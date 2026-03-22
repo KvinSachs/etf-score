@@ -521,6 +521,89 @@ function Toast({msg,visible}){
   );
 }
 
+/* ─── ONBOARDING ─────────────────────────────────────────────────────────────── */
+function Onboarding({onDone}){
+  const[step,setStep]=useState(0);
+  const steps=[
+    {
+      icon:(
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="28" stroke="rgba(14,203,129,0.2)" strokeWidth="1"/>
+          <circle cx="32" cy="32" r="20" stroke="rgba(14,203,129,0.15)" strokeWidth="1"/>
+          <path d="M16 40C20 40 22 28 26 28C30 28 30 34 36 32C41 30 43 20 48 16" stroke="#0ecb81" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter="drop-shadow(0 0 6px #0ecb81)"/>
+          <circle cx="48" cy="16" r="3" fill="#0ecb81" filter="drop-shadow(0 0 6px #0ecb81)"/>
+        </svg>
+      ),
+      title:"Analysez votre portefeuille ETF",
+      text:"ETF Score évalue la diversification de vos investissements selon 5 critères clés et vous guide vers un portefeuille plus solide.",
+    },
+    {
+      icon:(
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <rect x="8" y="36" width="12" height="20" rx="2" fill="rgba(14,203,129,0.15)" stroke="rgba(14,203,129,0.4)" strokeWidth="1"/>
+          <rect x="26" y="24" width="12" height="32" rx="2" fill="rgba(14,203,129,0.25)" stroke="rgba(14,203,129,0.5)" strokeWidth="1"/>
+          <rect x="44" y="12" width="12" height="44" rx="2" fill="rgba(14,203,129,0.4)" stroke="#0ecb81" strokeWidth="1"/>
+          <circle cx="50" cy="8" r="4" fill="#0ecb81" filter="drop-shadow(0 0 6px #0ecb81)"/>
+        </svg>
+      ),
+      title:"Un score clair sur 20",
+      text:"Géographie, secteurs, chevauchements, classes d'actifs, devises — chaque dimension est analysée et pondérée pour vous donner un score global actionnable.",
+    },
+    {
+      icon:(
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="22" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+          <path d="M32 10 L32 32 L48 22" stroke="#0ecb81" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter="drop-shadow(0 0 6px #0ecb81)"/>
+          <circle cx="32" cy="32" r="3" fill="#0ecb81"/>
+          <circle cx="32" cy="10" r="2" fill="rgba(14,203,129,0.5)"/>
+          <circle cx="48" cy="22" r="2" fill="rgba(14,203,129,0.5)"/>
+        </svg>
+      ),
+      title:"Des recommandations personnalisées",
+      text:"En fonction de votre portefeuille, ETF Score vous suggère des ajustements concrets avec des ETF adaptés à votre situation.",
+    },
+  ];
+
+  const done=()=>{
+    localStorage.setItem("etf-onboarding-seen","1");
+    onDone();
+  };
+
+  const s=steps[step];
+  const isLast=step===steps.length-1;
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"#050506",zIndex:99998,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",padding:"60px 24px 48px",maxWidth:430,margin:"0 auto"}}>
+      {/* Skip */}
+      <button onClick={done} style={{position:"absolute",top:20,right:20,background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:13,cursor:"pointer",padding:"8px 12px"}}>Passer</button>
+
+      {/* Content */}
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:32,textAlign:"center",animation:"fadeIn .4s ease"}}>
+        <div>{s.icon}</div>
+        <div>
+          <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{s.title}</div>
+          <div style={{fontSize:15,color:"rgba(255,255,255,0.4)",lineHeight:1.7,maxWidth:300}}>{s.text}</div>
+        </div>
+      </div>
+
+      {/* Dots */}
+      <div style={{display:"flex",gap:8,marginBottom:32}}>
+        {steps.map((_,i)=>(
+          <div key={i} onClick={()=>setStep(i)} style={{width:i===step?24:6,height:6,borderRadius:3,background:i===step?"#0ecb81":"rgba(255,255,255,0.12)",transition:"all .3s cubic-bezier(.16,1,.3,1)",cursor:"pointer"}}/>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <button onClick={isLast?done:()=>setStep(s=>s+1)}
+        style={{width:"100%",background:isLast?"#0ecb81":"rgba(255,255,255,0.06)",border:isLast?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:isLast?"#000":"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",transition:"all .2s",letterSpacing:.2}}
+        onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+        onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+        {isLast?"Analyser mon portefeuille →":"Suivant"}
+      </button>
+    </div>
+  );
+}
+
 /* ─── MAIN ───────────────────────────────────────────────────────────────────── */
 export default function App(){
   const[holdings,setHoldings]=useState([]);
@@ -532,6 +615,8 @@ export default function App(){
   const[disclaimerSeen,setDisclaimerSeen]=useState(false);
   const[savedAt,setSavedAt]=useState(null);
   const[toast,setToast]=useState({msg:"",visible:false});
+  const[onboarding,setOnboarding]=useState(false);
+  const[onboardStep,setOnboardStep]=useState(0);
   const[installToast,setInstallToast]=useState(false);
   const[activeRec,setActiveRec]=useState(null);
   const[recMode,setRecMode]=useState("essential");
@@ -540,6 +625,8 @@ export default function App(){
   useEffect(()=>{
     try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const p=JSON.parse(raw);if(p.holdings)setHoldings(p.holdings);if(p.disclaimerSeen)setDisclaimerSeen(true);if(p.savedAt)setSavedAt(new Date(p.savedAt));}}catch(_){}
     setReady(true);
+    const onboardingSeen=localStorage.getItem("etf-onboarding-seen");
+    if(!onboardingSeen) setOnboarding(true);
     const standalone=window.navigator.standalone||window.matchMedia("(display-mode: standalone)").matches;
     if(!standalone&&!localStorage.getItem("etf-install-seen")){setTimeout(()=>{setInstallToast(true);setTimeout(()=>setInstallToast(false),6000);localStorage.setItem("etf-install-seen","1");},2500);}
   },[]);
@@ -586,6 +673,7 @@ export default function App(){
       `}</style>
 
       {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)}/>}
+      {disclaimerSeen&&onboarding&&<Onboarding onDone={()=>{setOnboarding(false);setTab("ptf");}}/>}
 
       {/* Ambient */}
       <div aria-hidden="true" style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
