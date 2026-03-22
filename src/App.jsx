@@ -529,8 +529,10 @@ function Onboarding({onAdd,onDone}){
   const[open,setOpen]=useState(false);
   const[selectedTicker,setSelectedTicker]=useState(null);
   const[err,setErr]=useState("");
+  const[added,setAdded]=useState([]); // ETFs added during onboarding
   const ref=useRef(null);
   const amtRef=useRef(null);
+  const swipeStart=useRef(null);
 
   useEffect(()=>{const f=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",f);return()=>document.removeEventListener("mousedown",f);},[]);
 
@@ -544,16 +546,29 @@ function Onboarding({onAdd,onDone}){
 
   const selectItem=(ticker,name)=>{setSelectedTicker(ticker);setQ(name);setOpen(false);setTimeout(()=>amtRef.current?.focus(),60);};
 
-  const doAdd=()=>{
-    const t=selectedTicker||q.trim().toUpperCase();
+  const addOne=()=>{
+    const t=selectedTicker;
     const a=parseFloat(amt);
     if(!t||!DB[t]){setErr("Sélectionnez un ETF dans la liste");return;}
     if(isNaN(a)||a<=0){setErr("Montant invalide");return;}
     onAdd(t,a);
-    done();
+    setAdded(prev=>[...prev,{ticker:t,name:DB[t].name,amount:a}]);
+    setQ("");setAmt("");setSelectedTicker(null);setErr("");setOpen(false);
   };
 
   const done=()=>{localStorage.setItem("etf-onboarding-seen","1");onDone();};
+
+  // Swipe handling for info screens
+  const onTouchStart=e=>swipeStart.current=e.touches[0].clientX;
+  const onTouchEnd=e=>{
+    if(swipeStart.current===null)return;
+    const dx=e.changedTouches[0].clientX-swipeStart.current;
+    if(Math.abs(dx)>50){
+      if(dx<0&&step<2)setStep(s=>s+1);
+      if(dx>0&&step>0)setStep(s=>s-1);
+    }
+    swipeStart.current=null;
+  };
 
   const screens=[
     {
@@ -583,10 +598,19 @@ function Onboarding({onAdd,onDone}){
   ];
 
   const isAddStep=step===2;
-  const isLast=step===screens.length-1;
+
+  const Dots=()=>(
+    <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:32}}>
+      {[0,1,2].map(i=>(
+        <div key={i} onClick={()=>{ if(i<2)setStep(i); }} style={{width:i===step?24:6,height:6,borderRadius:3,background:i===step?"#0ecb81":"rgba(255,255,255,0.12)",transition:"all .3s cubic-bezier(.16,1,.3,1)",cursor:i<2?"pointer":"default"}}/>
+      ))}
+    </div>
+  );
 
   return(
-    <div style={{position:"fixed",inset:0,background:"#050506",zIndex:99998,display:"flex",flexDirection:"column",maxWidth:430,margin:"0 auto"}}>
+    <div style={{position:"fixed",inset:0,background:"#050506",zIndex:99998,display:"flex",flexDirection:"column",maxWidth:430,margin:"0 auto"}}
+      onTouchStart={!isAddStep?onTouchStart:undefined}
+      onTouchEnd={!isAddStep?onTouchEnd:undefined}>
 
       {/* Skip */}
       <button onClick={done} style={{position:"absolute",top:20,right:20,background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:13,cursor:"pointer",padding:"8px 12px",zIndex:1}}>Passer</button>
@@ -594,7 +618,7 @@ function Onboarding({onAdd,onDone}){
       {!isAddStep?(
         /* ── Info screens ── */
         <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",padding:"80px 24px 48px",textAlign:"center"}}>
-          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,animation:"fadeIn .4s ease"}}>
+          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,animation:"fadeIn .35s ease"}}>
             {screens[step].icon}
             <div>
               <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{screens[step].title}</div>
@@ -602,11 +626,7 @@ function Onboarding({onAdd,onDone}){
             </div>
           </div>
           <div style={{width:"100%"}}>
-            <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:32}}>
-              {[0,1,2].map(i=>(
-                <div key={i} style={{width:i===step?24:6,height:6,borderRadius:3,background:i===step?"#0ecb81":"rgba(255,255,255,0.12)",transition:"all .3s cubic-bezier(.16,1,.3,1)"}}/>
-              ))}
-            </div>
+            <Dots/>
             <button onClick={()=>setStep(s=>s+1)}
               style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2}}>
               Suivant
@@ -614,22 +634,32 @@ function Onboarding({onAdd,onDone}){
           </div>
         </div>
       ):(
-        /* ── Add first ETF screen ── */
-        <div style={{flex:1,display:"flex",flexDirection:"column",padding:"80px 24px 48px"}}>
-          <div style={{textAlign:"center",marginBottom:36}}>
-            <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:12,letterSpacing:-.3}}>Ajoutez votre premier ETF</div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,0.35)",lineHeight:1.7}}>Saisissez un ETF que vous détenez ou souhaitez analyser. Vous pourrez en ajouter d'autres ensuite.</div>
+        /* ── Add ETF screen ── */
+        <div style={{flex:1,display:"flex",flexDirection:"column",padding:"72px 24px 48px",overflowY:"auto"}}>
+          <div style={{textAlign:"center",marginBottom:28}}>
+            <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:10,letterSpacing:-.3}}>Constituez votre portefeuille</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,0.35)",lineHeight:1.65}}>Ajoutez autant d'ETF que vous souhaitez. Vous pourrez toujours en ajouter ou modifier depuis l'app.</div>
           </div>
 
-          {/* Dots */}
-          <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:32}}>
-            {[0,1,2].map(i=>(
-              <div key={i} style={{width:i===2?24:6,height:6,borderRadius:3,background:i===2?"#0ecb81":"rgba(255,255,255,0.3)",transition:"all .3s"}}/>
-            ))}
-          </div>
+          <Dots/>
 
-          {/* Search inline */}
-          <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10,flex:1}}>
+          {/* Added ETFs */}
+          {added.length>0&&(
+            <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:6}}>
+              {added.map((h,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.15)",borderRadius:12,padding:"10px 14px"}}>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:500,color:"#fff"}}>{h.name}</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginTop:2}}>{h.ticker}</div>
+                  </div>
+                  <span style={{fontSize:12,color:"#0ecb81",fontWeight:600}}>{h.amount.toLocaleString("fr-FR")} €</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Search */}
+          <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10}}>
             <div style={{position:"relative"}}>
               <input value={q}
                 onChange={e=>{setQ(e.target.value);setSelectedTicker(null);setErr("");setOpen(true);}}
@@ -642,7 +672,7 @@ function Onboarding({onAdd,onDone}){
               )}
               {open&&results.length>0&&(
                 <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:10,background:"rgba(14,14,14,0.99)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,overflow:"hidden",boxShadow:"0 16px 40px rgba(0,0,0,0.8)"}}>
-                  {results.map(([t,e],i)=>(
+                  {results.map(([t,e])=>(
                     <div key={t} onMouseDown={()=>selectItem(t,e.name)}
                       style={{padding:"13px 16px",cursor:"pointer",borderBottom:"0.5px solid rgba(255,255,255,0.05)",transition:"background .1s"}}
                       onMouseEnter={ev=>ev.currentTarget.style.background="rgba(255,255,255,0.05)"}
@@ -657,20 +687,22 @@ function Onboarding({onAdd,onDone}){
 
             <div style={{display:"flex",gap:10}}>
               <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
-                onKeyDown={e=>e.key==="Enter"&&doAdd()}
+                onKeyDown={e=>e.key==="Enter"&&addOne()}
                 onFocus={e=>e.target.style.borderColor="rgba(14,203,129,0.4)"}
                 onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
-                placeholder="Montant investi (€)"
+                placeholder="Montant (€)"
                 style={{flex:1,background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
+              <button onClick={addOne}
+                style={{background:"rgba(255,255,255,0.08)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 18px",color:"#fff",fontSize:18,fontWeight:700,cursor:"pointer",flexShrink:0}}>+</button>
             </div>
 
             {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
 
             {/* Popular suggestions */}
-            <div style={{marginTop:4}}>
-              <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Points de départ populaires</div>
+            <div>
+              <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Populaires</div>
               <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-                {[{t:"IWDA",l:"iShares Monde"},{t:"VWCE",l:"Vanguard All-World"},{t:"MWRD",l:"Amundi Monde"},{t:"CSP1",l:"S&P 500"}].map(({t,l})=>(
+                {[{t:"IWDA",l:"iShares Monde"},{t:"VWCE",l:"Vanguard All-World"},{t:"MWRD",l:"Amundi Monde PEA"},{t:"PAEEM",l:"Émergents PEA"}].map(({t,l})=>(
                   <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)}
                     style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,padding:"6px 14px",color:"rgba(255,255,255,0.5)",fontSize:12,cursor:"pointer",transition:"all .15s"}}
                     onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}}
@@ -680,16 +712,14 @@ function Onboarding({onAdd,onDone}){
                 ))}
               </div>
             </div>
-
-            <div style={{flex:1}}/>
-
-            <button onClick={doAdd}
-              style={{width:"100%",background:"#0ecb81",border:"none",borderRadius:16,padding:"17px",color:"#000",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,marginTop:8,transition:"opacity .15s"}}
-              onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
-              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              Analyser mon portefeuille →
-            </button>
           </div>
+
+          <div style={{flex:1,minHeight:24}}/>
+
+          <button onClick={done}
+            style={{width:"100%",background:added.length>0?"#0ecb81":"rgba(255,255,255,0.06)",border:added.length>0?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:added.length>0?"#000":"rgba(255,255,255,0.4)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s",marginTop:8}}>
+            {added.length>0?`Analyser mon portefeuille (${added.length} ETF) →`:"Passer cette étape"}
+          </button>
         </div>
       )}
     </div>
