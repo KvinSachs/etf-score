@@ -7,8 +7,65 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="ETF Score" />
-    <link rel="apple-touch-icon" href="/icon-512.png" />
+    <link rel="apple-touch-icon" href="/icon-180.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
     <title>ETF Score</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --sat: env(safe-area-inset-top, 0px);
+        --sar: env(safe-area-inset-right, 0px);
+        --sab: env(safe-area-inset-bottom, 0px);
+        --sal: env(safe-area-inset-left, 0px);
+      }
+
+      html {
+        background: #0e0e0f;
+        /* Fill notch area with app color */
+        background-color: #0e0e0f;
+        height: 100%;
+      }
+
+      body {
+        background: #0e0e0f;
+        background-color: #0e0e0f;
+        width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        overflow-x: hidden;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior-y: none;
+      }
+
+      #root {
+        background: #0e0e0f;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        /* Push content below status bar */
+        padding-top: var(--sat);
+        padding-left: var(--sal);
+        padding-right: var(--sar);
+      }
+
+      /* Force black behind status bar on standalone PWA */
+      @media all and (display-mode: standalone) {
+        html, body, #root {
+          background: #0e0e0f !important;
+        }
+        body {
+          padding-top: 0 !important;
+        }
+        #root {
+          padding-top: var(--sat);
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

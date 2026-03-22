@@ -160,21 +160,25 @@ function hhi(obj) {
   return Object.values(obj).reduce((s,v)=>s+Math.pow(v/t,2),0);
 }
 function hhiToScore(h, n) {
+  // Use a softer curve: sqrt gives more credit to partial diversification
   const mn = 1/n, norm = (h-mn)/(1-mn);
-  return Math.max(0, 1 - norm);
+  return Math.max(0, 1 - Math.pow(Math.max(0, norm), 0.75));
 }
 
 // 1. Geographic diversification (0-1)
 function geoScore(geoMap) {
   if(!Object.keys(geoMap).length) return 0;
-  const n = Math.max(Object.keys(geoMap).length, 8);
+  // Count distinct regions with meaningful weight (>2%)
+  const meaningful = Object.values(geoMap).filter(v=>v>2).length;
+  const n = Math.max(meaningful, Object.keys(geoMap).length, 6);
   return hhiToScore(hhi(geoMap), n);
 }
 
 // 2. Sector diversification (0-1)
 function sectorScore(secMap) {
   if(!Object.keys(secMap).length) return 0;
-  const n = Math.max(Object.keys(secMap).length, 11);
+  const meaningful = Object.values(secMap).filter(v=>v>2).length;
+  const n = Math.max(meaningful, Object.keys(secMap).length, 8);
   return hhiToScore(hhi(secMap), n);
 }
 
@@ -913,12 +917,13 @@ export default function App() {
   const [savedAt, setSavedAt] = useState(null);
   const [toast, setToast] = useState({msg:"",visible:false});
   const toastTimer = useRef(null);
+  const [installToast, setInstallToast] = useState(false);
 
   useEffect(()=>{
     try{
         const raw=localStorage.getItem(STORAGE_KEY);
         if(raw){ const p=JSON.parse(raw); if(p.holdings) setHoldings(p.holdings); if(p.disclaimerSeen) setDisclaimerSeen(true); if(p.savedAt) setSavedAt(new Date(p.savedAt)); }
-        
+
     }catch(_){}
     setReady(true);
   },[]);
@@ -949,7 +954,7 @@ export default function App() {
         @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.85)}}`}</style></div>);
 
   return (
-    <div style={{minHeight:"100vh",background:"#0e0e0f",color:"#e2e8f0",
+    <div style={{minHeight:"100vh",minHeight:"100dvh",background:"#0e0e0f",color:"#e2e8f0",
       fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif",
       maxWidth:430,margin:"0 auto",position:"relative"}}>
 
@@ -978,9 +983,15 @@ export default function App() {
 
       <div style={{position:"relative",zIndex:1}}>
         {/* Header */}
-        <header style={{padding:"16px 20px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",
-          borderBottom:"1px solid rgba(255,255,255,0.07)",backdropFilter:"blur(20px)",
-          background:"rgba(14,14,15,0.85)",position:"sticky",top:0,zIndex:50}}>
+        <header style={{
+          padding:"12px 20px 14px",
+          display:"flex",alignItems:"center",justifyContent:"space-between",
+          borderBottom:"1px solid rgba(255,255,255,0.07)",
+          backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+          background:"rgba(14,14,15,0.92)",
+          position:"sticky",top:0,zIndex:50,
+          marginTop:0,
+        }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div style={{width:34,height:34,flexShrink:0}}>
               <svg viewBox="0 0 512 512" width="34" height="34" xmlns="http://www.w3.org/2000/svg">
@@ -1038,7 +1049,7 @@ export default function App() {
         <div style={{padding:"14px 16px 0"}}><Tabs active={tab} onChange={setTab} highlight={holdings.length===0?["ptf"]:[]}/></div>
 
         {/* Content */}
-        <div style={{padding:"14px 16px 100px"}}>
+        <div style={{padding:"14px 16px calc(100px + env(safe-area-inset-bottom))"}}>
 
           {/* ── SCORES TAB ── */}
           {tab==="scores"&&(
@@ -1184,11 +1195,30 @@ export default function App() {
 
       <Toaster message={toast.msg} visible={toast.visible}/>
 
+      {/* Install prompt toast */}
+      <div style={{
+        position:"fixed", bottom:72, left:"50%",
+        transform:`translateX(-50%) translateY(${installToast?0:16}px)`,
+        opacity: installToast ? 1 : 0,
+        transition:"all 0.4s cubic-bezier(.16,1,.3,1)",
+        background:"rgba(30,30,42,0.97)", border:"1px solid rgba(129,140,248,0.25)",
+        borderRadius:20, padding:"12px 18px", zIndex:9000,
+        display:"flex", alignItems:"center", gap:10,
+        boxShadow:"0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,102,241,0.1)",
+        pointerEvents:"none", maxWidth:320, width:"calc(100% - 40px)",
+      }}>
+        <span style={{fontSize:20,flexShrink:0}}>📲</span>
+        <div>
+          <div style={{fontSize:13,color:"#e2e8f0",fontWeight:600,marginBottom:2}}>Installer l'app</div>
+          <div style={{fontSize:11,color:"#7c8fa8",lineHeight:1.5}}>Partager → Sur l'écran d'accueil pour une expérience optimale</div>
+        </div>
+      </div>
+
       {/* Disclaimer banner */}
       {disclaimerSeen&&(
         <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,
           background:"rgba(14,14,15,0.95)",borderTop:"1px solid rgba(255,255,255,0.06)",
-          padding:"8px 20px",textAlign:"center",zIndex:40,backdropFilter:"blur(10px)"}}>
+          padding:"8px 20px calc(8px + env(safe-area-inset-bottom))",textAlign:"center",zIndex:40,backdropFilter:"blur(10px)"}}>
           <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",letterSpacing:0.3}}>
             À titre informatif uniquement — pas un conseil en investissement · <button onClick={()=>setDisclaimerSeen(false)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:10,cursor:"pointer",padding:0,textDecoration:"underline"}}>Revoir</button>
           </span>
