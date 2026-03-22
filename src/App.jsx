@@ -632,12 +632,35 @@ function Onboarding({onAdd,onDone}){
       onTouchMove={!isAddStep?onTouchMove:undefined}
       onTouchEnd={!isAddStep?onTouchEnd:undefined}>
 
-      {/* Top nav — back left, skip right, always same position */}
-      {step>0&&(
-        <button onClick={()=>setStep(s=>s-1)}
-          style={{position:"absolute",top:20,left:20,background:"none",border:"none",color:"rgba(255,255,255,0.4)",fontSize:22,cursor:"pointer",padding:"8px 12px",zIndex:1,lineHeight:1}}>‹</button>
-      )}
-      <button onClick={done} style={{position:"absolute",top:20,right:20,background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:13,cursor:"pointer",padding:"8px 12px",zIndex:1}}>Passer</button>
+      {/* ETF added toast — top center */}
+      <div style={{
+        position:"fixed",top:`calc(env(safe-area-inset-top, 16px) + 60px)`,left:"50%",
+        transform:`translateX(-50%) translateY(${showCheck?0:-16}px)`,
+        opacity:showCheck?1:0,
+        transition:"all .3s cubic-bezier(.16,1,.3,1)",
+        background:"rgba(14,203,129,0.15)",backdropFilter:"blur(20px)",
+        border:"0.5px solid rgba(14,203,129,0.4)",borderRadius:20,
+        padding:"10px 18px",zIndex:200,
+        display:"flex",alignItems:"center",gap:8,
+        pointerEvents:"none",whiteSpace:"nowrap",
+      }}>
+        <div style={{width:16,height:16,borderRadius:"50%",background:"#0ecb81",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </div>
+        <span style={{fontSize:13,color:"#0ecb81",fontWeight:600}}>ETF ajouté au portefeuille</span>
+      </div>
+
+      {/* Top nav — fixed, above status bar */}
+      <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,display:"flex",justifyContent:"space-between",alignItems:"center",padding:"calc(env(safe-area-inset-top, 16px) + 8px) 20px 8px",zIndex:100,pointerEvents:"none"}}>
+        <div style={{pointerEvents:"auto"}}>
+          {step>0&&(
+            <button onClick={()=>setStep(s=>s-1)}
+              style={{background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:"rgba(255,255,255,0.6)",fontSize:20,cursor:"pointer",padding:"6px 14px",lineHeight:1}}>‹</button>
+          )}
+        </div>
+        <button onClick={done} pointerEvents="auto"
+          style={{pointerEvents:"auto",background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:"rgba(255,255,255,0.35)",fontSize:12,cursor:"pointer",padding:"6px 14px"}}>Passer</button>
+      </div>
 
       {!isAddStep?(
         /* ── Info screens — sliding carousel ── */
@@ -675,9 +698,9 @@ function Onboarding({onAdd,onDone}){
         </div>
       ):(
         /* ── Add ETF screen ── */
-        <div style={{flex:1,display:"flex",flexDirection:"column",padding:"72px 0 0",position:"relative"}}>
+        <div style={{flex:1,display:"flex",flexDirection:"column",padding:"0",position:"relative",paddingTop:"calc(env(safe-area-inset-top, 16px) + 56px)"}}>
           {/* Scrollable content */}
-          <div style={{flex:1,overflowY:"auto",padding:"0 24px",paddingBottom:100}}>
+          <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"0 24px",paddingBottom:120}}>
 
           {/* Spacer to push content down like other slides */}
           <div style={{flex:1,minHeight:40}}/>
@@ -752,15 +775,7 @@ function Onboarding({onAdd,onDone}){
               placeholder="Montant investi (€) — Entrée pour valider"
               style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
 
-            {showCheck&&(
-              <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",animation:"checkFade 1.2s ease forwards"}}>
-                <div style={{width:18,height:18,borderRadius:"50%",background:"#0ecb81",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
-                <span style={{fontSize:12,color:"#0ecb81",fontWeight:500}}>ETF ajouté</span>
-              </div>
-            )}
-            {err&&!showCheck&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
+            {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
 
             {/* Popular suggestions */}
             <div>
