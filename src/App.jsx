@@ -10,7 +10,7 @@ const ISIN_MAP = {
   "LU1681038672":"EPRA","IE00B945VV12":"un ETF Europe","IE00B579F325":"un ETF or physique",
   "IE00BDBRDM35":"AGGH","IE00B1XNHC34":"INRG","IE00B3F81R35":"IEAG",
   "IE00B5BMR087":"CSP1","LU1681041575":"un ETF Europe Amundi","LU1681042773":"BCHN",
-  "IE00B8GF1M35":"CBRE","LU1681043599":"MWRD","LU1681043086":"PAASI",
+  "IE00B8GF1M35":"CBRE","LU1681043599":"MWRD","LU1681043086":"PAASI","FR0011440478":"PAEMF","FR0013412038":"PCEU","FR0013411980":"PTPXE",
 };
 const DB = {
   "IWDA":{ name:"iShares Core ETF Monde", isin:"IE00B4L5Y983", p:"iShares", assetClass:"equity", currencies:{USD:70,EUR:16,JPY:6,GBP:4,CHF:4}, geo:{"Amér. du Nord":70,"Europe":16,"Japon":6,"Asie-Pac.":5,"Autres":3}, sec:{"Technologie":24,"Finance":16,"Santé":13,"Industrie":11,"Conso. discr.":10,"Conso. cour.":7,"Énergie":5,"Matériaux":4,"Télécom":4,"Immobilier":3,"Services pub.":3}, overlaps:{"SWDA":99,"MWRD":98,"SPY":68,"VOO":68,"CSP1":68,"500":68,"ESE":68,"QQQ":42,"PANX":42}},
@@ -46,6 +46,9 @@ const DB = {
   "VEUR":{ name:"Vanguard FTSE Developed Europe", isin:"IE00B945VV12", p:"Vanguard", assetClass:"equity", currencies:{EUR:55,GBP:22,CHF:14,SEK:5,Autres:4}, geo:{"Royaume-Uni":22,"France":15,"Suisse":14,"Allemagne":13,"Pays-Bas":8,"Autres EU":28}, sec:{"Finance":18,"Santé":15,"Industrie":14,"Conso. cour.":12,"Matériaux":8,"Conso. discr.":8,"Énergie":7,"Télécom":6,"Technologie":6,"Services pub.":4,"Immobilier":2}, overlaps:{"MEUD":96}},
   "PAEEM":{ name:"Amundi MSCI Emerging Markets", isin:"LU1681045370", p:"Amundi", assetClass:"equity", currencies:{CNY:32,TWD:16,INR:15,KRW:12,BRL:6,Autres:19}, geo:{"Chine":32,"Taiwan":16,"Inde":15,"Corée du Sud":12,"Brésil":6,"Autres EM":19}, sec:{"Technologie":28,"Finance":22,"Conso. discr.":12,"Télécom":10,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. cour.":4}, overlaps:{"EIMI":95}},
   "EIMI":{ name:"iShares Core MSCI EM IMI", isin:"IE00BKM4GZ66", p:"iShares", assetClass:"equity", currencies:{CNY:28,TWD:18,INR:16,KRW:12,BRL:5,Autres:21}, geo:{"Chine":28,"Taiwan":18,"Inde":16,"Corée du Sud":12,"Brésil":5,"Autres EM":21}, sec:{"Technologie":29,"Finance":21,"Conso. discr.":11,"Télécom":10,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. cour.":5}, overlaps:{"PAEEM":95}},
+  "PTPXE":{ name:"Amundi PEA Japan TOPIX UCITS ETF", isin:"FR0013411980", p:"Amundi", assetClass:"equity", currencies:{JPY:100}, geo:{"Japon":100}, sec:{"Industrie":22,"Finance":14,"Conso. discr.":13,"Technologie":11,"Matériaux":9,"Santé":8,"Conso. cour.":7,"Énergie":4,"Télécom":4,"Immobilier":4,"Services pub.":4}, overlaps:{}},
+  "PCEU":{ name:"Amundi PEA MSCI Europe UCITS ETF", isin:"FR0013412038", p:"Amundi", assetClass:"equity", currencies:{EUR:55,GBP:22,CHF:14,SEK:5,Autres:4}, geo:{"Royaume-Uni":22,"France":15,"Suisse":14,"Allemagne":13,"Pays-Bas":8,"Autres EU":28}, sec:{"Finance":18,"Santé":15,"Industrie":14,"Conso. cour.":12,"Matériaux":8,"Conso. discr.":8,"Énergie":7,"Télécom":6,"Technologie":6,"Services pub.":4,"Immobilier":2}, overlaps:{"MEUD":96,"VEUR":95}},
+  "PAEMF":{ name:"Amundi PEA Marchés Émergents EMEA", isin:"FR0011440478", p:"Amundi", assetClass:"equity", currencies:{ZAR:15,AED:12,EGP:10,QAR:8,KWD:7,NGN:6,Autres:42}, geo:{"Afrique du Sud":15,"Émirats Arabes":12,"Égypte":10,"Qatar":8,"Koweït":7,"Nigeria":6,"Autres EMEA":42}, sec:{"Finance":28,"Matériaux":18,"Énergie":14,"Télécom":12,"Conso. discr.":10,"Industrie":8,"Autres":10}, overlaps:{}},
   "IUSN":{ name:"iShares MSCI World Small Cap", isin:"IE00BF4RFH31", p:"iShares", assetClass:"equity", currencies:{USD:58,EUR:18,JPY:10,GBP:7,Autres:7}, geo:{"Amér. du Nord":58,"Europe":18,"Japon":10,"Asie-Pac.":7,"Autres":7}, sec:{"Industrie":20,"Finance":16,"Technologie":15,"Santé":12,"Conso. discr.":11,"Matériaux":8,"Conso. cour.":6,"Immobilier":5,"Énergie":4,"Télécom":2,"Services pub.":1}, overlaps:{"IWDA":8}},
 };
 const STORAGE_KEY = "etf-portfolio-v2";
@@ -124,7 +127,7 @@ function buildRecs(scores,holdings,total){
   if(rePct===0&&holdings.length>=2)recs.push({priority:"low",icon:"building",color:"#818cf8",bg:"rgba(129,140,248,0.08)",border:"rgba(129,140,248,0.15)",level:"advanced",title:"Immobilier absent",cat:"realestate",text:"Les REITs (ETF immobilier coté mondial) offrent revenus réguliers et décorrélation partielle."});
   const devW=(geoMap["Amér. du Nord"]||0)+(["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(geoMap[k]||0),0))+(geoMap["Japon"]||0);
   if(devW<20&&holdings.length>0)recs.push({priority:"high",icon:"geo",color:"#f59e0b",bg:"rgba(245,158,11,0.08)",border:"rgba(245,158,11,0.15)",level:"essential",title:"Marchés développés absents",cat:"world",text:`Seulement ${devW.toFixed(0)}% en marchés développés (US, Europe, Japon). Ces marchés représentent ~80% de la capitalisation mondiale. Un ETF Monde comme ETF Monde rééquilibrerait fortement votre exposition.`});
-  else if(usW>80)recs.push({priority:"high",icon:"geo",color:"#f59e0b",bg:"rgba(245,158,11,0.08)",border:"rgba(245,158,11,0.15)",level:"advanced",title:"Concentration US excessive",cat:"europe",text:`${usW.toFixed(0)}% en Amérique du Nord. Ajoutez de l'Europe ou des émergents pour rééquilibrer.`});
+  else if(usW>80)recs.push({priority:"high",icon:"geo",color:"#f59e0b",bg:"rgba(245,158,11,0.08)",border:"rgba(245,158,11,0.15)",level:"essential",title:"Concentration US excessive",cat:"europe",text:`${usW.toFixed(0)}% en Amérique du Nord. Ajoutez de l'Europe ou des émergents pour rééquilibrer.`});
   if(emW<8&&devW>=20&&holdings.length>0)recs.push({priority:"medium",icon:"geo",color:"#818cf8",bg:"rgba(129,140,248,0.08)",border:"rgba(129,140,248,0.15)",level:"advanced",title:"Émergents sous-représentés",cat:"emerging",text:`${emW.toFixed(0)}% seulement en marchés émergents, qui représentent ~40% du PIB mondial.`});
   if(tW>35)recs.push({priority:"high",icon:"sector",color:"#f87171",bg:"rgba(248,113,113,0.08)",border:"rgba(248,113,113,0.15)",level:"essential",title:"Surexposition technologie",text:`${tW.toFixed(0)}% en Tech — très sensible aux taux et aux rotations sectorielles.`});
   if(usdW>80)recs.push({priority:"medium",icon:"currency",color:"#38bdf8",bg:"rgba(56,189,248,0.08)",border:"rgba(56,189,248,0.15)",level:"advanced",title:"Risque USD élevé",cat:"eurobonds",text:`${usdW.toFixed(0)}% USD. Une dépréciation du dollar impacte directement vos rendements en euros.`});
@@ -137,12 +140,12 @@ function buildRecs(scores,holdings,total){
   const rePctR=classes["real_estate"]||0;
   if(commPctR>25) recs.push({priority:"high",icon:"gold",color:"#facc15",bg:"rgba(250,204,21,0.08)",border:"rgba(250,204,21,0.15)",level:"essential",title:"Surexposition matières premières",cat:"gold",text:`${commPctR.toFixed(0)}% en matières premières (or, etc.). Au-delà de 10-15%, cette classe amplifie la volatilité sans rendement long terme garanti. Rééquilibrez vers des actions ou obligations.`});
   else if(commPctR>15) recs.push({priority:"medium",icon:"gold",color:"#facc15",bg:"rgba(250,204,21,0.08)",border:"rgba(250,204,21,0.15)",level:"advanced",title:"Or/matières premières élevé",cat:"gold",text:`${commPctR.toFixed(0)}% en matières premières. Une allocation de 5-10% est généralement recommandée comme couverture.`});
-  if(rePctR>30) recs.push({priority:"high",icon:"building",color:"#fb923c",bg:"rgba(251,146,60,0.08)",border:"rgba(251,146,60,0.15)",level:"advanced",title:"Surexposition immobilier",cat:"realestate",text:`${rePctR.toFixed(0)}% en immobilier coté. Au-delà de 15%, vous amplifiez le risque de taux (les REITs sont sensibles aux hausses de taux). Diversifiez avec des actions ou obligations.`});
+  if(rePctR>30) recs.push({priority:"high",icon:"building",color:"#fb923c",bg:"rgba(251,146,60,0.08)",border:"rgba(251,146,60,0.15)",level:"essential",title:"Surexposition immobilier",cat:"realestate",text:`${rePctR.toFixed(0)}% en immobilier coté. Au-delà de 15%, vous amplifiez le risque de taux (les REITs sont sensibles aux hausses de taux). Diversifiez avec des actions ou obligations.`});
   if(bondPctR>60) recs.push({priority:"medium",icon:"bond",color:"#34d399",bg:"rgba(52,211,153,0.08)",border:"rgba(52,211,153,0.15)",level:"advanced",title:"Portefeuille très obligataire",cat:"emerging",text:`${bondPctR.toFixed(0)}% en obligations. Rendement potentiel limité sur le long terme. Un rééquilibrage vers les actions améliorerait la performance attendue.`});
   if(equityPctR>95&&holdings.length===1) recs.push({priority:"low",icon:"sector",color:"#818cf8",bg:"rgba(129,140,248,0.08)",border:"rgba(129,140,248,0.15)",level:"advanced",title:"Portefeuille mono-ETF",cat:"bonds",text:"Un seul ETF action couvre bien la diversification interne. Ajouter obligations et or renforcerait la résilience globale lors des crises."});
 
   // Scoring-driven analysis
-  if(scores.overlap<10&&holdings.length>1) recs.push({priority:"high",icon:"overlap",color:"#f87171",bg:"rgba(248,113,113,0.08)",border:"rgba(248,113,113,0.15)",level:"advanced",title:"Chevauchements massifs détectés",text:`Score chevauchement : ${scores.overlap.toFixed(1)}/20. Plusieurs de vos ETF détiennent les mêmes entreprises. Vous payez des frais de gestion en doublon sans gain de diversification.`});
+  if(scores.overlap<10&&holdings.length>1) recs.push({priority:"high",icon:"overlap",color:"#f87171",bg:"rgba(248,113,113,0.08)",border:"rgba(248,113,113,0.15)",level:"essential",title:"Chevauchements massifs détectés",text:`Score chevauchement : ${scores.overlap.toFixed(1)}/20. Plusieurs de vos ETF détiennent les mêmes entreprises. Vous payez des frais de gestion en doublon sans gain de diversification.`});
   if(scores.currency<8&&holdings.length>0) recs.push({priority:"medium",icon:"currency",color:"#38bdf8",bg:"rgba(56,189,248,0.08)",border:"rgba(56,189,248,0.15)",level:"advanced",title:"Dépendance monétaire élevée",cat:"eurobonds",text:`Score devises : ${scores.currency.toFixed(1)}/20. Votre portefeuille est très exposé à une ou deux devises. Une variation des taux de change peut amplement affecter vos rendements réels en euros.`});
   if(scores.assetClass<8&&holdings.length>1) recs.push({priority:"medium",icon:"bond",color:"#34d399",bg:"rgba(52,211,153,0.08)",border:"rgba(52,211,153,0.15)",level:"advanced",title:"Classes d'actifs déséquilibrées",cat:"bonds",text:`Score classes d'actifs : ${scores.assetClass.toFixed(1)}/20. Un portefeuille robuste combine actions, obligations, immobilier et or dans des proportions équilibrées. Le vôtre est concentré sur une seule catégorie.`});
 
@@ -392,7 +395,7 @@ function SuggestionModal({catalog,onSelect,onClose}){
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.borderColor="rgba(255,255,255,0.16)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.borderColor="rgba(255,255,255,0.08)";}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <span style={{fontSize:13,fontWeight:700,color:"#f1f5f9"}}>{opt.label.split(" · ")[0]}</span>
+                <span style={{fontSize:13,fontWeight:700,color:"#f1f5f9"}}>{DB[opt.ticker]?.name||opt.label.split(" · ")[0]}</span>
                 <div style={{display:"flex",alignItems:"center",gap:5}}>
                   {opt.ter&&<span style={{fontSize:10,color:"#34d399",fontWeight:700,background:"rgba(52,211,153,0.12)",padding:"2px 6px",borderRadius:5}}>TER {opt.ter}</span>}
                   <span style={{fontSize:9,color:"rgba(255,255,255,0.2)",fontFamily:"monospace"}}>{opt.ticker}</span>
@@ -806,7 +809,21 @@ export default function App(){
                     <div style={{flex:1,height:1,background:"linear-gradient(270deg,rgba(99,102,241,0.4),transparent)"}}/>
                   </div>
 
-                  {/* Positive feedback — always shown */}
+                  {/* Critical first — high priority essential recs */}
+                  {recs.filter(r=>r.level==="essential"&&r.priority==="high").map((r,i)=>(
+                    <div key={i} style={{background:r.bg,border:`1px solid ${r.border}`,borderRadius:16,padding:"14px 16px"}}>
+                      <div style={{fontSize:12,fontWeight:700,color:r.color,marginBottom:5}}>{r.title}</div>
+                      <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.7)",lineHeight:1.65}}>{r.text}</p>
+                      {r.cat&&CAT[r.cat]&&(
+                        <button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:r.color,fontSize:12,fontWeight:600}}>
+                          <span style={{fontSize:14,lineHeight:1}}>→</span>
+                          <span style={{borderBottom:`1px solid ${r.color}55`}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Positive feedback — after criticals */}
                   {positives.map((p,i)=>(
                     <div key={i} style={{background:"rgba(74,222,128,0.06)",border:"1px solid rgba(74,222,128,0.15)",borderRadius:16,padding:"13px 16px",display:"flex",gap:10,alignItems:"flex-start"}}>
                       <span style={{fontSize:16,flexShrink:0}}>🌟</span>
@@ -814,8 +831,8 @@ export default function App(){
                     </div>
                   ))}
 
-                  {/* Essential recs */}
-                  {recs.filter(r=>r.level==="essential").map((r,i)=>(
+                  {/* Other essential recs (non-critical) */}
+                  {recs.filter(r=>r.level==="essential"&&r.priority!=="high").map((r,i)=>(
                     <div key={i} style={{background:r.bg,border:`1px solid ${r.border}`,borderRadius:16,padding:"14px 16px"}}>
                       <div style={{fontSize:12,fontWeight:700,color:r.color,marginBottom:5}}>{r.title}</div>
                       <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.7)",lineHeight:1.65}}>{r.text}</p>
