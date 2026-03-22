@@ -396,7 +396,20 @@ function Search({onAdd,suggestions=[]}){
   useEffect(()=>{const f=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",f);return()=>document.removeEventListener("mousedown",f);},[]);
   const resolved=useMemo(()=>{if(selectedTicker)return selectedTicker;const u=q.trim().toUpperCase();if(/^[A-Z]{2}[A-Z0-9]{10}$/.test(u)&&ISIN_MAP[u])return ISIN_MAP[u];return u;},[q,selectedTicker]);
   const results=useMemo(()=>{if(selectedTicker)return[];const u=q.trim().toUpperCase();if(u.length<1)return[];const s=(/^[A-Z]{2}[A-Z0-9]{10}$/.test(u)&&ISIN_MAP[u])?ISIN_MAP[u]:u;return Object.entries(DB).filter(([t,e])=>t.includes(s)||e.name.toUpperCase().includes(s)||(e.isin&&e.isin.toUpperCase().includes(s))||e.p.toUpperCase().includes(s)).slice(0,5);},[q,selectedTicker]);
-  const selectItem=(ticker,name)=>{setSelectedTicker(ticker);setQ(name);setOpen(false);setTimeout(()=>amtRef.current?.focus(),60);};
+  const selectItem=(ticker,name)=>{
+    setSelectedTicker(ticker);
+    setQ(name);
+    setOpen(false);
+    // Focus amount field — must happen in same tick as user gesture for iOS keyboard
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        if(amtRef.current){
+          amtRef.current.focus();
+          amtRef.current.click();
+        }
+      });
+    });
+  };
   const doAdd=()=>{const t=resolved,a=parseFloat(amt);if(!t){setErr("Saisissez un ETF");return;}if(!DB[t]){setErr("ETF introuvable — sélectionnez dans la liste");return;}if(isNaN(a)||a<=0){setErr("Montant invalide");return;}onAdd(t,a);setQ("");setAmt("");setErr("");setOpen(false);setSelectedTicker(null);};
   const onKey=e=>{if(!open||!results.length){if(e.key==="Enter")doAdd();return;}if(e.key==="ArrowDown"){e.preventDefault();setHi(h=>Math.min(h+1,results.length-1));}else if(e.key==="ArrowUp"){e.preventDefault();setHi(h=>Math.max(h-1,0));}else if(e.key==="Enter"){e.preventDefault();const[t,e2]=results[hi];selectItem(t,e2.name);}else if(e.key==="Escape")setOpen(false);};
   const inp={width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"};
@@ -549,7 +562,20 @@ function Onboarding({onAdd,onDone}){
     return Object.entries(DB).filter(([t,e])=>t.includes(s)||e.name.toUpperCase().includes(s)||(e.isin&&e.isin.toUpperCase().includes(s))).slice(0,4);
   },[q,selectedTicker]);
 
-  const selectItem=(ticker,name)=>{setSelectedTicker(ticker);setQ(name);setOpen(false);setTimeout(()=>amtRef.current?.focus(),60);};
+  const selectItem=(ticker,name)=>{
+    setSelectedTicker(ticker);
+    setQ(name);
+    setOpen(false);
+    // Focus amount field — must happen in same tick as user gesture for iOS keyboard
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        if(amtRef.current){
+          amtRef.current.focus();
+          amtRef.current.click();
+        }
+      });
+    });
+  };
 
   const addOne=()=>{
     const t=selectedTicker;
@@ -702,7 +728,7 @@ function Onboarding({onAdd,onDone}){
         <div style={{flex:1,display:"flex",flexDirection:"column",padding:"0",position:"relative",paddingTop:"calc(env(safe-area-inset-top, 16px) + 56px)"}}>
           {/* Scrollable content — slides up when keyboard opens */}
           <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"0 24px",paddingBottom:120,
-            transform:inputFocused?"translateY(-18vh)":"translateY(0)",
+            transform:inputFocused?"translateY(-8vh)":"translateY(0)",
             transition:"transform .35s cubic-bezier(.16,1,.3,1)"}}>
 
           <div style={{textAlign:"center",marginBottom:28,marginTop:"15vh"}}>
