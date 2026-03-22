@@ -534,6 +534,60 @@ function Toast({msg,visible}){
   );
 }
 
+/* ─── SPLASH ─────────────────────────────────────────────────────────────────── */
+function Splash({visible}){
+  return(
+    <div style={{
+      position:"fixed",inset:0,background:"#050506",
+      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+      zIndex:999999,
+      opacity:visible?1:0,
+      pointerEvents:visible?"auto":"none",
+      transition:"opacity .6s cubic-bezier(.16,1,.3,1)",
+    }}>
+      {/* Logo */}
+      <div style={{
+        position:"relative",
+        animation:visible?"splashPop .6s cubic-bezier(.16,1,.3,1) .2s both":"none",
+      }}>
+        {/* Glow */}
+        <div style={{
+          position:"absolute",inset:-40,
+          background:"radial-gradient(circle,rgba(14,203,129,0.15) 0%,transparent 70%)",
+          animation:visible?"splashGlow 1.2s ease .4s both":"none",
+        }}/>
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" style={{position:"relative",zIndex:1}}>
+          <rect width="72" height="72" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
+          <circle cx="36" cy="36" r="28" stroke="rgba(14,203,129,0.1)" strokeWidth="1"/>
+          <path d="M18 46C23 46 25 32 30 32C35 32 35 40 41 37C46 34 49 22 55 18"
+            stroke="#0ecb81" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            style={{filter:"drop-shadow(0 0 8px #0ecb81)"}}/>
+          <circle cx="55" cy="18" r="4" fill="#0ecb81" style={{filter:"drop-shadow(0 0 10px #0ecb81)"}}/>
+        </svg>
+      </div>
+
+      {/* App name */}
+      <div style={{
+        marginTop:20,
+        animation:visible?"splashText .5s cubic-bezier(.16,1,.3,1) .5s both":"none",
+      }}>
+        <div style={{fontSize:22,fontWeight:700,color:"#fff",letterSpacing:-.5,textAlign:"center"}}>ETF Score</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,0.25)",textAlign:"center",marginTop:4,letterSpacing:2,textTransform:"uppercase"}}>Analyse multicritères</div>
+      </div>
+
+      {/* Bottom indicator */}
+      <div style={{
+        position:"absolute",bottom:48,
+        animation:visible?"splashText .5s ease .8s both":"none",
+      }}>
+        <div style={{width:32,height:3,borderRadius:2,background:"rgba(255,255,255,0.1)",overflow:"hidden"}}>
+          <div style={{height:"100%",background:"#0ecb81",borderRadius:2,animation:visible?"splashBar 1.2s ease .3s both":"none"}}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── ONBOARDING ─────────────────────────────────────────────────────────────── */
 function Onboarding({onAdd,onDone}){
   const[step,setStep]=useState(0);
@@ -850,6 +904,7 @@ export default function App(){
   const[toast,setToast]=useState({msg:"",visible:false});
   const[onboarding,setOnboarding]=useState(false);
   const[onboardStep,setOnboardStep]=useState(0);
+  const[splash,setSplash]=useState(true);
   const[installToast,setInstallToast]=useState(false);
   const[activeRec,setActiveRec]=useState(null);
   const[recMode,setRecMode]=useState("essential");
@@ -860,6 +915,7 @@ export default function App(){
     setReady(true);
     const onboardingSeen=localStorage.getItem("etf-onboarding-seen");
     if(!onboardingSeen) setOnboarding(true);
+    setTimeout(()=>setSplash(false), 1800);
     const standalone=window.navigator.standalone||window.matchMedia("(display-mode: standalone)").matches;
     if(!standalone&&!localStorage.getItem("etf-install-seen")){setTimeout(()=>{setInstallToast(true);setTimeout(()=>setInstallToast(false),6000);localStorage.setItem("etf-install-seen","1");},2500);}
   },[]);
@@ -900,6 +956,10 @@ export default function App(){
         @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes popIn{0%{opacity:0;transform:scale(0.7)}60%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
         @keyframes checkFade{0%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(0.8)}}
+        @keyframes splashPop{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+        @keyframes splashText{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes splashGlow{from{opacity:0}to{opacity:1}}
+        @keyframes splashBar{from{width:0}to{width:100%}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -907,6 +967,7 @@ export default function App(){
         .row{animation:up .35s cubic-bezier(.16,1,.3,1) both}
       `}</style>
 
+      <Splash visible={splash}/>
       {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)}/>}
       {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={()=>{setOnboarding(false);setTab("scores");}}/>}
 
