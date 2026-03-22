@@ -531,7 +531,8 @@ function Onboarding({onAdd,onDone}){
   const[err,setErr]=useState("");
   const[added,setAdded]=useState([]);
   const[lastAdded,setLastAdded]=useState(null);
-  const[showCheck,setShowCheck]=useState(false); // ETFs added during onboarding
+  const[showCheck,setShowCheck]=useState(false);
+  const[inputFocused,setInputFocused]=useState(false); // ETFs added during onboarding
   const ref=useRef(null);
   const amtRef=useRef(null);
   const swipeStart=useRef(null);
@@ -699,11 +700,10 @@ function Onboarding({onAdd,onDone}){
       ):(
         /* ── Add ETF screen ── */
         <div style={{flex:1,display:"flex",flexDirection:"column",padding:"0",position:"relative",paddingTop:"calc(env(safe-area-inset-top, 16px) + 56px)"}}>
-          {/* Scrollable content */}
-          <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"0 24px",paddingBottom:120}}>
-
-          {/* Spacer to push content down like other slides */}
-          <div style={{flex:1,minHeight:40}}/>
+          {/* Scrollable content — slides up when keyboard opens */}
+          <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"0 24px",paddingBottom:120,
+            transform:inputFocused?"translateY(-18vh)":"translateY(0)",
+            transition:"transform .35s cubic-bezier(.16,1,.3,1)"}}>
 
           <div style={{textAlign:"center",marginBottom:28,marginTop:"15vh"}}>
             <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:8,letterSpacing:-.3}}>Constituez votre portefeuille</div>
@@ -746,8 +746,8 @@ function Onboarding({onAdd,onDone}){
             <div style={{position:"relative"}}>
               <input value={q}
                 onChange={e=>{setQ(e.target.value);setSelectedTicker(null);setErr("");setOpen(true);}}
-                onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor="rgba(14,203,129,0.4)";}}
-                onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
+                onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
+                onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);}}
                 placeholder="Nom, ISIN ou ticker…"
                 style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s"}}/>
               {selectedTicker&&(
@@ -770,8 +770,9 @@ function Onboarding({onAdd,onDone}){
 
             <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
               onKeyDown={e=>e.key==="Enter"&&addOne()}
-              onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";if(selectedTicker&&parseFloat(amt)>0)addOne();}}
-              onFocus={e=>e.target.style.borderColor="rgba(14,203,129,0.4)"}
+              onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);if(selectedTicker&&parseFloat(amt)>0)addOne();}}
+              onFocus={e=>{e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
+              inputMode="decimal"
               placeholder="Montant investi (€) — Entrée pour valider"
               style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
 
