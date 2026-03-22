@@ -553,12 +553,16 @@ function Onboarding({onAdd,onDone}){
     const a=parseFloat(amt);
     if(!t||!DB[t]){setErr("Sélectionnez un ETF dans la liste");return;}
     if(isNaN(a)||a<=0){setErr("Montant invalide");return;}
-    onAdd(t,a);
     setAdded(prev=>[...prev,{ticker:t,name:DB[t].name,amount:a}]);
     setQ("");setAmt("");setSelectedTicker(null);setErr("");setOpen(false);
   };
 
-  const done=()=>{localStorage.setItem("etf-onboarding-seen","1");onDone();};
+  const done=()=>{
+    // Commit all added ETFs to parent on exit
+    added.forEach(h=>onAdd(h.ticker,h.amount));
+    localStorage.setItem("etf-onboarding-seen","1");
+    onDone();
+  };
 
   // Swipe handling — content follows finger
   const onTouchStart=e=>{swipeStart.current=e.touches[0].clientX;isDragging.current=true;};
@@ -679,12 +683,26 @@ function Onboarding({onAdd,onDone}){
           {added.length>0&&(
             <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:6}}>
               {added.map((h,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.15)",borderRadius:12,padding:"10px 14px"}}>
-                  <div>
-                    <div style={{fontSize:12,fontWeight:500,color:"#fff"}}>{h.name}</div>
+                <div key={i} style={{display:"flex",alignItems:"center",gap:10,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.15)",borderRadius:12,padding:"10px 14px"}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:12,fontWeight:500,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{h.name}</div>
                     <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginTop:2}}>{h.ticker}</div>
                   </div>
-                  <span style={{fontSize:12,color:"#0ecb81",fontWeight:600}}>{h.amount.toLocaleString("fr-FR")} €</span>
+                  <input
+                    type="number"
+                    defaultValue={h.amount}
+                    onBlur={e=>{
+                      const v=parseFloat(e.target.value);
+                      if(!isNaN(v)&&v>0)setAdded(prev=>prev.map((x,j)=>j===i?{...x,amount:v}:x));
+                      else e.target.value=h.amount;
+                    }}
+                    onKeyDown={e=>e.key==="Enter"&&e.target.blur()}
+                    style={{width:72,background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"4px 8px",color:"#0ecb81",fontSize:12,fontWeight:600,textAlign:"right",outline:"none",fontFamily:"monospace",WebkitAppearance:"none"}}/>
+                  <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",flexShrink:0}}>€</span>
+                  <button onClick={()=>setAdded(prev=>prev.filter((_,j)=>j!==i))}
+                    style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:16,cursor:"pointer",padding:"0 2px",flexShrink:0,lineHeight:1,transition:"color .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"}
+                    onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.2)"}>×</button>
                 </div>
               ))}
             </div>
@@ -717,16 +735,12 @@ function Onboarding({onAdd,onDone}){
               )}
             </div>
 
-            <div style={{display:"flex",gap:10}}>
-              <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
-                onKeyDown={e=>e.key==="Enter"&&addOne()}
-                onFocus={e=>e.target.style.borderColor="rgba(14,203,129,0.4)"}
-                onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
-                placeholder="Montant (€)"
-                style={{flex:1,background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
-              <button onClick={addOne}
-                style={{background:"rgba(255,255,255,0.08)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 18px",color:"#fff",fontSize:18,fontWeight:700,cursor:"pointer",flexShrink:0}}>+</button>
-            </div>
+            <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
+              onKeyDown={e=>e.key==="Enter"&&addOne()}
+              onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";if(selectedTicker&&parseFloat(amt)>0)addOne();}}
+              onFocus={e=>e.target.style.borderColor="rgba(14,203,129,0.4)"}
+              placeholder="Montant investi (€) — Entrée pour valider"
+              style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
 
             {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
 
