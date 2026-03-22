@@ -8,18 +8,32 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="ETF Score" />
     <link rel="apple-touch-icon" href="/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
     <title>ETF Score</title>
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body, #root {
-        min-height: 100%;
-        min-height: 100dvh;
+      html {
         background: #0e0e0f;
+        height: 100%;
+        /* Prevent elastic scroll showing white */
         overscroll-behavior: none;
       }
       body {
         background: #0e0e0f;
+        min-height: 100%;
+        min-height: 100dvh;
         -webkit-tap-highlight-color: transparent;
+        overscroll-behavior: none;
+        /* Fill safe areas with app bg */
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      #root {
+        min-height: 100dvh;
+        background: #0e0e0f;
       }
     </style>
   </head>
