@@ -441,7 +441,7 @@ function buildSuggestions(scores, holdings) {
   const techW = secMap["Technologie"] || 0;
   const usdW  = currencies["USD"] || 0;
 
-  if(!holdings.length) { keys.push("world","bonds","gold"); return keys.slice(0,3); }
+  if(!holdings.length) { keys.push("world","bonds","gold"); }
   if(bondPct < 10)  keys.push(usdW > 80 ? "eurobonds" : "bonds");
   if(commPct < 5)   keys.push("gold");
   if(rePct < 5 && holdings.length >= 2) keys.push("realestate");
@@ -810,7 +810,7 @@ function Search({ onAdd, suggestions=[] }) {
 }
 
 /* ─── TABS ───────────────────────────────────────────────────────────────────── */
-function Tabs({ active, onChange }) {
+function Tabs({ active, onChange, highlight=[] }) {
   const icons={
     scores:(<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" strokeDasharray="2.5 1.5" strokeLinecap="round"/><circle cx="8" cy="8" r="2" fill="currentColor" opacity="0.7"/></svg>),
     geo:(<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><ellipse cx="8" cy="8" rx="2.8" ry="6" stroke="currentColor" strokeWidth="1.4"/><line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.4"/></svg>),
@@ -827,7 +827,13 @@ function Tabs({ active, onChange }) {
           fontSize:11,fontWeight:active===t.id?700:500,cursor:"pointer",transition:"all 0.2s",
           WebkitTapHighlightColor:"transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
           {icons[t.id]}
-          <span style={{letterSpacing:0.3}}>{t.label}</span>
+          <div style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4}}>
+            <span style={{letterSpacing:0.3}}>{t.label}</span>
+            {highlight.includes(t.id)&&(
+              <div style={{width:5,height:5,borderRadius:"50%",background:"#818cf8",
+                boxShadow:"0 0 6px #818cf899",flexShrink:0,animation:"pulse 2s infinite"}}/>
+            )}
+          </div>
         </button>
       ))}
     </div>
@@ -912,6 +918,7 @@ export default function App() {
     try{
         const raw=localStorage.getItem(STORAGE_KEY);
         if(raw){ const p=JSON.parse(raw); if(p.holdings) setHoldings(p.holdings); if(p.disclaimerSeen) setDisclaimerSeen(true); if(p.savedAt) setSavedAt(new Date(p.savedAt)); }
+        
     }catch(_){}
     setReady(true);
   },[]);
@@ -938,7 +945,8 @@ export default function App() {
   const recs=useMemo(()=>buildRecommendations(scores,holdings,holdings.reduce((s,h)=>s+h.amount,0)),[scores,holdings]);
   const total=holdings.reduce((s,h)=>s+h.amount,0);
 
-  if(!ready) return (<div style={{minHeight:"100vh",background:"#0e0e0f",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:36,height:36,borderRadius:"50%",border:"2.5px solid rgba(99,102,241,0.2)",borderTopColor:"#6366f1",animation:"spin 0.8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
+  if(!ready) return (<div style={{minHeight:"100vh",background:"#0e0e0f",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:36,height:36,borderRadius:"50%",border:"2.5px solid rgba(99,102,241,0.2)",borderTopColor:"#6366f1",animation:"spin 0.8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.85)}}`}</style></div>);
 
   return (
     <div style={{minHeight:"100vh",background:"#0e0e0f",color:"#e2e8f0",
@@ -953,6 +961,7 @@ export default function App() {
         button{font-family:inherit;-webkit-tap-highlight-color:transparent}
         @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.85)}}
         ::-webkit-scrollbar{display:none}
         .anim{animation:fadeUp 0.4s cubic-bezier(.16,1,.3,1) both}
       `}</style>
@@ -1026,7 +1035,7 @@ export default function App() {
         )}
 
         {/* Tabs */}
-        <div style={{padding:"14px 16px 0"}}><Tabs active={tab} onChange={setTab}/></div>
+        <div style={{padding:"14px 16px 0"}}><Tabs active={tab} onChange={setTab} highlight={holdings.length===0?["ptf"]:[]}/></div>
 
         {/* Content */}
         <div style={{padding:"14px 16px 100px"}}>
