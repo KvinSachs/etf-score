@@ -522,84 +522,176 @@ function Toast({msg,visible}){
 }
 
 /* ─── ONBOARDING ─────────────────────────────────────────────────────────────── */
-function Onboarding({onDone}){
+function Onboarding({onAdd,onDone}){
   const[step,setStep]=useState(0);
-  const steps=[
+  const[q,setQ]=useState("");
+  const[amt,setAmt]=useState("");
+  const[open,setOpen]=useState(false);
+  const[selectedTicker,setSelectedTicker]=useState(null);
+  const[err,setErr]=useState("");
+  const ref=useRef(null);
+  const amtRef=useRef(null);
+
+  useEffect(()=>{const f=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",f);return()=>document.removeEventListener("mousedown",f);},[]);
+
+  const results=useMemo(()=>{
+    if(selectedTicker)return[];
+    const u=q.trim().toUpperCase();
+    if(u.length<1)return[];
+    const s=(/^[A-Z]{2}[A-Z0-9]{10}$/.test(u)&&ISIN_MAP[u])?ISIN_MAP[u]:u;
+    return Object.entries(DB).filter(([t,e])=>t.includes(s)||e.name.toUpperCase().includes(s)||(e.isin&&e.isin.toUpperCase().includes(s))).slice(0,4);
+  },[q,selectedTicker]);
+
+  const selectItem=(ticker,name)=>{setSelectedTicker(ticker);setQ(name);setOpen(false);setTimeout(()=>amtRef.current?.focus(),60);};
+
+  const doAdd=()=>{
+    const t=selectedTicker||q.trim().toUpperCase();
+    const a=parseFloat(amt);
+    if(!t||!DB[t]){setErr("Sélectionnez un ETF dans la liste");return;}
+    if(isNaN(a)||a<=0){setErr("Montant invalide");return;}
+    onAdd(t,a);
+    done();
+  };
+
+  const done=()=>{localStorage.setItem("etf-onboarding-seen","1");onDone();};
+
+  const screens=[
     {
       icon:(
-        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <circle cx="32" cy="32" r="28" stroke="rgba(14,203,129,0.2)" strokeWidth="1"/>
-          <circle cx="32" cy="32" r="20" stroke="rgba(14,203,129,0.15)" strokeWidth="1"/>
-          <path d="M16 40C20 40 22 28 26 28C30 28 30 34 36 32C41 30 43 20 48 16" stroke="#0ecb81" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter="drop-shadow(0 0 6px #0ecb81)"/>
-          <circle cx="48" cy="16" r="3" fill="#0ecb81" filter="drop-shadow(0 0 6px #0ecb81)"/>
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+          <circle cx="36" cy="36" r="32" stroke="rgba(14,203,129,0.12)" strokeWidth="1"/>
+          <circle cx="36" cy="36" r="22" stroke="rgba(14,203,129,0.08)" strokeWidth="1"/>
+          <path d="M18 46C23 46 25 32 30 32C35 32 35 40 41 37C46 34 49 22 55 18" stroke="#0ecb81" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter="drop-shadow(0 0 8px #0ecb81)"/>
+          <circle cx="55" cy="18" r="4" fill="#0ecb81" filter="drop-shadow(0 0 8px #0ecb81)"/>
         </svg>
       ),
       title:"Analysez votre portefeuille ETF",
-      text:"ETF Score évalue la diversification de vos investissements selon 5 critères clés et vous guide vers un portefeuille plus solide.",
+      text:"ETF Score évalue la diversification de vos investissements selon 5 critères — géographie, secteurs, chevauchements, classes d'actifs et devises.",
     },
     {
       icon:(
-        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <rect x="8" y="36" width="12" height="20" rx="2" fill="rgba(14,203,129,0.15)" stroke="rgba(14,203,129,0.4)" strokeWidth="1"/>
-          <rect x="26" y="24" width="12" height="32" rx="2" fill="rgba(14,203,129,0.25)" stroke="rgba(14,203,129,0.5)" strokeWidth="1"/>
-          <rect x="44" y="12" width="12" height="44" rx="2" fill="rgba(14,203,129,0.4)" stroke="#0ecb81" strokeWidth="1"/>
-          <circle cx="50" cy="8" r="4" fill="#0ecb81" filter="drop-shadow(0 0 6px #0ecb81)"/>
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+          <rect x="8" y="42" width="14" height="22" rx="2" fill="rgba(14,203,129,0.1)" stroke="rgba(14,203,129,0.3)" strokeWidth="1"/>
+          <rect x="29" y="28" width="14" height="36" rx="2" fill="rgba(14,203,129,0.2)" stroke="rgba(14,203,129,0.4)" strokeWidth="1"/>
+          <rect x="50" y="12" width="14" height="52" rx="2" fill="rgba(14,203,129,0.35)" stroke="#0ecb81" strokeWidth="1"/>
+          <circle cx="57" cy="7" r="5" fill="#0ecb81" filter="drop-shadow(0 0 8px #0ecb81)"/>
         </svg>
       ),
       title:"Un score clair sur 20",
-      text:"Géographie, secteurs, chevauchements, classes d'actifs, devises — chaque dimension est analysée et pondérée pour vous donner un score global actionnable.",
-    },
-    {
-      icon:(
-        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <circle cx="32" cy="32" r="22" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
-          <path d="M32 10 L32 32 L48 22" stroke="#0ecb81" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter="drop-shadow(0 0 6px #0ecb81)"/>
-          <circle cx="32" cy="32" r="3" fill="#0ecb81"/>
-          <circle cx="32" cy="10" r="2" fill="rgba(14,203,129,0.5)"/>
-          <circle cx="48" cy="22" r="2" fill="rgba(14,203,129,0.5)"/>
-        </svg>
-      ),
-      title:"Des recommandations personnalisées",
-      text:"En fonction de votre portefeuille, ETF Score vous suggère des ajustements concrets avec des ETF adaptés à votre situation.",
+      text:"Chaque critère est pondéré et analysé pour vous donner un score global et des recommandations concrètes.",
     },
   ];
 
-  const done=()=>{
-    localStorage.setItem("etf-onboarding-seen","1");
-    onDone();
-  };
-
-  const s=steps[step];
-  const isLast=step===steps.length-1;
+  const isAddStep=step===2;
+  const isLast=step===screens.length-1;
 
   return(
-    <div style={{position:"fixed",inset:0,background:"#050506",zIndex:99998,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",padding:"60px 24px 48px",maxWidth:430,margin:"0 auto"}}>
+    <div style={{position:"fixed",inset:0,background:"#050506",zIndex:99998,display:"flex",flexDirection:"column",maxWidth:430,margin:"0 auto"}}>
+
       {/* Skip */}
-      <button onClick={done} style={{position:"absolute",top:20,right:20,background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:13,cursor:"pointer",padding:"8px 12px"}}>Passer</button>
+      <button onClick={done} style={{position:"absolute",top:20,right:20,background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:13,cursor:"pointer",padding:"8px 12px",zIndex:1}}>Passer</button>
 
-      {/* Content */}
-      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:32,textAlign:"center",animation:"fadeIn .4s ease"}}>
-        <div>{s.icon}</div>
-        <div>
-          <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{s.title}</div>
-          <div style={{fontSize:15,color:"rgba(255,255,255,0.4)",lineHeight:1.7,maxWidth:300}}>{s.text}</div>
+      {!isAddStep?(
+        /* ── Info screens ── */
+        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",padding:"80px 24px 48px",textAlign:"center"}}>
+          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,animation:"fadeIn .4s ease"}}>
+            {screens[step].icon}
+            <div>
+              <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{screens[step].title}</div>
+              <div style={{fontSize:15,color:"rgba(255,255,255,0.4)",lineHeight:1.75,maxWidth:300}}>{screens[step].text}</div>
+            </div>
+          </div>
+          <div style={{width:"100%"}}>
+            <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:32}}>
+              {[0,1,2].map(i=>(
+                <div key={i} style={{width:i===step?24:6,height:6,borderRadius:3,background:i===step?"#0ecb81":"rgba(255,255,255,0.12)",transition:"all .3s cubic-bezier(.16,1,.3,1)"}}/>
+              ))}
+            </div>
+            <button onClick={()=>setStep(s=>s+1)}
+              style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2}}>
+              Suivant
+            </button>
+          </div>
         </div>
-      </div>
+      ):(
+        /* ── Add first ETF screen ── */
+        <div style={{flex:1,display:"flex",flexDirection:"column",padding:"80px 24px 48px"}}>
+          <div style={{textAlign:"center",marginBottom:36}}>
+            <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:12,letterSpacing:-.3}}>Ajoutez votre premier ETF</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,0.35)",lineHeight:1.7}}>Saisissez un ETF que vous détenez ou souhaitez analyser. Vous pourrez en ajouter d'autres ensuite.</div>
+          </div>
 
-      {/* Dots */}
-      <div style={{display:"flex",gap:8,marginBottom:32}}>
-        {steps.map((_,i)=>(
-          <div key={i} onClick={()=>setStep(i)} style={{width:i===step?24:6,height:6,borderRadius:3,background:i===step?"#0ecb81":"rgba(255,255,255,0.12)",transition:"all .3s cubic-bezier(.16,1,.3,1)",cursor:"pointer"}}/>
-        ))}
-      </div>
+          {/* Dots */}
+          <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:32}}>
+            {[0,1,2].map(i=>(
+              <div key={i} style={{width:i===2?24:6,height:6,borderRadius:3,background:i===2?"#0ecb81":"rgba(255,255,255,0.3)",transition:"all .3s"}}/>
+            ))}
+          </div>
 
-      {/* CTA */}
-      <button onClick={isLast?done:()=>setStep(s=>s+1)}
-        style={{width:"100%",background:isLast?"#0ecb81":"rgba(255,255,255,0.06)",border:isLast?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:isLast?"#000":"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",transition:"all .2s",letterSpacing:.2}}
-        onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
-        onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-        {isLast?"Analyser mon portefeuille →":"Suivant"}
-      </button>
+          {/* Search inline */}
+          <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10,flex:1}}>
+            <div style={{position:"relative"}}>
+              <input value={q}
+                onChange={e=>{setQ(e.target.value);setSelectedTicker(null);setErr("");setOpen(true);}}
+                onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor="rgba(14,203,129,0.4)";}}
+                onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
+                placeholder="Nom, ISIN ou ticker…"
+                style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s"}}/>
+              {selectedTicker&&(
+                <button onMouseDown={()=>{setQ("");setSelectedTicker(null);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:22,height:22,color:"rgba(255,255,255,0.5)",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+              )}
+              {open&&results.length>0&&(
+                <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:10,background:"rgba(14,14,14,0.99)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,overflow:"hidden",boxShadow:"0 16px 40px rgba(0,0,0,0.8)"}}>
+                  {results.map(([t,e],i)=>(
+                    <div key={t} onMouseDown={()=>selectItem(t,e.name)}
+                      style={{padding:"13px 16px",cursor:"pointer",borderBottom:"0.5px solid rgba(255,255,255,0.05)",transition:"background .1s"}}
+                      onMouseEnter={ev=>ev.currentTarget.style.background="rgba(255,255,255,0.05)"}
+                      onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
+                      <div style={{fontSize:13,fontWeight:500,color:"#fff",marginBottom:3}}>{e.name}</div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",fontFamily:"monospace"}}>{e.isin} · {ASSET_LABELS[e.assetClass]||e.assetClass}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div style={{display:"flex",gap:10}}>
+              <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&doAdd()}
+                onFocus={e=>e.target.style.borderColor="rgba(14,203,129,0.4)"}
+                onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
+                placeholder="Montant investi (€)"
+                style={{flex:1,background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
+            </div>
+
+            {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
+
+            {/* Popular suggestions */}
+            <div style={{marginTop:4}}>
+              <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Points de départ populaires</div>
+              <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                {[{t:"IWDA",l:"iShares Monde"},{t:"VWCE",l:"Vanguard All-World"},{t:"MWRD",l:"Amundi Monde"},{t:"CSP1",l:"S&P 500"}].map(({t,l})=>(
+                  <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)}
+                    style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,padding:"6px 14px",color:"rgba(255,255,255,0.5)",fontSize:12,cursor:"pointer",transition:"all .15s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}}
+                    onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{flex:1}}/>
+
+            <button onClick={doAdd}
+              style={{width:"100%",background:"#0ecb81",border:"none",borderRadius:16,padding:"17px",color:"#000",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,marginTop:8,transition:"opacity .15s"}}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              Analyser mon portefeuille →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -673,7 +765,7 @@ export default function App(){
       `}</style>
 
       {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)}/>}
-      {disclaimerSeen&&onboarding&&<Onboarding onDone={()=>{setOnboarding(false);setTab("ptf");}}/>}
+      {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={()=>{setOnboarding(false);setTab("scores");}}/>}
 
       {/* Ambient */}
       <div aria-hidden="true" style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
