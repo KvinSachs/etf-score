@@ -162,6 +162,17 @@ function buildSuggestions(scores,holdings){
   return[...new Set(keys)].slice(0,4).map(k=>({key:k,...CAT[k]}));
 }
 
+const REC_ICONS={
+  bond: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.3"/><line x1="5" y1="8" x2="13" y2="8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><line x1="5" y1="11" x2="10" y2="11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+  gold: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polygon points="9,2 11.5,7 17,7.5 13,11.5 14.5,17 9,14 3.5,17 5,11.5 1,7.5 6.5,7" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
+  geo: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.3"/><ellipse cx="9" cy="9" rx="3" ry="7" stroke="currentColor" strokeWidth="1.3"/><line x1="2" y1="9" x2="16" y2="9" stroke="currentColor" strokeWidth="1.3"/></svg>,
+  overlap: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="7" cy="9" r="5" stroke="currentColor" strokeWidth="1.3"/><circle cx="11" cy="9" r="5" stroke="currentColor" strokeWidth="1.3"/></svg>,
+  sector: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 9 L9 2 A7 7 0 0 1 16 9 Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.3"/></svg>,
+  building: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="5" width="12" height="11" rx="1" stroke="currentColor" strokeWidth="1.3"/><path d="M6 16V11h6v5" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M3 8h12" stroke="currentColor" strokeWidth="1.3"/><rect x="7" y="2" width="4" height="3" rx=".5" stroke="currentColor" strokeWidth="1.3"/></svg>,
+  currency: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.3"/><path d="M9 5v8M7 6.5h3a1.5 1.5 0 0 1 0 3H8a1.5 1.5 0 0 0 0 3h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+  trophy: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M6 2h6v7a3 3 0 0 1-6 0V2Z" stroke="currentColor" strokeWidth="1.3"/><path d="M3 4H6M15 4h-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M9 12v3M6 16h6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+};
+
 const ASSET_LABELS={equity:"Actions",bond:"Obligations",real_estate:"Immobilier",commodity:"Matières prem."};
 const ASSET_COLORS={equity:"rgba(255,255,255,0.7)",bond:"#0ecb81",real_estate:"#f0b90b",commodity:"#f0b90b"};
 
@@ -556,12 +567,11 @@ export default function App(){
               <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",marginTop:0,letterSpacing:.3}}>Analyse multicritères</div>
             </div>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",background:"rgba(255,255,255,0.04)",backdropFilter:"blur(20px)",borderRadius:20,border:"0.5px solid rgba(255,255,255,0.08)"}}>
-            <div style={{width:5,height:5,borderRadius:"50%",background:saved?"#0ecb81":"#f0b90b",boxShadow:saved?"0 0 6px #0ecb8166":"0 0 6px #f0b90b66",transition:"all .4s"}}/>
-            <div>
-              <span style={{fontSize:10,color:"rgba(255,255,255,0.3)",letterSpacing:.5}}>{saved?"Sync":"..."}</span>
-              {savedAt&&<div style={{fontSize:8,color:"rgba(255,255,255,0.15)",lineHeight:1}}>{savedAt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</div>}
-            </div>
+          <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",background:"rgba(255,255,255,0.04)",borderRadius:20,border:"0.5px solid rgba(255,255,255,0.08)"}}>
+            <div style={{width:5,height:5,borderRadius:"50%",background:saved?"#0ecb81":"#f0b90b",boxShadow:saved?"0 0 6px #0ecb8166":"0 0 6px #f0b90b66",transition:"all .4s",flexShrink:0}}/>
+            <span style={{fontSize:11,color:"rgba(255,255,255,0.3)",letterSpacing:.3,lineHeight:1}}>
+              {saved?(savedAt?savedAt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):"Sync"):"..."}
+            </span>
           </div>
         </header>
 
@@ -662,16 +672,19 @@ export default function App(){
                   {/* Critiques d'abord */}
                   {recs.filter(r=>r.level==="essential"&&r.priority==="high").map((r,i)=>(
                     <div key={i} style={{background:r.bg,border:`0.5px solid ${r.border}`,borderRadius:16,padding:"14px 16px"}}>
-                      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:12,fontWeight:700,color:r.color,marginBottom:5}}>{r.title}</div>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
+                        <div style={{color:r.color,flexShrink:0}}>{REC_ICONS[r.icon]||REC_ICONS.geo}</div>
+                        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:13,fontWeight:700,color:r.color}}>{r.title}</div>
+                      </div>
                       <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.65}}>{r.text}</p>
-                      {r.cat&&CAT[r.cat]&&<button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:r.color,fontSize:12,fontWeight:600}}><span>→</span><span style={{borderBottom:`1px solid ${r.color}44`}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span></button>}
+                      {r.cat&&CAT[r.cat]&&<button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:r.color,fontSize:12,fontWeight:600,WebkitTapHighlightColor:"transparent"}}><span>→</span><span style={{borderBottom:`1px solid ${r.color}66`}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span></button>}
                     </div>
                   ))}
 
                   {/* Feedback positif */}
                   {positives.map((p,i)=>(
                     <div key={i} style={{background:"rgba(14,203,129,0.04)",border:"0.5px solid rgba(14,203,129,0.12)",borderRadius:16,padding:"13px 16px",display:"flex",gap:10,alignItems:"flex-start"}}>
-                      <span style={{fontSize:14,flexShrink:0}}>🌟</span>
+                      <div style={{color:"#0ecb81",flexShrink:0,marginTop:1}}>{REC_ICONS.trophy}</div>
                       <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.65}}>{p}</p>
                     </div>
                   ))}
@@ -679,9 +692,12 @@ export default function App(){
                   {/* Essentiels non-critiques */}
                   {recs.filter(r=>r.level==="essential"&&r.priority!=="high").map((r,i)=>(
                     <div key={i} style={{background:r.bg,border:`0.5px solid ${r.border}`,borderRadius:16,padding:"14px 16px"}}>
-                      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:12,fontWeight:700,color:r.color,marginBottom:5}}>{r.title}</div>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
+                        <div style={{color:r.color,flexShrink:0}}>{REC_ICONS[r.icon]||REC_ICONS.geo}</div>
+                        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:13,fontWeight:700,color:r.color}}>{r.title}</div>
+                      </div>
                       <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.65}}>{r.text}</p>
-                      {r.cat&&CAT[r.cat]&&<button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:r.color,fontSize:12,fontWeight:600}}><span>→</span><span style={{borderBottom:`1px solid ${r.color}44`}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span></button>}
+                      {r.cat&&CAT[r.cat]&&<button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:r.color,fontSize:12,fontWeight:600,WebkitTapHighlightColor:"transparent"}}><span>→</span><span style={{borderBottom:`1px solid ${r.color}66`}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span></button>}
                     </div>
                   ))}
 
@@ -696,10 +712,13 @@ export default function App(){
                     </button>
                   )}
                   {recMode==="advanced"&&recs.filter(r=>r.level==="advanced").map((r,i)=>(
-                    <div key={i} style={{background:r.bg,border:`0.5px solid ${r.border}`,borderRadius:16,padding:"14px 16px",animation:"up .3s cubic-bezier(.16,1,.3,1)"}}>
-                      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:12,fontWeight:700,color:r.color,marginBottom:5}}>{r.title}</div>
-                      <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.65}}>{r.text}</p>
-                      {r.cat&&CAT[r.cat]&&<button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:r.color,fontSize:12,fontWeight:600}}><span>→</span><span style={{borderBottom:`1px solid ${r.color}44`}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span></button>}
+                    <div key={i} style={{background:"rgba(255,255,255,0.03)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"14px 16px",animation:"up .3s cubic-bezier(.16,1,.3,1)"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
+                        <div style={{color:"rgba(255,255,255,0.35)",flexShrink:0}}>{REC_ICONS[r.icon]||REC_ICONS.geo}</div>
+                        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:13,fontWeight:600,color:"rgba(255,255,255,0.7)"}}>{r.title}</div>
+                      </div>
+                      <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.45)",lineHeight:1.65}}>{r.text}</p>
+                      {r.cat&&CAT[r.cat]&&<button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:"#0ecb81",fontSize:12,fontWeight:600,WebkitTapHighlightColor:"transparent"}}><span>→</span><span style={{borderBottom:"1px solid rgba(14,203,129,0.4)"}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span></button>}
                     </div>
                   ))}
                 </div>
