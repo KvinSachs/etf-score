@@ -622,7 +622,11 @@ function Onboarding({onAdd,onDone}){
       onTouchMove={!isAddStep?onTouchMove:undefined}
       onTouchEnd={!isAddStep?onTouchEnd:undefined}>
 
-      {/* Skip */}
+      {/* Top nav — back left, skip right, always same position */}
+      {step>0&&(
+        <button onClick={()=>setStep(s=>s-1)}
+          style={{position:"absolute",top:20,left:20,background:"none",border:"none",color:"rgba(255,255,255,0.4)",fontSize:22,cursor:"pointer",padding:"8px 12px",zIndex:1,lineHeight:1}}>‹</button>
+      )}
       <button onClick={done} style={{position:"absolute",top:20,right:20,background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:13,cursor:"pointer",padding:"8px 12px",zIndex:1}}>Passer</button>
 
       {!isAddStep?(
@@ -651,22 +655,12 @@ function Onboarding({onAdd,onDone}){
           {/* Controls */}
           <div style={{padding:"0 24px"}}>
             <Dots/>
-            <div style={{display:"flex",gap:10}}>
-              {step>0&&(
-                <button onClick={()=>setStep(s=>s-1)}
-                  style={{background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px 20px",color:"rgba(255,255,255,0.4)",fontSize:18,cursor:"pointer",flexShrink:0,transition:"all .15s"}}
-                  onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
-                  onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}>
-                  ‹
-                </button>
-              )}
-              <button onClick={()=>setStep(s=>s+1)}
-                style={{flex:1,background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .15s"}}
-                onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
-                onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}>
-                Suivant
-              </button>
-            </div>
+            <button onClick={()=>setStep(s=>s+1)}
+              style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .15s"}}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
+              onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}>
+              Suivant
+            </button>
           </div>
         </div>
       ):(
@@ -674,12 +668,9 @@ function Onboarding({onAdd,onDone}){
         <div style={{flex:1,display:"flex",flexDirection:"column",padding:"72px 0 0",position:"relative"}}>
           {/* Scrollable content */}
           <div style={{flex:1,overflowY:"auto",padding:"0 24px",paddingBottom:100}}>
-          <div style={{display:"flex",alignItems:"center",marginBottom:28,gap:12}}>
-            <button onClick={()=>setStep(1)} style={{background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"8px 12px",color:"rgba(255,255,255,0.4)",fontSize:18,cursor:"pointer",flexShrink:0,lineHeight:1}}>‹</button>
-            <div style={{textAlign:"center",flex:1}}>
+          <div style={{textAlign:"center",marginBottom:28}}>
             <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:6,letterSpacing:-.3}}>Constituez votre portefeuille</div>
             <div style={{fontSize:13,color:"rgba(255,255,255,0.35)",lineHeight:1.65}}>Ajoutez autant d'ETF que vous souhaitez.</div>
-            </div>
           </div>
 
           <Dots/>
