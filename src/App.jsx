@@ -629,16 +629,16 @@ function Onboarding({onAdd,onDone}){
         /* ── Info screens — sliding carousel ── */
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"80px 0 48px",overflow:"hidden"}}>
           {/* Sliding track */}
-          <div style={{flex:1,display:"flex",overflow:"hidden",position:"relative"}}>
+          <div style={{flex:1,overflow:"hidden",position:"relative"}}>
             <div style={{
               display:"flex",
-              width:`${screens.length*100}%`,
-              transform:`translateX(calc(${-step*100/screens.length}% + ${dragX}px))`,
+              height:"100%",
+              transform:`translateX(calc(${-step*100}% + ${dragX}px))`,
               transition:isDragging.current?"none":"transform .35s cubic-bezier(.16,1,.3,1)",
               willChange:"transform",
             }}>
               {screens.map((s,i)=>(
-                <div key={i} style={{width:`${100/screens.length}%`,flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,textAlign:"center",padding:"0 32px"}}>
+                <div key={i} style={{minWidth:"100%",width:"100%",flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,textAlign:"center",padding:"0 32px",boxSizing:"border-box"}}>
                   {s.icon}
                   <div>
                     <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{s.title}</div>
@@ -651,10 +651,22 @@ function Onboarding({onAdd,onDone}){
           {/* Controls */}
           <div style={{padding:"0 24px"}}>
             <Dots/>
-            <button onClick={()=>setStep(s=>s+1)}
-              style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2}}>
-              Suivant
-            </button>
+            <div style={{display:"flex",gap:10}}>
+              {step>0&&(
+                <button onClick={()=>setStep(s=>s-1)}
+                  style={{background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px 20px",color:"rgba(255,255,255,0.4)",fontSize:18,cursor:"pointer",flexShrink:0,transition:"all .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}>
+                  ‹
+                </button>
+              )}
+              <button onClick={()=>setStep(s=>s+1)}
+                style={{flex:1,background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .15s"}}
+                onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
+                onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}>
+                Suivant
+              </button>
+            </div>
           </div>
         </div>
       ):(
@@ -662,9 +674,12 @@ function Onboarding({onAdd,onDone}){
         <div style={{flex:1,display:"flex",flexDirection:"column",padding:"72px 0 0",position:"relative"}}>
           {/* Scrollable content */}
           <div style={{flex:1,overflowY:"auto",padding:"0 24px",paddingBottom:100}}>
-          <div style={{textAlign:"center",marginBottom:28}}>
-            <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:10,letterSpacing:-.3}}>Constituez votre portefeuille</div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,0.35)",lineHeight:1.65}}>Ajoutez autant d'ETF que vous souhaitez. Vous pourrez toujours en ajouter ou modifier depuis l'app.</div>
+          <div style={{display:"flex",alignItems:"center",marginBottom:28,gap:12}}>
+            <button onClick={()=>setStep(1)} style={{background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"8px 12px",color:"rgba(255,255,255,0.4)",fontSize:18,cursor:"pointer",flexShrink:0,lineHeight:1}}>‹</button>
+            <div style={{textAlign:"center",flex:1}}>
+            <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:6,letterSpacing:-.3}}>Constituez votre portefeuille</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,0.35)",lineHeight:1.65}}>Ajoutez autant d'ETF que vous souhaitez.</div>
+            </div>
           </div>
 
           <Dots/>
