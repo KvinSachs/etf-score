@@ -533,6 +533,8 @@ function Onboarding({onAdd,onDone}){
   const ref=useRef(null);
   const amtRef=useRef(null);
   const swipeStart=useRef(null);
+  const[dragX,setDragX]=useState(0);
+  const isDragging=useRef(false);
 
   useEffect(()=>{const f=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",f);return()=>document.removeEventListener("mousedown",f);},[]);
 
@@ -558,15 +560,22 @@ function Onboarding({onAdd,onDone}){
 
   const done=()=>{localStorage.setItem("etf-onboarding-seen","1");onDone();};
 
-  // Swipe handling for info screens
-  const onTouchStart=e=>swipeStart.current=e.touches[0].clientX;
+  // Swipe handling — content follows finger
+  const onTouchStart=e=>{swipeStart.current=e.touches[0].clientX;isDragging.current=true;};
+  const onTouchMove=e=>{
+    if(!isDragging.current)return;
+    const dx=e.touches[0].clientX-swipeStart.current;
+    // Resist swiping past boundaries
+    if((step===0&&dx>0)||(step===1&&dx<0))setDragX(dx*0.3);
+    else setDragX(dx);
+  };
   const onTouchEnd=e=>{
-    if(swipeStart.current===null)return;
+    if(!isDragging.current)return;
+    isDragging.current=false;
     const dx=e.changedTouches[0].clientX-swipeStart.current;
-    if(Math.abs(dx)>50){
-      if(dx<0&&step<2)setStep(s=>s+1);
-      if(dx>0&&step>0)setStep(s=>s-1);
-    }
+    if(dx<-60&&step<2){setStep(s=>s+1);}
+    else if(dx>60&&step>0){setStep(s=>s-1);}
+    setDragX(0);
     swipeStart.current=null;
   };
 
@@ -610,22 +619,37 @@ function Onboarding({onAdd,onDone}){
   return(
     <div style={{position:"fixed",inset:0,background:"#050506",zIndex:99998,display:"flex",flexDirection:"column",maxWidth:430,margin:"0 auto"}}
       onTouchStart={!isAddStep?onTouchStart:undefined}
+      onTouchMove={!isAddStep?onTouchMove:undefined}
       onTouchEnd={!isAddStep?onTouchEnd:undefined}>
 
       {/* Skip */}
       <button onClick={done} style={{position:"absolute",top:20,right:20,background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:13,cursor:"pointer",padding:"8px 12px",zIndex:1}}>Passer</button>
 
       {!isAddStep?(
-        /* ── Info screens ── */
-        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",padding:"80px 24px 48px",textAlign:"center"}}>
-          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,animation:"fadeIn .35s ease"}}>
-            {screens[step].icon}
-            <div>
-              <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{screens[step].title}</div>
-              <div style={{fontSize:15,color:"rgba(255,255,255,0.4)",lineHeight:1.75,maxWidth:300}}>{screens[step].text}</div>
+        /* ── Info screens — sliding carousel ── */
+        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"80px 0 48px",overflow:"hidden"}}>
+          {/* Sliding track */}
+          <div style={{flex:1,display:"flex",overflow:"hidden",position:"relative"}}>
+            <div style={{
+              display:"flex",
+              width:`${screens.length*100}%`,
+              transform:`translateX(calc(${-step*100/screens.length}% + ${dragX}px))`,
+              transition:isDragging.current?"none":"transform .35s cubic-bezier(.16,1,.3,1)",
+              willChange:"transform",
+            }}>
+              {screens.map((s,i)=>(
+                <div key={i} style={{width:`${100/screens.length}%`,flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,textAlign:"center",padding:"0 32px"}}>
+                  {s.icon}
+                  <div>
+                    <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{s.title}</div>
+                    <div style={{fontSize:15,color:"rgba(255,255,255,0.4)",lineHeight:1.75}}>{s.text}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <div style={{width:"100%"}}>
+          {/* Controls */}
+          <div style={{padding:"0 24px"}}>
             <Dots/>
             <button onClick={()=>setStep(s=>s+1)}
               style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2}}>
@@ -635,7 +659,9 @@ function Onboarding({onAdd,onDone}){
         </div>
       ):(
         /* ── Add ETF screen ── */
-        <div style={{flex:1,display:"flex",flexDirection:"column",padding:"72px 24px 48px",overflowY:"auto"}}>
+        <div style={{flex:1,display:"flex",flexDirection:"column",padding:"72px 0 0",position:"relative"}}>
+          {/* Scrollable content */}
+          <div style={{flex:1,overflowY:"auto",padding:"0 24px",paddingBottom:100}}>
           <div style={{textAlign:"center",marginBottom:28}}>
             <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:10,letterSpacing:-.3}}>Constituez votre portefeuille</div>
             <div style={{fontSize:14,color:"rgba(255,255,255,0.35)",lineHeight:1.65}}>Ajoutez autant d'ETF que vous souhaitez. Vous pourrez toujours en ajouter ou modifier depuis l'app.</div>
@@ -714,12 +740,17 @@ function Onboarding({onAdd,onDone}){
             </div>
           </div>
 
-          <div style={{flex:1,minHeight:24}}/>
+          </div>{/* end scrollable */}
 
-          <button onClick={done}
-            style={{width:"100%",background:added.length>0?"#0ecb81":"rgba(255,255,255,0.06)",border:added.length>0?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:added.length>0?"#000":"rgba(255,255,255,0.4)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s",marginTop:8}}>
-            {added.length>0?`Analyser mon portefeuille (${added.length} ETF) →`:"Passer cette étape"}
-          </button>
+          {/* Fixed bottom CTA */}
+          <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"12px 24px 40px",background:"linear-gradient(to bottom,transparent,#050506 40%)",zIndex:2}}>
+            <button onClick={done}
+              style={{width:"100%",background:added.length>0?"#0ecb81":"rgba(255,255,255,0.06)",border:added.length>0?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:added.length>0?"#000":"rgba(255,255,255,0.4)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              {added.length>0?`Analyser mon portefeuille (${added.length} ETF) →`:"Passer cette étape"}
+            </button>
+          </div>
         </div>
       )}
     </div>
