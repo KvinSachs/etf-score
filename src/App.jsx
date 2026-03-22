@@ -864,8 +864,33 @@ function Disclaimer({ onAccept }) {
       <div style={{background:"rgba(14,14,22,0.98)",border:"1px solid rgba(255,255,255,0.1)",
         borderRadius:24,padding:"28px 24px",width:"100%",maxWidth:400,
         boxShadow:"0 24px 60px rgba(0,0,0,0.8)"}}>
-        <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#6366f1,#818cf8)",
-          display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,marginBottom:18}}>⚖️</div>
+        <div style={{marginBottom:20}}>
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" rx="12" fill="url(#disc_bg)"/>
+            <defs>
+              <linearGradient id="disc_bg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#4f46e5"/>
+                <stop offset="100%" stopColor="#7c3aed"/>
+              </linearGradient>
+              <linearGradient id="disc_line" x1="0" y1="0" x2="48" y2="0" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#38bdf8"/>
+                <stop offset="100%" stopColor="#c084fc"/>
+              </linearGradient>
+            </defs>
+            {/* Scale beam */}
+            <line x1="14" y1="18" x2="34" y2="18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            {/* Center pole */}
+            <line x1="24" y1="18" x2="24" y2="34" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            {/* Base */}
+            <line x1="18" y1="34" x2="30" y2="34" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            {/* Left pan */}
+            <path d="M14 18 Q11 22 14 26 Q17 22 14 18Z" fill="rgba(255,255,255,0.9)"/>
+            {/* Right pan */}
+            <path d="M34 18 Q31 22 34 26 Q37 22 34 18Z" fill="rgba(255,255,255,0.9)"/>
+            {/* Gradient accent line on top */}
+            <line x1="14" y1="18" x2="34" y2="18" stroke="url(#disc_line)" strokeWidth="2.5" strokeLinecap="round"/>
+          </svg>
+        </div>
         <div style={{fontSize:16,fontWeight:700,color:"#e2e8f0",marginBottom:12}}>À titre informatif uniquement</div>
         <p style={{fontSize:13,color:"#94a3b8",lineHeight:1.7,margin:"0 0 20px"}}>
           ETF Score est un outil d'analyse personnel. Les scores, indicateurs et suggestions affichés
@@ -993,26 +1018,8 @@ export default function App() {
           marginTop:0,
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:34,height:34,flexShrink:0}}>
-              <svg viewBox="0 0 512 512" width="34" height="34" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="lline" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#38bdf8"/><stop offset="50%" stopColor="#818cf8"/><stop offset="100%" stopColor="#c084fc"/></linearGradient>
-                  <linearGradient id="lfill" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#6366f1" stopOpacity="0.18"/><stop offset="100%" stopColor="#6366f1" stopOpacity="0"/></linearGradient>
-                  <filter id="lglow"><feGaussianBlur stdDeviation="7" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                  <filter id="lblob"><feGaussianBlur stdDeviation="50"/></filter>
-                  <clipPath id="lshape"><rect width="512" height="512" rx="115" ry="115"/></clipPath>
-                </defs>
-                <g clipPath="url(#lshape)">
-                  <rect width="512" height="512" fill="#08080c"/>
-                  <ellipse cx="300" cy="260" rx="200" ry="150" fill="#6366f1" opacity="0.12" filter="url(#lblob)"/>
-                  <ellipse cx="150" cy="350" rx="120" ry="100" fill="#38bdf8" opacity="0.07" filter="url(#lblob)"/>
-                  <path d="M 72 360 C 110 360 120 310 155 295 C 190 280 200 320 235 300 C 265 282 275 230 310 200 C 340 175 355 210 385 185 C 408 165 420 145 440 128 L 440 400 L 72 400 Z" fill="url(#lfill)"/>
-                  <path d="M 72 360 C 110 360 120 310 155 295 C 190 280 200 320 235 300 C 265 282 275 230 310 200 C 340 175 355 210 385 185 C 408 165 420 145 440 128" fill="none" stroke="url(#lline)" strokeWidth="18" strokeLinecap="round" strokeLinejoin="round" filter="url(#lglow)"/>
-                  <circle cx="440" cy="128" r="14" fill="#c084fc" filter="url(#lglow)"/>
-                  <circle cx="440" cy="128" r="7" fill="white" opacity="0.9"/>
-                </g>
-              </svg>
-            </div>
+            <img src="/icon-180.png" alt="ETF Score"
+              style={{width:34,height:34,borderRadius:9,flexShrink:0,objectFit:"cover"}}/>
             <div>
               <div style={{fontSize:15,fontWeight:700,color:"#e2e8f0",letterSpacing:-0.3}}>ETF Score <span style={{fontSize:10,color:"#6366f1",fontWeight:700,letterSpacing:1,background:"rgba(99,102,241,0.12)",padding:"2px 6px",borderRadius:4,border:"1px solid rgba(99,102,241,0.2)"}}>EXPERT</span></div>
               <div style={{fontSize:11,color:"#7c8fa8",marginTop:1}}>Analyse multicritères</div>
