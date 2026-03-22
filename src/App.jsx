@@ -529,7 +529,9 @@ function Onboarding({onAdd,onDone}){
   const[open,setOpen]=useState(false);
   const[selectedTicker,setSelectedTicker]=useState(null);
   const[err,setErr]=useState("");
-  const[added,setAdded]=useState([]); // ETFs added during onboarding
+  const[added,setAdded]=useState([]);
+  const[lastAdded,setLastAdded]=useState(null);
+  const[showCheck,setShowCheck]=useState(false); // ETFs added during onboarding
   const ref=useRef(null);
   const amtRef=useRef(null);
   const swipeStart=useRef(null);
@@ -553,7 +555,11 @@ function Onboarding({onAdd,onDone}){
     const a=parseFloat(amt);
     if(!t||!DB[t]){setErr("Sélectionnez un ETF dans la liste");return;}
     if(isNaN(a)||a<=0){setErr("Montant invalide");return;}
+    const newIdx=added.length;
     setAdded(prev=>[...prev,{ticker:t,name:DB[t].name,amount:a}]);
+    setLastAdded(newIdx);
+    setShowCheck(true);
+    setTimeout(()=>{setLastAdded(null);setShowCheck(false);},1200);
     setQ("");setAmt("");setSelectedTicker(null);setErr("");setOpen(false);
   };
 
@@ -672,9 +678,13 @@ function Onboarding({onAdd,onDone}){
         <div style={{flex:1,display:"flex",flexDirection:"column",padding:"72px 0 0",position:"relative"}}>
           {/* Scrollable content */}
           <div style={{flex:1,overflowY:"auto",padding:"0 24px",paddingBottom:100}}>
-          <div style={{textAlign:"center",marginBottom:28}}>
-            <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:6,letterSpacing:-.3}}>Constituez votre portefeuille</div>
-            <div style={{fontSize:13,color:"rgba(255,255,255,0.35)",lineHeight:1.65}}>Ajoutez autant d'ETF que vous souhaitez.</div>
+
+          {/* Spacer to push content down like other slides */}
+          <div style={{flex:1,minHeight:40}}/>
+
+          <div style={{textAlign:"center",marginBottom:28,marginTop:"15vh"}}>
+            <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:8,letterSpacing:-.3}}>Constituez votre portefeuille</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,0.35)",lineHeight:1.7,maxWidth:300,margin:"0 auto"}}>Ajoutez autant d'ETF que vous souhaitez. Vous pourrez toujours modifier depuis l'app.</div>
           </div>
 
           <Dots/>
@@ -683,7 +693,7 @@ function Onboarding({onAdd,onDone}){
           {added.length>0&&(
             <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:6}}>
               {added.map((h,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:10,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.15)",borderRadius:12,padding:"10px 14px"}}>
+                <div key={i} style={{display:"flex",alignItems:"center",gap:10,background:lastAdded===i?"rgba(14,203,129,0.12)":"rgba(14,203,129,0.06)",border:`0.5px solid ${lastAdded===i?"rgba(14,203,129,0.4)":"rgba(14,203,129,0.15)"}`,borderRadius:12,padding:"10px 14px",animation:lastAdded===i?"popIn .4s cubic-bezier(.16,1,.3,1)":"none",boxShadow:lastAdded===i?"0 0 16px rgba(14,203,129,0.2)":"none",transition:"background .4s,border .4s,box-shadow .4s"}}>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:12,fontWeight:500,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{h.name}</div>
                     <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginTop:2}}>{h.ticker}</div>
@@ -742,7 +752,15 @@ function Onboarding({onAdd,onDone}){
               placeholder="Montant investi (€) — Entrée pour valider"
               style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
 
-            {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
+            {showCheck&&(
+              <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",animation:"checkFade 1.2s ease forwards"}}>
+                <div style={{width:18,height:18,borderRadius:"50%",background:"#0ecb81",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </div>
+                <span style={{fontSize:12,color:"#0ecb81",fontWeight:500}}>ETF ajouté</span>
+              </div>
+            )}
+            {err&&!showCheck&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
 
             {/* Popular suggestions */}
             <div>
@@ -838,6 +856,8 @@ export default function App(){
         input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         button{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
         @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes popIn{0%{opacity:0;transform:scale(0.7)}60%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+        @keyframes checkFade{0%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(0.8)}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1028,7 +1048,11 @@ export default function App(){
                 <Glass style={{padding:"52px 24px",textAlign:"center"}}>
                   <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:44,marginBottom:16,opacity:.3}}>◎</div>
                   <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:16,fontWeight:800,color:"#fff",marginBottom:10}}>Aucun ETF renseigné</div>
-                  <div style={{fontSize:13,color:"rgba(255,255,255,0.3)",lineHeight:1.7}}>Allez dans l'onglet <strong style={{color:"rgba(255,255,255,0.6)"}}>ETF</strong> pour ajouter vos positions.</div>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,0.3)",lineHeight:1.7,marginBottom:20}}>Allez dans l'onglet <strong style={{color:"rgba(255,255,255,0.6)"}}>Mes ETF</strong> pour ajouter vos positions.</div>
+                  <button onClick={()=>setOnboarding(true)}
+                    style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:12,cursor:"pointer",padding:0,textDecoration:"underline",textUnderlineOffset:3}}>
+                    Revoir l'introduction
+                  </button>
                 </Glass>
               )}
             </div>
