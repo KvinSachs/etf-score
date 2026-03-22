@@ -1,761 +1,488 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 
-/* ─── ISIN MAP ───────────────────────────────────────────────────────────────── */
+/* ─── DATA (identical to v1) ────────────────────────────────────────────────── */
 const ISIN_MAP = {
   "IE00B4L5Y983":"IWDA","IE00B4L5YC18":"SWDA","FR0010315770":"MWRD",
-  "IE00B6R52259":"ACWI","LU1681045370":"PAEEM","IE00BKM4GZ66":"EIMI",
+  "IE00B6R52259":"ACWI","LU1681045370":"un ETF marchés émergents","IE00BKM4GZ66":"un ETF marchés émergents IMI",
   "US78462F1030":"SPY","US9229083632":"VOO","LU1681048804":"500",
   "US46090E1038":"QQQ","LU1681038243":"PANX","FR0011550185":"ESE",
   "LU1737652823":"EWLD","IE00B0M63177":"EEM","IE00BF4RFH31":"IUSN",
-  "LU1681038672":"EPRA","IE00B945VV12":"VEUR","IE00B579F325":"SGLD",
+  "LU1681038672":"EPRA","IE00B945VV12":"un ETF Europe","IE00B579F325":"un ETF or physique",
   "IE00BDBRDM35":"AGGH","IE00B1XNHC34":"INRG","IE00B3F81R35":"IEAG",
-  "IE00B5BMR087":"CSP1","LU1681041575":"MEUD","LU1681042773":"BCHN",
+  "IE00B5BMR087":"CSP1","LU1681041575":"un ETF Europe Amundi","LU1681042773":"BCHN",
   "IE00B8GF1M35":"CBRE","LU1681043599":"MWRD","LU1681043086":"PAASI",
 };
-
-/* ─── ETF DATABASE ───────────────────────────────────────────────────────────── */
-// assetClass: "equity" | "bond" | "commodity" | "real_estate" | "mixed"
-// currency: main currency of underlying exposure
-// overlap: map of tickers this ETF significantly overlaps with (% of portfolio overlap)
 const DB = {
-  "IWDA":{ name:"iShares Core MSCI World", isin:"IE00B4L5Y983", p:"iShares",
-    assetClass:"equity", currencies:{USD:70,EUR:16,JPY:6,GBP:4,CHF:4},
-    geo:{"Amér. du Nord":70,"Europe":16,"Japon":6,"Asie-Pac.":5,"Autres":3},
-    sec:{"Technologie":24,"Finance":16,"Santé":13,"Industrie":11,"Conso. discrétionnaire":10,"Conso. courante":7,"Énergie":5,"Matériaux":4,"Télécom":4,"Immobilier":3,"Services pub.":3},
-    overlaps:{"SWDA":99,"MWRD":98,"XDWD":98,"SPY":68,"VOO":68,"CSP1":68,"500":68,"ESE":68,"QQQ":42,"PANX":42}},
-  "SWDA":{ name:"iShares MSCI World Acc", isin:"IE00B4L5Y983", p:"iShares",
-    assetClass:"equity", currencies:{USD:70,EUR:16,JPY:6,GBP:4,CHF:4},
-    geo:{"Amér. du Nord":70,"Europe":16,"Japon":6,"Asie-Pac.":5,"Autres":3},
-    sec:{"Technologie":24,"Finance":16,"Santé":13,"Industrie":11,"Conso. discrétionnaire":10,"Conso. courante":7,"Énergie":5,"Matériaux":4,"Télécom":4,"Immobilier":3,"Services pub.":3},
-    overlaps:{"IWDA":99,"MWRD":98,"SPY":68,"VOO":68,"CSP1":68,"500":68,"ESE":68}},
-  "MWRD":{ name:"Amundi MSCI World", isin:"LU1681043599", p:"Amundi",
-    assetClass:"equity", currencies:{USD:70,EUR:16,JPY:6,GBP:4,CHF:4},
-    geo:{"Amér. du Nord":70,"Europe":16,"Japon":6,"Asie-Pac.":5,"Autres":3},
-    sec:{"Technologie":24,"Finance":16,"Santé":13,"Industrie":11,"Conso. discrétionnaire":10,"Conso. courante":7,"Énergie":5,"Matériaux":4,"Télécom":4,"Immobilier":3,"Services pub.":3},
-    overlaps:{"IWDA":98,"SWDA":98,"SPY":68,"VOO":68,"CSP1":68,"500":68,"ESE":68}},
-  "EWLD":{ name:"Amundi MSCI All World", isin:"LU1792117779", p:"Amundi",
-    assetClass:"equity", currencies:{USD:62,EUR:13,JPY:5,GBP:4,CNY:4,KRW:2,TWD:3,INR:4,Autres:3},
-    geo:{"Amér. du Nord":62,"Europe":13,"Japon":5,"Asie-Pac.":4,"Émergents":12,"Autres":4},
-    sec:{"Technologie":23,"Finance":16,"Santé":12,"Industrie":10,"Conso. discrétionnaire":10,"Conso. courante":7,"Énergie":5,"Matériaux":5,"Télécom":4,"Immobilier":3,"Services pub.":3},
-    overlaps:{"ACWI":97,"IWDA":85,"SWDA":85,"MWRD":85}},
-  "ACWI":{ name:"iShares MSCI ACWI", isin:"IE00B6R52259", p:"iShares",
-    assetClass:"equity", currencies:{USD:62,EUR:13,JPY:5,GBP:4,CNY:4,KRW:2,TWD:3,INR:4,Autres:3},
-    geo:{"Amér. du Nord":62,"Europe":13,"Japon":5,"Asie-Pac.":4,"Émergents":12,"Autres":4},
-    sec:{"Technologie":23,"Finance":16,"Santé":12,"Industrie":10,"Conso. discrétionnaire":10,"Conso. courante":7,"Énergie":5,"Matériaux":5,"Télécom":4,"Immobilier":3,"Services pub.":3},
-    overlaps:{"EWLD":97,"IWDA":85,"SWDA":85,"MWRD":85}},
-  "PAEEM":{ name:"Amundi MSCI Emerging Markets", isin:"LU1681045370", p:"Amundi",
-    assetClass:"equity", currencies:{CNY:32,TWD:16,INR:15,KRW:12,BRL:6,Autres:19},
-    geo:{"Chine":32,"Taiwan":16,"Inde":15,"Corée du Sud":12,"Brésil":6,"Autres EM":19},
-    sec:{"Technologie":28,"Finance":22,"Conso. discrétionnaire":12,"Télécom":10,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. courante":4},
-    overlaps:{"EIMI":95,"EEM":92}},
-  "EIMI":{ name:"iShares Core MSCI EM IMI", isin:"IE00BKM4GZ66", p:"iShares",
-    assetClass:"equity", currencies:{CNY:28,TWD:18,INR:16,KRW:12,BRL:5,Autres:21},
-    geo:{"Chine":28,"Taiwan":18,"Inde":16,"Corée du Sud":12,"Brésil":5,"Autres EM":21},
-    sec:{"Technologie":29,"Finance":21,"Conso. discrétionnaire":11,"Télécom":10,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. courante":5},
-    overlaps:{"PAEEM":95,"EEM":92}},
-  "EEM":{ name:"iShares MSCI Emerging Markets", isin:"US4642872349", p:"iShares",
-    assetClass:"equity", currencies:{CNY:30,TWD:17,INR:15,KRW:11,BRL:5,Autres:22},
-    geo:{"Chine":30,"Taiwan":17,"Inde":15,"Corée du Sud":11,"Brésil":5,"Autres EM":22},
-    sec:{"Technologie":28,"Finance":22,"Conso. discrétionnaire":12,"Télécom":10,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. courante":4},
-    overlaps:{"PAEEM":92,"EIMI":92}},
-  "SPY":{ name:"SPDR S&P 500", isin:"US78462F1030", p:"SPDR",
-    assetClass:"equity", currencies:{USD:100},
-    geo:{"Amér. du Nord":100},
-    sec:{"Technologie":29,"Finance":13,"Santé":13,"Conso. discrétionnaire":11,"Industrie":9,"Conso. courante":6,"Énergie":5,"Matériaux":3,"Télécom":4,"Immobilier":2,"Services pub.":2,"Autres":3},
-    overlaps:{"VOO":99,"CSP1":99,"500":99,"ESE":99,"IWDA":68,"SWDA":68,"MWRD":68,"QQQ":55,"PANX":55}},
-  "VOO":{ name:"Vanguard S&P 500", isin:"US9229083632", p:"Vanguard",
-    assetClass:"equity", currencies:{USD:100},
-    geo:{"Amér. du Nord":100},
-    sec:{"Technologie":29,"Finance":13,"Santé":13,"Conso. discrétionnaire":11,"Industrie":9,"Conso. courante":6,"Énergie":5,"Matériaux":3,"Télécom":4,"Immobilier":2,"Services pub.":2,"Autres":3},
-    overlaps:{"SPY":99,"CSP1":99,"500":99,"ESE":99,"IWDA":68,"SWDA":68,"MWRD":68,"QQQ":55,"PANX":55}},
-  "CSP1":{ name:"iShares Core S&P 500", isin:"IE00B5BMR087", p:"iShares",
-    assetClass:"equity", currencies:{USD:100},
-    geo:{"Amér. du Nord":100},
-    sec:{"Technologie":29,"Finance":13,"Santé":13,"Conso. discrétionnaire":11,"Industrie":9,"Conso. courante":6,"Énergie":5,"Matériaux":3,"Télécom":4,"Immobilier":2,"Services pub.":2,"Autres":3},
-    overlaps:{"SPY":99,"VOO":99,"500":99,"ESE":99,"IWDA":68,"SWDA":68,"MWRD":68}},
-  "500":{ name:"Amundi S&P 500", isin:"LU1681048804", p:"Amundi",
-    assetClass:"equity", currencies:{USD:100},
-    geo:{"Amér. du Nord":100},
-    sec:{"Technologie":29,"Finance":13,"Santé":13,"Conso. discrétionnaire":11,"Industrie":9,"Conso. courante":6,"Énergie":5,"Matériaux":3,"Télécom":4,"Immobilier":2,"Services pub.":2,"Autres":3},
-    overlaps:{"SPY":99,"VOO":99,"CSP1":99,"ESE":99,"IWDA":68,"SWDA":68,"MWRD":68}},
-  "ESE":{ name:"BNP Paribas Easy S&P 500", isin:"FR0011550185", p:"BNP Paribas",
-    assetClass:"equity", currencies:{USD:100},
-    geo:{"Amér. du Nord":100},
-    sec:{"Technologie":29,"Finance":13,"Santé":13,"Conso. discrétionnaire":11,"Industrie":9,"Conso. courante":6,"Énergie":5,"Matériaux":3,"Télécom":4,"Immobilier":2,"Services pub.":2,"Autres":3},
-    overlaps:{"SPY":99,"VOO":99,"CSP1":99,"500":99,"IWDA":68,"SWDA":68,"MWRD":68}},
-  "QQQ":{ name:"Invesco NASDAQ-100", isin:"US46090E1038", p:"Invesco",
-    assetClass:"equity", currencies:{USD:97,Autres:3},
-    geo:{"Amér. du Nord":97,"Autres":3},
-    sec:{"Technologie":50,"Conso. discrétionnaire":16,"Santé":7,"Finance":5,"Industrie":5,"Télécom":5,"Conso. courante":4,"Énergie":1,"Autres":7},
-    overlaps:{"PANX":99,"SPY":55,"VOO":55,"CSP1":55,"500":55,"ESE":55,"IWDA":42}},
-  "PANX":{ name:"Amundi NASDAQ-100", isin:"LU1681038243", p:"Amundi",
-    assetClass:"equity", currencies:{USD:97,Autres:3},
-    geo:{"Amér. du Nord":97,"Autres":3},
-    sec:{"Technologie":50,"Conso. discrétionnaire":16,"Santé":7,"Finance":5,"Industrie":5,"Télécom":5,"Conso. courante":4,"Énergie":1,"Autres":7},
-    overlaps:{"QQQ":99,"SPY":55,"VOO":55,"CSP1":55,"500":55,"ESE":55,"IWDA":42}},
-  "IUSN":{ name:"iShares MSCI World Small Cap", isin:"IE00BF4RFH31", p:"iShares",
-    assetClass:"equity", currencies:{USD:58,EUR:18,JPY:10,GBP:7,Autres:7},
-    geo:{"Amér. du Nord":58,"Europe":18,"Japon":10,"Asie-Pac.":7,"Autres":7},
-    sec:{"Industrie":20,"Finance":16,"Technologie":15,"Santé":12,"Conso. discrétionnaire":11,"Matériaux":8,"Conso. courante":6,"Immobilier":5,"Énergie":4,"Télécom":2,"Services pub.":1},
-    overlaps:{"IWDA":8,"SWDA":8}},
-  "VEUR":{ name:"Vanguard FTSE Developed Europe", isin:"IE00B945VV12", p:"Vanguard",
-    assetClass:"equity", currencies:{EUR:55,GBP:22,CHF:14,SEK:5,Autres:4},
-    geo:{"Royaume-Uni":22,"France":15,"Suisse":14,"Allemagne":13,"Pays-Bas":8,"Autres EU":28},
-    sec:{"Finance":18,"Santé":15,"Industrie":14,"Conso. courante":12,"Matériaux":8,"Conso. discrétionnaire":8,"Énergie":7,"Télécom":6,"Technologie":6,"Services pub.":4,"Immobilier":2},
-    overlaps:{"MEUD":96,"IWDA":16,"SWDA":16}},
-  "MEUD":{ name:"Amundi MSCI Europe", isin:"LU1681041575", p:"Amundi",
-    assetClass:"equity", currencies:{EUR:55,GBP:22,CHF:14,SEK:5,Autres:4},
-    geo:{"Royaume-Uni":22,"France":15,"Suisse":14,"Allemagne":13,"Pays-Bas":8,"Autres EU":28},
-    sec:{"Finance":18,"Santé":15,"Industrie":14,"Conso. courante":12,"Matériaux":8,"Conso. discrétionnaire":8,"Énergie":7,"Télécom":6,"Technologie":6,"Services pub.":4,"Immobilier":2},
-    overlaps:{"VEUR":96,"IWDA":16,"SWDA":16}},
-  "PAASI":{ name:"Amundi MSCI Asia Pacific Ex-Japan", isin:"LU1681043086", p:"Amundi",
-    assetClass:"equity", currencies:{CNY:38,TWD:20,INR:17,KRW:14,Autres:11},
-    geo:{"Chine":38,"Taiwan":20,"Inde":17,"Corée du Sud":14,"Autres Asie":11},
-    sec:{"Technologie":32,"Finance":20,"Conso. discrétionnaire":12,"Télécom":9,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. courante":3},
-    overlaps:{"PAEEM":45,"EIMI":42}},
-  "EPRA":{ name:"Amundi FTSE EPRA Nareit", isin:"LU1681038672", p:"Amundi",
-    assetClass:"real_estate", currencies:{USD:55,JPY:10,AUD:8,GBP:7,Autres:20},
-    geo:{"Amér. du Nord":55,"Japon":10,"Australie":8,"Royaume-Uni":7,"Autres":20},
-    sec:{"Immobilier":100},
-    overlaps:{"CBRE":75}},
-  "CBRE":{ name:"iShares Global REIT", isin:"IE00B8GF1M35", p:"iShares",
-    assetClass:"real_estate", currencies:{USD:65,JPY:10,AUD:8,SGD:5,Autres:12},
-    geo:{"Amér. du Nord":65,"Japon":10,"Australie":8,"Singapour":5,"Autres":12},
-    sec:{"Immobilier":100},
-    overlaps:{"EPRA":75}},
-  "SGLD":{ name:"Invesco Physical Gold", isin:"IE00B579F325", p:"Invesco",
-    assetClass:"commodity", currencies:{USD:100},
-    geo:{"Global":100}, sec:{"Or":100}, overlaps:{}},
-  "GLD":{ name:"SPDR Gold Shares", isin:"US78463V1070", p:"SPDR",
-    assetClass:"commodity", currencies:{USD:100},
-    geo:{"Global":100}, sec:{"Or":100}, overlaps:{"SGLD":99}},
-  "INRG":{ name:"iShares Global Clean Energy", isin:"IE00B1XNHC34", p:"iShares",
-    assetClass:"equity", currencies:{USD:45,EUR:30,Autres:25},
-    geo:{"Amér. du Nord":45,"Europe":30,"Asie-Pac.":15,"Autres":10},
-    sec:{"Énergie renou.":70,"Services pub.":20,"Industrie":10},
-    overlaps:{}},
-  "BCHN":{ name:"Amundi MSCI China", isin:"LU1681042773", p:"Amundi",
-    assetClass:"equity", currencies:{CNY:100},
-    geo:{"Chine":100},
-    sec:{"Conso. discrétionnaire":28,"Finance":20,"Télécom":15,"Industrie":12,"Technologie":10,"Santé":6,"Énergie":5,"Matériaux":4},
-    overlaps:{"PAEEM":32,"EIMI":28}},
-  "AGGH":{ name:"iShares Global Aggregate Bond", isin:"IE00BDBRDM35", p:"iShares",
-    assetClass:"bond", currencies:{USD:40,EUR:30,JPY:15,Autres:15},
-    geo:{"Amér. du Nord":40,"Europe":30,"Japon":15,"Autres":15},
-    sec:{"Oblig. souv.":60,"Oblig. corp.":30,"Autres":10},
-    overlaps:{"IEAG":35}},
-  "IEAG":{ name:"iShares Euro Aggregate Bond", isin:"IE00B3F81R35", p:"iShares",
-    assetClass:"bond", currencies:{EUR:90,Autres:10},
-    geo:{"Europe":90,"Autres":10},
-    sec:{"Oblig. souv.":70,"Oblig. corp.":25,"Autres":5},
-    overlaps:{"AGGH":35}},
+  "IWDA":{ name:"iShares Core ETF Monde", isin:"IE00B4L5Y983", p:"iShares", assetClass:"equity", currencies:{USD:70,EUR:16,JPY:6,GBP:4,CHF:4}, geo:{"Amér. du Nord":70,"Europe":16,"Japon":6,"Asie-Pac.":5,"Autres":3}, sec:{"Technologie":24,"Finance":16,"Santé":13,"Industrie":11,"Conso. discr.":10,"Conso. cour.":7,"Énergie":5,"Matériaux":4,"Télécom":4,"Immobilier":3,"Services pub.":3}, overlaps:{"SWDA":99,"MWRD":98,"SPY":68,"VOO":68,"CSP1":68,"500":68,"ESE":68,"QQQ":42,"PANX":42}},
+  "SWDA":{ name:"iShares ETF Monde Acc", isin:"IE00B4L5Y983", p:"iShares", assetClass:"equity", currencies:{USD:70,EUR:16,JPY:6,GBP:4,CHF:4}, geo:{"Amér. du Nord":70,"Europe":16,"Japon":6,"Asie-Pac.":5,"Autres":3}, sec:{"Technologie":24,"Finance":16,"Santé":13,"Industrie":11,"Conso. discr.":10,"Conso. cour.":7,"Énergie":5,"Matériaux":4,"Télécom":4,"Immobilier":3,"Services pub.":3}, overlaps:{"IWDA":99,"MWRD":98,"SPY":68,"VOO":68,"CSP1":68,"500":68,"ESE":68}},
+  "MWRD":{ name:"Amundi ETF Monde", isin:"LU1681043599", p:"Amundi", assetClass:"equity", currencies:{USD:70,EUR:16,JPY:6,GBP:4,CHF:4}, geo:{"Amér. du Nord":70,"Europe":16,"Japon":6,"Asie-Pac.":5,"Autres":3}, sec:{"Technologie":24,"Finance":16,"Santé":13,"Industrie":11,"Conso. discr.":10,"Conso. cour.":7,"Énergie":5,"Matériaux":4,"Télécom":4,"Immobilier":3,"Services pub.":3}, overlaps:{"IWDA":98,"SWDA":98,"SPY":68,"VOO":68,"CSP1":68,"500":68,"ESE":68}},
+  "EWLD":{ name:"Amundi MSCI All World", isin:"LU1792117779", p:"Amundi", assetClass:"equity", currencies:{USD:62,EUR:13,JPY:5,GBP:4,CNY:4,KRW:2,TWD:3,INR:4,Autres:3}, geo:{"Amér. du Nord":62,"Europe":13,"Japon":5,"Asie-Pac.":4,"Émergents":12,"Autres":4}, sec:{"Technologie":23,"Finance":16,"Santé":12,"Industrie":10,"Conso. discr.":10,"Conso. cour.":7,"Énergie":5,"Matériaux":5,"Télécom":4,"Immobilier":3,"Services pub.":3}, overlaps:{"ACWI":97,"IWDA":85,"SWDA":85}},
+  "ACWI":{ name:"iShares MSCI ACWI", isin:"IE00B6R52259", p:"iShares", assetClass:"equity", currencies:{USD:62,EUR:13,JPY:5,GBP:4,CNY:4,KRW:2,TWD:3,INR:4,Autres:3}, geo:{"Amér. du Nord":62,"Europe":13,"Japon":5,"Asie-Pac.":4,"Émergents":12,"Autres":4}, sec:{"Technologie":23,"Finance":16,"Santé":12,"Industrie":10,"Conso. discr.":10,"Conso. cour.":7,"Énergie":5,"Matériaux":5,"Télécom":4,"Immobilier":3,"Services pub.":3}, overlaps:{"EWLD":97,"IWDA":85}},
+  "un ETF marchés émergents":{ name:"Amundi MSCI Emerging Markets", isin:"LU1681045370", p:"Amundi", assetClass:"equity", currencies:{CNY:32,TWD:16,INR:15,KRW:12,BRL:6,Autres:19}, geo:{"Chine":32,"Taiwan":16,"Inde":15,"Corée du Sud":12,"Brésil":6,"Autres EM":19}, sec:{"Technologie":28,"Finance":22,"Conso. discr.":12,"Télécom":10,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. cour.":4}, overlaps:{"un ETF marchés émergents IMI":95,"EEM":92}},
+  "un ETF marchés émergents IMI":{ name:"iShares Core MSCI EM IMI", isin:"IE00BKM4GZ66", p:"iShares", assetClass:"equity", currencies:{CNY:28,TWD:18,INR:16,KRW:12,BRL:5,Autres:21}, geo:{"Chine":28,"Taiwan":18,"Inde":16,"Corée du Sud":12,"Brésil":5,"Autres EM":21}, sec:{"Technologie":29,"Finance":21,"Conso. discr.":11,"Télécom":10,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. cour.":5}, overlaps:{"un ETF marchés émergents":95,"EEM":92}},
+  "SPY":{ name:"SPDR S&P 500", isin:"US78462F1030", p:"SPDR", assetClass:"equity", currencies:{USD:100}, geo:{"Amér. du Nord":100}, sec:{"Technologie":29,"Finance":13,"Santé":13,"Conso. discr.":11,"Industrie":9,"Conso. cour.":6,"Énergie":5,"Matériaux":3,"Télécom":4,"Immobilier":2,"Services pub.":2,"Autres":3}, overlaps:{"VOO":99,"CSP1":99,"500":99,"ESE":99,"IWDA":68,"QQQ":55}},
+  "VOO":{ name:"Vanguard S&P 500", isin:"US9229083632", p:"Vanguard", assetClass:"equity", currencies:{USD:100}, geo:{"Amér. du Nord":100}, sec:{"Technologie":29,"Finance":13,"Santé":13,"Conso. discr.":11,"Industrie":9,"Conso. cour.":6,"Énergie":5,"Matériaux":3,"Télécom":4,"Immobilier":2,"Services pub.":2,"Autres":3}, overlaps:{"SPY":99,"CSP1":99,"500":99,"ESE":99,"IWDA":68}},
+  "CSP1":{ name:"iShares Core S&P 500", isin:"IE00B5BMR087", p:"iShares", assetClass:"equity", currencies:{USD:100}, geo:{"Amér. du Nord":100}, sec:{"Technologie":29,"Finance":13,"Santé":13,"Conso. discr.":11,"Industrie":9,"Conso. cour.":6,"Énergie":5,"Matériaux":3,"Télécom":4,"Immobilier":2,"Services pub.":2,"Autres":3}, overlaps:{"SPY":99,"VOO":99,"500":99,"ESE":99}},
+  "500":{ name:"Amundi S&P 500", isin:"LU1681048804", p:"Amundi", assetClass:"equity", currencies:{USD:100}, geo:{"Amér. du Nord":100}, sec:{"Technologie":29,"Finance":13,"Santé":13,"Conso. discr.":11,"Industrie":9,"Conso. cour.":6,"Énergie":5,"Matériaux":3,"Télécom":4,"Immobilier":2,"Services pub.":2,"Autres":3}, overlaps:{"SPY":99,"VOO":99,"CSP1":99,"ESE":99}},
+  "ESE":{ name:"BNP Paribas Easy S&P 500", isin:"FR0011550185", p:"BNP Paribas", assetClass:"equity", currencies:{USD:100}, geo:{"Amér. du Nord":100}, sec:{"Technologie":29,"Finance":13,"Santé":13,"Conso. discr.":11,"Industrie":9,"Conso. cour.":6,"Énergie":5,"Matériaux":3,"Télécom":4,"Immobilier":2,"Services pub.":2,"Autres":3}, overlaps:{"SPY":99,"VOO":99,"CSP1":99,"500":99}},
+  "QQQ":{ name:"Invesco NASDAQ-100", isin:"US46090E1038", p:"Invesco", assetClass:"equity", currencies:{USD:97,Autres:3}, geo:{"Amér. du Nord":97,"Autres":3}, sec:{"Technologie":50,"Conso. discr.":16,"Santé":7,"Finance":5,"Industrie":5,"Télécom":5,"Conso. cour.":4,"Énergie":1,"Autres":7}, overlaps:{"PANX":99,"SPY":55,"IWDA":42}},
+  "PANX":{ name:"Amundi NASDAQ-100", isin:"LU1681038243", p:"Amundi", assetClass:"equity", currencies:{USD:97,Autres:3}, geo:{"Amér. du Nord":97,"Autres":3}, sec:{"Technologie":50,"Conso. discr.":16,"Santé":7,"Finance":5,"Industrie":5,"Télécom":5,"Conso. cour.":4,"Énergie":1,"Autres":7}, overlaps:{"QQQ":99,"SPY":55}},
+  "IUSN":{ name:"iShares ETF Monde Small Cap", isin:"IE00BF4RFH31", p:"iShares", assetClass:"equity", currencies:{USD:58,EUR:18,JPY:10,GBP:7,Autres:7}, geo:{"Amér. du Nord":58,"Europe":18,"Japon":10,"Asie-Pac.":7,"Autres":7}, sec:{"Industrie":20,"Finance":16,"Technologie":15,"Santé":12,"Conso. discr.":11,"Matériaux":8,"Conso. cour.":6,"Immobilier":5,"Énergie":4,"Télécom":2,"Services pub.":1}, overlaps:{"IWDA":8}},
+  "un ETF Europe":{ name:"Vanguard FTSE Developed Europe", isin:"IE00B945VV12", p:"Vanguard", assetClass:"equity", currencies:{EUR:55,GBP:22,CHF:14,SEK:5,Autres:4}, geo:{"Royaume-Uni":22,"France":15,"Suisse":14,"Allemagne":13,"Pays-Bas":8,"Autres EU":28}, sec:{"Finance":18,"Santé":15,"Industrie":14,"Conso. cour.":12,"Matériaux":8,"Conso. discr.":8,"Énergie":7,"Télécom":6,"Technologie":6,"Services pub.":4,"Immobilier":2}, overlaps:{"un ETF Europe Amundi":96}},
+  "un ETF Europe Amundi":{ name:"Amundi MSCI Europe", isin:"LU1681041575", p:"Amundi", assetClass:"equity", currencies:{EUR:55,GBP:22,CHF:14,SEK:5,Autres:4}, geo:{"Royaume-Uni":22,"France":15,"Suisse":14,"Allemagne":13,"Pays-Bas":8,"Autres EU":28}, sec:{"Finance":18,"Santé":15,"Industrie":14,"Conso. cour.":12,"Matériaux":8,"Conso. discr.":8,"Énergie":7,"Télécom":6,"Technologie":6,"Services pub.":4,"Immobilier":2}, overlaps:{"un ETF Europe":96}},
+  "PAASI":{ name:"Amundi MSCI Asia Pacific Ex-Japan", isin:"LU1681043086", p:"Amundi", assetClass:"equity", currencies:{CNY:38,TWD:20,INR:17,KRW:14,Autres:11}, geo:{"Chine":38,"Taiwan":20,"Inde":17,"Corée du Sud":14,"Autres Asie":11}, sec:{"Technologie":32,"Finance":20,"Conso. discr.":12,"Télécom":9,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. cour.":3}, overlaps:{"un ETF marchés émergents":45}},
+  "EPRA":{ name:"Amundi FTSE EPRA Nareit", isin:"LU1681038672", p:"Amundi", assetClass:"real_estate", currencies:{USD:55,JPY:10,AUD:8,GBP:7,Autres:20}, geo:{"Amér. du Nord":55,"Japon":10,"Australie":8,"Royaume-Uni":7,"Autres":20}, sec:{"Immobilier":100}, overlaps:{"CBRE":75}},
+  "CBRE":{ name:"iShares Global REIT", isin:"IE00B8GF1M35", p:"iShares", assetClass:"real_estate", currencies:{USD:65,JPY:10,AUD:8,SGD:5,Autres:12}, geo:{"Amér. du Nord":65,"Japon":10,"Australie":8,"Singapour":5,"Autres":12}, sec:{"Immobilier":100}, overlaps:{"EPRA":75}},
+  "un ETF or physique":{ name:"Invesco Physical Gold", isin:"IE00B579F325", p:"Invesco", assetClass:"commodity", currencies:{USD:100}, geo:{"Global":100}, sec:{"Or":100}, overlaps:{}},
+  "un ETF or physique SPDR":{ name:"SPDR Gold Shares", isin:"US78463V1070", p:"SPDR", assetClass:"commodity", currencies:{USD:100}, geo:{"Global":100}, sec:{"Or":100}, overlaps:{"un ETF or physique":99}},
+  "INRG":{ name:"iShares Global Clean Energy", isin:"IE00B1XNHC34", p:"iShares", assetClass:"equity", currencies:{USD:45,EUR:30,Autres:25}, geo:{"Amér. du Nord":45,"Europe":30,"Asie-Pac.":15,"Autres":10}, sec:{"Énergie renou.":70,"Services pub.":20,"Industrie":10}, overlaps:{}},
+  "BCHN":{ name:"Amundi MSCI China", isin:"LU1681042773", p:"Amundi", assetClass:"equity", currencies:{CNY:100}, geo:{"Chine":100}, sec:{"Conso. discr.":28,"Finance":20,"Télécom":15,"Industrie":12,"Technologie":10,"Santé":6,"Énergie":5,"Matériaux":4}, overlaps:{"un ETF marchés émergents":32}},
+  "AGGH":{ name:"iShares Global Aggregate Bond", isin:"IE00BDBRDM35", p:"iShares", assetClass:"bond", currencies:{USD:40,EUR:30,JPY:15,Autres:15}, geo:{"Amér. du Nord":40,"Europe":30,"Japon":15,"Autres":15}, sec:{"Oblig. souv.":60,"Oblig. corp.":30,"Autres":10}, overlaps:{"IEAG":35}},
+  "IEAG":{ name:"iShares Euro Aggregate Bond", isin:"IE00B3F81R35", p:"iShares", assetClass:"bond", currencies:{EUR:90,Autres:10}, geo:{"Europe":90,"Autres":10}, sec:{"Oblig. souv.":70,"Oblig. corp.":25,"Autres":5}, overlaps:{"AGGH":35}},
+  "SGLD":{ name:"Invesco Physical Gold", isin:"IE00B579F325", p:"Invesco", assetClass:"commodity", currencies:{USD:100}, geo:{"Global":100}, sec:{"Or":100}, overlaps:{}},
+  "EPRA":{ name:"Amundi FTSE EPRA Nareit", isin:"LU1681038672", p:"Amundi", assetClass:"real_estate", currencies:{USD:55,JPY:10,AUD:8,GBP:7,Autres:20}, geo:{"Amér. du Nord":55,"Japon":10,"Australie":8,"Royaume-Uni":7,"Autres":20}, sec:{"Immobilier":100}, overlaps:{"CBRE":75}},
+  "CBRE":{ name:"iShares Global REIT", isin:"IE00B8GF1M35", p:"iShares", assetClass:"real_estate", currencies:{USD:65,JPY:10,AUD:8,SGD:5,Autres:12}, geo:{"Amér. du Nord":65,"Japon":10,"Australie":8,"Singapour":5,"Autres":12}, sec:{"Immobilier":100}, overlaps:{"EPRA":75}},
+  "MEUD":{ name:"Amundi MSCI Europe", isin:"LU1681041575", p:"Amundi", assetClass:"equity", currencies:{EUR:55,GBP:22,CHF:14,SEK:5,Autres:4}, geo:{"Royaume-Uni":22,"France":15,"Suisse":14,"Allemagne":13,"Pays-Bas":8,"Autres EU":28}, sec:{"Finance":18,"Santé":15,"Industrie":14,"Conso. cour.":12,"Matériaux":8,"Conso. discr.":8,"Énergie":7,"Télécom":6,"Technologie":6,"Services pub.":4,"Immobilier":2}, overlaps:{"VEUR":96}},
+  "VEUR":{ name:"Vanguard FTSE Developed Europe", isin:"IE00B945VV12", p:"Vanguard", assetClass:"equity", currencies:{EUR:55,GBP:22,CHF:14,SEK:5,Autres:4}, geo:{"Royaume-Uni":22,"France":15,"Suisse":14,"Allemagne":13,"Pays-Bas":8,"Autres EU":28}, sec:{"Finance":18,"Santé":15,"Industrie":14,"Conso. cour.":12,"Matériaux":8,"Conso. discr.":8,"Énergie":7,"Télécom":6,"Technologie":6,"Services pub.":4,"Immobilier":2}, overlaps:{"MEUD":96}},
+  "PAEEM":{ name:"Amundi MSCI Emerging Markets", isin:"LU1681045370", p:"Amundi", assetClass:"equity", currencies:{CNY:32,TWD:16,INR:15,KRW:12,BRL:6,Autres:19}, geo:{"Chine":32,"Taiwan":16,"Inde":15,"Corée du Sud":12,"Brésil":6,"Autres EM":19}, sec:{"Technologie":28,"Finance":22,"Conso. discr.":12,"Télécom":10,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. cour.":4}, overlaps:{"EIMI":95}},
+  "EIMI":{ name:"iShares Core MSCI EM IMI", isin:"IE00BKM4GZ66", p:"iShares", assetClass:"equity", currencies:{CNY:28,TWD:18,INR:16,KRW:12,BRL:5,Autres:21}, geo:{"Chine":28,"Taiwan":18,"Inde":16,"Corée du Sud":12,"Brésil":5,"Autres EM":21}, sec:{"Technologie":29,"Finance":21,"Conso. discr.":11,"Télécom":10,"Énergie":7,"Matériaux":7,"Industrie":6,"Santé":4,"Conso. cour.":5}, overlaps:{"PAEEM":95}},
+  "IUSN":{ name:"iShares MSCI World Small Cap", isin:"IE00BF4RFH31", p:"iShares", assetClass:"equity", currencies:{USD:58,EUR:18,JPY:10,GBP:7,Autres:7}, geo:{"Amér. du Nord":58,"Europe":18,"Japon":10,"Asie-Pac.":7,"Autres":7}, sec:{"Industrie":20,"Finance":16,"Technologie":15,"Santé":12,"Conso. discr.":11,"Matériaux":8,"Conso. cour.":6,"Immobilier":5,"Énergie":4,"Télécom":2,"Services pub.":1}, overlaps:{"IWDA":8}},
 };
-
 const STORAGE_KEY = "etf-portfolio-v2";
 
-/* ─── EXPERT SCORING ENGINE ──────────────────────────────────────────────────── */
-function hhi(obj) {
-  const t = Object.values(obj).reduce((a,b)=>a+b,0);
-  if(!t) return 1;
-  return Object.values(obj).reduce((s,v)=>s+Math.pow(v/t,2),0);
+/* ─── SCORING ENGINE (identical) ────────────────────────────────────────────── */
+function hhi(obj){const t=Object.values(obj).reduce((a,b)=>a+b,0);if(!t)return 1;return Object.values(obj).reduce((s,v)=>s+Math.pow(v/t,2),0);}
+function hhiToScore(h,n){const mn=1/n,norm=(h-mn)/(1-mn);return Math.max(0,1-Math.pow(Math.max(0,norm),0.75));}
+function geoScore(m){
+  if(!Object.keys(m).length) return 0;
+  // Base HHI score
+  const n=Math.max(Object.values(m).filter(v=>v>2).length,Object.keys(m).length,6);
+  const base=hhiToScore(hhi(m),n);
+  // Penalty for missing major developed regions
+  const usW=(m["Amér. du Nord"]||0)/100;
+  const euW=(["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(m[k]||0),0))/100;
+  const jpW=(m["Japon"]||0)/100;
+  const devW=usW+euW+jpW;
+  // If less than 20% in developed markets, apply a significant penalty
+  const devPenalty = devW < 0.20 ? (0.20 - devW) * 2.5 : 0;
+  // Individual concentration penalties (one region >70%)
+  const maxSingle = Math.max(usW, euW, ...Object.values(m).map(v=>v/100)) ;
+  const concPenalty = maxSingle > 0.70 ? (maxSingle - 0.70) * 1.5 : 0;
+  return Math.max(0, base - devPenalty - concPenalty);
 }
-function hhiToScore(h, n) {
-  // Use a softer curve: sqrt gives more credit to partial diversification
-  const mn = 1/n, norm = (h-mn)/(1-mn);
-  return Math.max(0, 1 - Math.pow(Math.max(0, norm), 0.75));
+function sectorScore(m){
+  if(!Object.keys(m).length) return 0;
+  const n=Math.max(Object.values(m).filter(v=>v>2).length,Object.keys(m).length,8);
+  const base=hhiToScore(hhi(m),n);
+  // Penalize if top sector > 40%
+  const maxSec=Math.max(...Object.values(m))/100;
+  const concPenalty = maxSec > 0.40 ? (maxSec - 0.40) * 1.8 : 0;
+  return Math.max(0, base - concPenalty);
 }
-
-// 1. Geographic diversification (0-1)
-function geoScore(geoMap) {
-  if(!Object.keys(geoMap).length) return 0;
-  // Count distinct regions with meaningful weight (>2%)
-  const meaningful = Object.values(geoMap).filter(v=>v>2).length;
-  const n = Math.max(meaningful, Object.keys(geoMap).length, 6);
-  return hhiToScore(hhi(geoMap), n);
-}
-
-// 2. Sector diversification (0-1)
-function sectorScore(secMap) {
-  if(!Object.keys(secMap).length) return 0;
-  const meaningful = Object.values(secMap).filter(v=>v>2).length;
-  const n = Math.max(meaningful, Object.keys(secMap).length, 8);
-  return hhiToScore(hhi(secMap), n);
-}
-
-// 3. Overlap score (0-1) — penalizes redundant ETF holdings
-function overlapScore(holdings, total) {
-  if(holdings.length <= 1) return 1;
-  let totalPenalty = 0;
-  let comparisons = 0;
-  for(let i=0; i<holdings.length; i++) {
-    for(let j=i+1; j<holdings.length; j++) {
-      const a = holdings[i], b = holdings[j];
-      const etfA = DB[a.ticker], etfB = DB[b.ticker];
-      if(!etfA||!etfB) continue;
-      const overlapPct = etfA.overlaps?.[b.ticker] || 0;
-      const wA = a.amount/total, wB = b.amount/total;
-      const combinedWeight = Math.min(wA, wB);
-      totalPenalty += (overlapPct/100) * combinedWeight * 2;
-      comparisons++;
-    }
-  }
-  return Math.max(0, 1 - totalPenalty * 1.5);
+function overlapScore(holdings,total){if(holdings.length<=1)return 1;let p=0;for(let i=0;i<holdings.length;i++)for(let j=i+1;j<holdings.length;j++){const a=holdings[i],b=holdings[j],eA=DB[a.ticker],eB=DB[b.ticker];if(!eA||!eB)continue;const ov=(eA.overlaps?.[b.ticker]||0)/100;p+=ov*(Math.min(a.amount,b.amount)/total)*2;}return Math.max(0,1-p*1.5);}
+function assetClassScore(holdings,total){if(!holdings.length)return 0;const cls={};for(const h of holdings){const e=DB[h.ticker];if(!e)continue;cls[e.assetClass]=(cls[e.assetClass]||0)+h.amount/total;}const ideal={equity:.60,bond:.25,real_estate:.08,commodity:.07};const n=Math.min(Object.keys(cls).length/4,1);let dev=0;for(const[k,v] of Object.entries(ideal))dev+=Math.abs((cls[k]||0)-v)*.5;return Math.max(0,n-Math.min(.4,dev));}
+function currencyScore(holdings,total){if(!holdings.length)return 0;const cur={};for(const h of holdings){const e=DB[h.ticker];if(!e)continue;const w=h.amount/total;for(const[k,v] of Object.entries(e.currencies||{}))cur[k]=(cur[k]||0)+(v/100)*w;}const n=Math.max(Object.keys(cur).length,4);return hhiToScore(hhi(cur),n);}
+function computeScores(holdings){
+  if(!holdings.length)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
+  const total=holdings.reduce((s,h)=>s+h.amount,0);if(!total)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
+  const geoMap={},secMap={},classes={},curs={};
+  for(const h of holdings){const e=DB[h.ticker];if(!e)continue;const w=h.amount/total;for(const[k,v] of Object.entries(e.geo))geoMap[k]=(geoMap[k]||0)+(v/100)*w*100;for(const[k,v] of Object.entries(e.sec))secMap[k]=(secMap[k]||0)+(v/100)*w*100;classes[e.assetClass]=(classes[e.assetClass]||0)+w*100;for(const[k,v] of Object.entries(e.currencies||{}))curs[k]=(curs[k]||0)+(v/100)*w*100;}
+  const s1=geoScore(geoMap),s2=sectorScore(secMap),s3=overlapScore(holdings,total),s4=assetClassScore(holdings,total),s5=currencyScore(holdings,total);
+  const composite=s1*.25+s2*.25+s3*.20+s4*.15+s5*.15;
+  return{total:Math.round(composite*200)/10,geo:Math.round(s1*200)/10,sector:Math.round(s2*200)/10,overlap:Math.round(s3*200)/10,assetClass:Math.round(s4*200)/10,currency:Math.round(s5*200)/10,geoMap,secMap,classes,currencies:curs};
 }
 
-// 4. Asset class diversification (0-1)
-function assetClassScore(holdings, total) {
-  if(!holdings.length) return 0;
-  const classes = {};
-  for(const h of holdings) {
-    const e = DB[h.ticker]; if(!e) continue;
-    const w = h.amount/total;
-    classes[e.assetClass] = (classes[e.assetClass]||0) + w;
-  }
-  // Ideal: equity ~60%, bonds ~25%, real_estate ~8%, commodity ~7%
-  const ideal = {equity:0.60, bond:0.25, real_estate:0.08, commodity:0.07};
-  const presentClasses = Object.keys(classes).length;
-  // Base score on number of distinct classes + proximity to ideal allocation
-  const classBonus = Math.min(1, presentClasses / 4);
-  let deviationPenalty = 0;
-  for(const [cls, idealW] of Object.entries(ideal)) {
-    const actual = classes[cls] || 0;
-    deviationPenalty += Math.abs(actual - idealW) * 0.5;
-  }
-  return Math.max(0, classBonus - Math.min(0.4, deviationPenalty));
-}
-
-// 5. Currency diversification (0-1) — penalizes >70% single currency
-function currencyScore(holdings, total) {
-  if(!holdings.length) return 0;
-  const currencies = {};
-  for(const h of holdings) {
-    const e = DB[h.ticker]; if(!e) continue;
-    const w = h.amount/total;
-    for(const [cur, pct] of Object.entries(e.currencies||{})) {
-      currencies[cur] = (currencies[cur]||0) + (pct/100)*w;
-    }
-  }
-  const n = Math.max(Object.keys(currencies).length, 4);
-  return hhiToScore(hhi(currencies), n);
-}
-
-// Composite expert score /20
-function computeExpertScore(holdings) {
-  if(!holdings.length) return { total:0, geo:0, sector:0, overlap:0, assetClass:0, currency:0, geoMap:{}, secMap:{}, classes:{}, currencies:{} };
-  const total = holdings.reduce((s,h)=>s+h.amount,0);
-  if(!total) return { total:0, geo:0, sector:0, overlap:0, assetClass:0, currency:0, geoMap:{}, secMap:{}, classes:{}, currencies:{} };
-
-  const geoMap={}, secMap={}, classes={}, currencyMap={};
-  for(const h of holdings) {
-    const e = DB[h.ticker]; if(!e) continue;
-    const w = h.amount/total;
-    for(const[k,v] of Object.entries(e.geo)) geoMap[k]=(geoMap[k]||0)+(v/100)*w*100;
-    for(const[k,v] of Object.entries(e.sec)) secMap[k]=(secMap[k]||0)+(v/100)*w*100;
-    classes[e.assetClass]=(classes[e.assetClass]||0)+w*100;
-    for(const[k,v] of Object.entries(e.currencies||{})) currencyMap[k]=(currencyMap[k]||0)+(v/100)*w*100;
-  }
-
-  const s1 = geoScore(geoMap);
-  const s2 = sectorScore(secMap);
-  const s3 = overlapScore(holdings, total);
-  const s4 = assetClassScore(holdings, total);
-  const s5 = currencyScore(holdings, total);
-
-  // Weighted composite
-  const weights = { geo:0.25, sector:0.25, overlap:0.20, assetClass:0.15, currency:0.15 };
-  const composite = s1*weights.geo + s2*weights.sector + s3*weights.overlap + s4*weights.assetClass + s5*weights.currency;
-
-  return {
-    total: Math.round(composite*200)/10,
-    geo:   Math.round(s1*200)/10,
-    sector:Math.round(s2*200)/10,
-    overlap:Math.round(s3*200)/10,
-    assetClass:Math.round(s4*200)/10,
-    currency:Math.round(s5*200)/10,
-    geoMap, secMap, classes, currencies: currencyMap,
-  };
-}
-
-/* ─── RECOMMENDATIONS ENGINE ─────────────────────────────────────────────────── */
-function buildRecommendations(scores, holdings, total) {
-  const recs = [];
-  const { geoMap, secMap, classes, currencies } = scores;
-
-  // — Overlap warnings
-  for(let i=0; i<holdings.length; i++) {
-    for(let j=i+1; j<holdings.length; j++) {
-      const a=holdings[i], b=holdings[j];
-      const etfA=DB[a.ticker], etfB=DB[b.ticker]; if(!etfA||!etfB) continue;
-      const ov=etfA.overlaps?.[b.ticker]||0;
-      if(ov>=90) recs.push({ priority:"high", emoji:"⚠️", color:"#f87171", bg:"rgba(248,113,113,0.08)", border:"rgba(248,113,113,0.2)",
-        title:"Chevauchement critique",
-        text:`${a.ticker} et ${b.ticker} se recoupent à ${ov}% — vous doublez la même exposition. Conservez un seul des deux.` });
-      else if(ov>=60) recs.push({ priority:"medium", emoji:"🔄", color:"#fb923c", bg:"rgba(251,146,60,0.08)", border:"rgba(251,146,60,0.2)",
-        title:"Chevauchement élevé",
-        text:`${a.ticker} et ${b.ticker} partagent ~${ov}% de leurs sous-jacents. Vérifiez que cette duplication est intentionnelle.` });
-    }
-  }
-
-  // — Asset class gaps
-  const equityPct = classes["equity"]||0;
+/* ─── RECOMMENDATIONS ────────────────────────────────────────────────────────── */
+function buildPositive(scores, holdings) {
+  const positives = [];
+  const { geoMap, secMap, classes } = scores;
   const bondPct = classes["bond"]||0;
-  const realEstatePct = classes["real_estate"]||0;
-  const commodityPct = classes["commodity"]||0;
-
-  if(bondPct===0 && holdings.length>0) recs.push({ priority:"high", emoji:"🔒", color:"#818cf8", bg:"rgba(129,140,248,0.08)", border:"rgba(129,140,248,0.2)",
-    title:"Aucune exposition obligataire",
-    text:`Votre portefeuille est 100% actions. Les obligations réduisent la volatilité globale et protègent en cas de krach. Envisagez AGGH (global) ou IEAG (euro).` });
-  else if(bondPct<15 && holdings.length>0) recs.push({ priority:"medium", emoji:"🔒", color:"#818cf8", bg:"rgba(129,140,248,0.08)", border:"rgba(129,140,248,0.2)",
-    title:"Faible exposition obligataire",
-    text:`Seulement ${bondPct.toFixed(0)}% d'obligations. Une allocation de 20-30% améliorerait la résilience du portefeuille.` });
-
-  if(realEstatePct===0 && holdings.length>=2) recs.push({ priority:"low", emoji:"🏢", color:"#34d399", bg:"rgba(52,211,153,0.08)", border:"rgba(52,211,153,0.2)",
-    title:"Immobilier absent",
-    text:`L'immobilier coté (REITs) offre une décorrélation partielle des actions et des revenus réguliers. EPRA ou CBRE sont des options.` });
-
-  if(commodityPct===0 && holdings.length>=3) recs.push({ priority:"low", emoji:"✨", color:"#facc15", bg:"rgba(250,204,21,0.08)", border:"rgba(250,204,21,0.2)",
-    title:"Aucune matière première",
-    text:`L'or (SGLD) agit comme valeur refuge et couverture contre l'inflation. Une allocation de 5-10% est souvent recommandée.` });
-
-  // — Geographic concentration
-  const usW = geoMap["Amér. du Nord"]||0;
-  const emW = ["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie"].reduce((s,k)=>s+(geoMap[k]||0),0);
-  if(usW>80) recs.push({ priority:"high", emoji:"🌍", color:"#facc15", bg:"rgba(250,204,21,0.08)", border:"rgba(250,204,21,0.2)",
-    title:"Concentration US excessive",
-    text:`${usW.toFixed(0)}% en Amér. du Nord — votre portefeuille dépend fortement de l'économie américaine. Ajoutez VEUR (Europe) ou PAEEM (émergents).` });
-  if(emW<8 && holdings.length>0) recs.push({ priority:"medium", emoji:"📈", color:"#818cf8", bg:"rgba(129,140,248,0.08)", border:"rgba(129,140,248,0.2)",
-    title:"Sous-exposition aux émergents",
-    text:`${emW.toFixed(0)}% seulement en marchés émergents. Ils représentent ~40% du PIB mondial. PAEEM ou EIMI à 10-15% est une base raisonnable.` });
-
-  // — Sector concentration
-  const techW = secMap["Technologie"]||0;
-  if(techW>35) recs.push({ priority:"high", emoji:"💻", color:"#f87171", bg:"rgba(248,113,113,0.08)", border:"rgba(248,113,113,0.2)",
-    title:"Surdose de technologie",
-    text:`${techW.toFixed(0)}% en Technologie — volatilité élevée, sensible aux taux d'intérêt. Diversifiez avec des secteurs défensifs (Santé, Conso. courante).` });
-
-  // — Currency risk
-  const usdW = currencies["USD"]||0;
-  if(usdW>80) recs.push({ priority:"medium", emoji:"💱", color:"#38bdf8", bg:"rgba(56,189,248,0.08)", border:"rgba(56,189,248,0.2)",
-    title:"Risque de change USD élevé",
-    text:`${usdW.toFixed(0)}% d'exposition en USD sans couverture. Une dépréciation du dollar impacte directement vos rendements en euros. Envisagez des ETF hedgés ou plus européens.` });
-
-  // — Perfect scores
-  if(scores.overlap>=18 && scores.assetClass>=14 && scores.geo>=14 && scores.sector>=14) recs.push({ priority:"success", emoji:"🏆", color:"#4ade80", bg:"rgba(74,222,128,0.08)", border:"rgba(74,222,128,0.2)",
-    title:"Portefeuille excellent",
-    text:`Diversification optimale sur tous les critères. Maintenez le cap et rééquilibrez périodiquement.` });
-
-  const order = { high:0, medium:1, low:2, success:3 };
-  return recs.sort((a,b)=>order[a.priority]-order[b.priority]).slice(0,5);
+  const commPct = classes["commodity"]||0;
+  const n = holdings.length;
+  if(n === 0) return [];
+  if(n === 1) positives.push("C'est un excellent départ — un ETF diversifié mondial couvre déjà des centaines d'entreprises à moindre coût.");
+  if(n >= 2)  positives.push("Votre portefeuille multi-ETF montre une vraie démarche de diversification. C'est ce que font les investisseurs avisés.");
+  if(n >= 3)  positives.push("Avec " + n + " ETF complémentaires, vous avez construit une base solide.");
+  if(scores.geo   >= 14) positives.push("Excellente diversification géographique — vous êtes exposé aux grandes zones économiques mondiales.");
+  if(scores.sector>= 14) positives.push("Vos secteurs sont bien équilibrés — vous ne dépendez pas d'une seule industrie.");
+  if(scores.overlap>=18) positives.push("Aucun chevauchement significatif — chaque ETF apporte une vraie valeur ajoutée.");
+  if(bondPct>=15)         positives.push("Bonne allocation obligataire — votre portefeuille résistera mieux aux krachs actions.");
+  if(commPct>=5&&commPct<=15) positives.push("Votre exposition à l'or est bien calibrée — une couverture efficace sans excès.");
+  if(scores.total >= 16) positives.push("Score global exceptionnel. Votre portefeuille est parmi les mieux diversifiés.");
+  return positives.slice(0, 2);
 }
 
-/* ─── SUGGESTION CATALOG ────────────────────────────────────────────────────── */
-const SUGGESTION_CATALOG = {
-  bonds: {
-    title: "Obligations",
-    emoji: "🔒",
-    color: "#34d399",
-    why: "Votre portefeuille manque d'obligations. Elles réduisent la volatilité et offrent un coussin en cas de krach actions.",
-    options: [
-      { ticker:"AGGH", label:"Global (hedgé EUR)", desc:"Obligations mondiales couvertes en euros — le plus diversifié." },
-      { ticker:"IEAG", label:"Zone Euro",           desc:"Obligations européennes souveraines et corporate — risque de change nul." },
-    ]
-  },
-  gold: {
-    title: "Or",
-    emoji: "✨",
-    color: "#facc15",
-    why: "L'or est une valeur refuge décorrélée des marchés. 5-10% protège contre l'inflation et les crises.",
-    options: [
-      { ticker:"SGLD", label:"Or physique (Invesco)", desc:"Réplication physique, coté à Londres, frais parmi les plus bas." },
-      { ticker:"GLD",  label:"Or physique (SPDR)",    desc:"Le plus ancien et liquide des ETF or, coté aux US." },
-    ]
-  },
-  realestate: {
-    title: "Immobilier coté",
-    emoji: "🏢",
-    color: "#fb923c",
-    why: "L'immobilier coté (REITs) offre des revenus réguliers et une décorrélation partielle des actions.",
-    options: [
-      { ticker:"EPRA", label:"Monde développé (Amundi)", desc:"Foncières cotées mondiales — exposition Europe et Asie." },
-      { ticker:"CBRE", label:"Global REIT (iShares)",    desc:"REITs mondiaux avec forte pondération US." },
-    ]
-  },
-  europe: {
-    title: "Actions Europe",
-    emoji: "🇪🇺",
-    color: "#38bdf8",
-    why: "Votre exposition est très centrée sur les US. L'Europe offre une diversification géographique et sectorielle complémentaire.",
-    options: [
-      { ticker:"VEUR", label:"Europe développée (Vanguard)", desc:"UK, France, Suisse, Allemagne — les plus grandes capi européennes." },
-      { ticker:"MEUD", label:"Europe MSCI (Amundi)",         desc:"Même exposition, frais légèrement inférieurs." },
-    ]
-  },
-  emerging: {
-    title: "Marchés émergents",
-    emoji: "📈",
-    color: "#a78bfa",
-    why: "Les émergents représentent ~40% du PIB mondial mais sont sous-représentés dans votre portefeuille.",
-    options: [
-      { ticker:"PAEEM", label:"EM MSCI (Amundi)",      desc:"Chine, Inde, Taiwan, Corée — émergents large caps, frais bas." },
-      { ticker:"EIMI",  label:"EM IMI (iShares)",      desc:"Version étendue incluant les mid et small caps émergentes." },
-    ]
-  },
-  smallcaps: {
-    title: "Small caps",
-    emoji: "🔬",
-    color: "#c084fc",
-    why: "Les small caps offrent une prime de rendement historique et diversifient vos grandes capitalisations.",
-    options: [
-      { ticker:"IUSN", label:"World Small Cap (iShares)", desc:"Small caps mondiales — complément naturel à un ETF World large caps." },
-    ]
-  },
-  eurobonds: {
-    title: "Obligations euro",
-    emoji: "💶",
-    color: "#34d399",
-    why: "Votre exposition USD est très élevée. Des obligations en euros éliminent le risque de change.",
-    options: [
-      { ticker:"IEAG", label:"Euro Aggregate (iShares)", desc:"Obligations souveraines et corporate en euros — risque de change nul." },
-    ]
-  },
-  world: {
-    title: "ETF Monde — par où commencer",
-    emoji: "🌍",
-    color: "#818cf8",
-    why: "Un ETF Monde est la brique de base idéale : diversification maximale en un seul produit.",
-    options: [
-      { ticker:"IWDA",  label:"MSCI World (iShares)",  desc:"1600 entreprises des pays développés. La référence." },
-      { ticker:"EWLD",  label:"All World (Amundi)",     desc:"Monde développé + émergents en un seul ETF." },
-      { ticker:"MWRD",  label:"MSCI World (Amundi)",    desc:"Équivalent IWDA, domicilié Luxembourg, frais compétitifs." },
-    ]
-  },
+function buildRecs(scores,holdings,total){
+  const recs=[];const{geoMap,secMap,classes,currencies}=scores;const tickers=new Set(holdings.map(h=>h.ticker));
+  const bondPct=classes["bond"]||0,rePct=classes["real_estate"]||0,commPct=classes["commodity"]||0,equityPct=classes["equity"]||0;
+  const usW=geoMap["Amér. du Nord"]||0,emW=["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie"].reduce((s,k)=>s+(geoMap[k]||0),0);
+  const tW=secMap["Technologie"]||0,usdW=currencies["USD"]||0;
+  for(let i=0;i<holdings.length;i++)for(let j=i+1;j<holdings.length;j++){const a=holdings[i],b=holdings[j],eA=DB[a.ticker],eB=DB[b.ticker];if(!eA||!eB)continue;const ov=eA.overlaps?.[b.ticker]||0;if(ov>=90)recs.push({priority:"high",icon:"overlap",color:"#f87171",bg:"rgba(248,113,113,0.08)",border:"rgba(248,113,113,0.15)",level:"essential",title:"Chevauchement critique",text:`${a.ticker} et ${b.ticker} se recoupent à ${ov}% — doublon inutile. Conservez un seul.`});else if(ov>=60)recs.push({priority:"medium",icon:"overlap",color:"#fb923c",bg:"rgba(251,146,60,0.08)",border:"rgba(251,146,60,0.15)",level:"advanced",title:"Chevauchement élevé",text:`${a.ticker} et ${b.ticker} partagent ~${ov}% de leurs sous-jacents.`});}
+  if(bondPct===0&&holdings.length>0)recs.push({priority:"high",icon:"bond",color:"#34d399",bg:"rgba(52,211,153,0.08)",border:"rgba(52,211,153,0.15)",title:"Aucune obligation",text:"Portefeuille 100% actions. obligations mondiales ou euro (ex: iShares Global Aggregate) réduiraient la volatilité et protégeraient lors des krachs."});
+  else if(bondPct<15&&holdings.length>0)recs.push({priority:"medium",icon:"bond",color:"#34d399",bg:"rgba(52,211,153,0.08)",border:"rgba(52,211,153,0.15)",level:"advanced",title:"Faible exposition obligataire",cat:"bonds",text:`${bondPct.toFixed(0)}% seulement. Une allocation de 20-25% améliorerait la résilience.`});
+  if(commPct===0&&holdings.length>=2)recs.push({priority:"low",icon:"gold",color:"#facc15",bg:"rgba(250,204,21,0.08)",border:"rgba(250,204,21,0.15)",level:"advanced",title:"Or absent",cat:"gold",text:"5-10% d'or (un ETF or physique) protège contre l'inflation et les crises systémiques."});
+  if(rePct===0&&holdings.length>=2)recs.push({priority:"low",icon:"building",color:"#818cf8",bg:"rgba(129,140,248,0.08)",border:"rgba(129,140,248,0.15)",level:"advanced",title:"Immobilier absent",cat:"realestate",text:"Les REITs (ETF immobilier coté mondial) offrent revenus réguliers et décorrélation partielle."});
+  const devW=(geoMap["Amér. du Nord"]||0)+(["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(geoMap[k]||0),0))+(geoMap["Japon"]||0);
+  if(devW<20&&holdings.length>0)recs.push({priority:"high",icon:"geo",color:"#f59e0b",bg:"rgba(245,158,11,0.08)",border:"rgba(245,158,11,0.15)",level:"essential",title:"Marchés développés absents",cat:"world",text:`Seulement ${devW.toFixed(0)}% en marchés développés (US, Europe, Japon). Ces marchés représentent ~80% de la capitalisation mondiale. Un ETF Monde comme ETF Monde rééquilibrerait fortement votre exposition.`});
+  else if(usW>80)recs.push({priority:"high",icon:"geo",color:"#f59e0b",bg:"rgba(245,158,11,0.08)",border:"rgba(245,158,11,0.15)",level:"advanced",title:"Concentration US excessive",cat:"europe",text:`${usW.toFixed(0)}% en Amérique du Nord. Ajoutez de l'Europe ou des émergents pour rééquilibrer.`});
+  if(emW<8&&devW>=20&&holdings.length>0)recs.push({priority:"medium",icon:"geo",color:"#818cf8",bg:"rgba(129,140,248,0.08)",border:"rgba(129,140,248,0.15)",level:"advanced",title:"Émergents sous-représentés",cat:"emerging",text:`${emW.toFixed(0)}% seulement en marchés émergents, qui représentent ~40% du PIB mondial.`});
+  if(tW>35)recs.push({priority:"high",icon:"sector",color:"#f87171",bg:"rgba(248,113,113,0.08)",border:"rgba(248,113,113,0.15)",level:"essential",title:"Surexposition technologie",text:`${tW.toFixed(0)}% en Tech — très sensible aux taux et aux rotations sectorielles.`});
+  if(usdW>80)recs.push({priority:"medium",icon:"currency",color:"#38bdf8",bg:"rgba(56,189,248,0.08)",border:"rgba(56,189,248,0.15)",level:"advanced",title:"Risque USD élevé",cat:"eurobonds",text:`${usdW.toFixed(0)}% USD. Une dépréciation du dollar impacte directement vos rendements en euros.`});
+  if(scores.total>=16)recs.push({priority:"success",icon:"trophy",color:"#4ade80",bg:"rgba(74,222,128,0.08)",border:"rgba(74,222,128,0.15)",level:"essential",title:"Excellent portefeuille",text:"Diversification optimale. Maintenez et rééquilibrez périodiquement."});
+
+  // Asset class overexposure warnings
+  const equityPctR=classes["equity"]||0;
+  const bondPctR=classes["bond"]||0;
+  const commPctR=classes["commodity"]||0;
+  const rePctR=classes["real_estate"]||0;
+  if(commPctR>25) recs.push({priority:"high",icon:"gold",color:"#facc15",bg:"rgba(250,204,21,0.08)",border:"rgba(250,204,21,0.15)",level:"essential",title:"Surexposition matières premières",cat:"gold",text:`${commPctR.toFixed(0)}% en matières premières (or, etc.). Au-delà de 10-15%, cette classe amplifie la volatilité sans rendement long terme garanti. Rééquilibrez vers des actions ou obligations.`});
+  else if(commPctR>15) recs.push({priority:"medium",icon:"gold",color:"#facc15",bg:"rgba(250,204,21,0.08)",border:"rgba(250,204,21,0.15)",level:"advanced",title:"Or/matières premières élevé",cat:"gold",text:`${commPctR.toFixed(0)}% en matières premières. Une allocation de 5-10% est généralement recommandée comme couverture.`});
+  if(rePctR>30) recs.push({priority:"high",icon:"building",color:"#fb923c",bg:"rgba(251,146,60,0.08)",border:"rgba(251,146,60,0.15)",level:"advanced",title:"Surexposition immobilier",cat:"realestate",text:`${rePctR.toFixed(0)}% en immobilier coté. Au-delà de 15%, vous amplifiez le risque de taux (les REITs sont sensibles aux hausses de taux). Diversifiez avec des actions ou obligations.`});
+  if(bondPctR>60) recs.push({priority:"medium",icon:"bond",color:"#34d399",bg:"rgba(52,211,153,0.08)",border:"rgba(52,211,153,0.15)",level:"advanced",title:"Portefeuille très obligataire",cat:"emerging",text:`${bondPctR.toFixed(0)}% en obligations. Rendement potentiel limité sur le long terme. Un rééquilibrage vers les actions améliorerait la performance attendue.`});
+  if(equityPctR>95&&holdings.length===1) recs.push({priority:"low",icon:"sector",color:"#818cf8",bg:"rgba(129,140,248,0.08)",border:"rgba(129,140,248,0.15)",level:"advanced",title:"Portefeuille mono-ETF",cat:"bonds",text:"Un seul ETF action couvre bien la diversification interne. Ajouter obligations et or renforcerait la résilience globale lors des crises."});
+
+  // Scoring-driven analysis
+  if(scores.overlap<10&&holdings.length>1) recs.push({priority:"high",icon:"overlap",color:"#f87171",bg:"rgba(248,113,113,0.08)",border:"rgba(248,113,113,0.15)",level:"advanced",title:"Chevauchements massifs détectés",text:`Score chevauchement : ${scores.overlap.toFixed(1)}/20. Plusieurs de vos ETF détiennent les mêmes entreprises. Vous payez des frais de gestion en doublon sans gain de diversification.`});
+  if(scores.currency<8&&holdings.length>0) recs.push({priority:"medium",icon:"currency",color:"#38bdf8",bg:"rgba(56,189,248,0.08)",border:"rgba(56,189,248,0.15)",level:"advanced",title:"Dépendance monétaire élevée",cat:"eurobonds",text:`Score devises : ${scores.currency.toFixed(1)}/20. Votre portefeuille est très exposé à une ou deux devises. Une variation des taux de change peut amplement affecter vos rendements réels en euros.`});
+  if(scores.assetClass<8&&holdings.length>1) recs.push({priority:"medium",icon:"bond",color:"#34d399",bg:"rgba(52,211,153,0.08)",border:"rgba(52,211,153,0.15)",level:"advanced",title:"Classes d'actifs déséquilibrées",cat:"bonds",text:`Score classes d'actifs : ${scores.assetClass.toFixed(1)}/20. Un portefeuille robuste combine actions, obligations, immobilier et or dans des proportions équilibrées. Le vôtre est concentré sur une seule catégorie.`});
+
+  const order={high:0,medium:1,low:2,success:3};
+  return recs.sort((a,b)=>order[a.priority]-order[b.priority]).slice(0,6);
+}
+
+/* ─── SUGGESTION CATALOG ─────────────────────────────────────────────────────── */
+const CAT={
+  world:{title:"ETF Monde — brique de base",emoji:"🌍",color:"#818cf8",why:"Un ETF Monde est le point de départ idéal : 1600 entreprises, diversification maximale en un produit.",options:[
+    {ticker:"MWRD",label:"Monde développé · Amundi",desc:"Équivalent IWDA, frais compétitifs, domicilié Luxembourg.",ter:"0.12%",tags:["✅ Éligible PEA","💰 Le moins cher"]},
+    {ticker:"IWDA",label:"Monde développé · iShares",desc:"1 600 entreprises dans 23 pays développés. La référence mondiale.",ter:"0.20%",tags:["⭐ Le plus populaire","💧 Très liquide"]},
+    {ticker:"EWLD",label:"Monde entier · Amundi",desc:"Pays développés + marchés émergents en un seul produit.",ter:"0.38%",tags:["✅ Éligible PEA","🌐 Monde + émergents"]},
+  ]},
+  bonds:{title:"Obligations",emoji:"🔒",color:"#34d399",why:"Votre portefeuille manque d'obligations. Elles amortissent la volatilité et protègent lors des krachs actions.",options:[
+    {ticker:"IEAG",label:"Obligations euro · iShares",desc:"Obligations souveraines et corporate européennes. Zéro risque de change.",ter:"0.09%",tags:["💰 Le moins cher","🇪🇺 Zéro risque €"]},
+    {ticker:"AGGH",label:"Obligations mondiales · iShares",desc:"Obligations du monde entier, couvertes en euros.",ter:"0.10%",tags:["🌍 Le plus diversifié","💧 Liquide"]},
+  ]},
+  gold:{title:"Or",emoji:"✨",color:"#facc15",why:"5-10% d'or réduit la volatilité globale et protège contre l'inflation et les crises systémiques.",options:[
+    {ticker:"SGLD",label:"Or physique · Invesco",desc:"Or physique stocké en coffre à Londres. Meilleure option pour les investisseurs européens — frais très bas, réplication physique.",ter:"0.12%",tags:["💰 Le moins cher","🏦 Or physique","💧 Liquide"]},
+  ]},
+  realestate:{title:"Immobilier coté",emoji:"🏢",color:"#fb923c",why:"Les REITs offrent revenus réguliers et décorrélation partielle des actions.",options:[
+    {ticker:"EPRA",label:"Immobilier mondial · Amundi",desc:"Foncières cotées mondiales — exposition Europe et Asie.",ter:"0.24%",tags:["✅ Éligible PEA","🇪🇺 Exposition Europe"]},
+    {ticker:"CBRE",label:"REITs mondiaux · iShares",desc:"Sociétés immobilières cotées dans le monde entier.",ter:"0.25%",tags:["🌍 Plus diversifié","💧 Liquide"]},
+  ]},
+  europe:{title:"Actions Europe",emoji:"🇪🇺",color:"#38bdf8",why:"Rééquilibre la forte pondération US et expose aux secteurs défensifs européens.",options:[
+    {ticker:"MEUD",label:"Actions Europe · Amundi",desc:"Grandes entreprises européennes, domicilié en France.",ter:"0.12%",tags:["✅ Éligible PEA","💰 Le moins cher"]},
+    {ticker:"VEUR",label:"Actions Europe · Vanguard",desc:"Royaume-Uni, France, Suisse, Allemagne — grandes capitalisations.",ter:"0.10%",tags:["💰 Frais très bas","💧 Très liquide"]},
+  ]},
+  emerging:{title:"Marchés émergents",emoji:"📈",color:"#a78bfa",why:"Les émergents = ~40% du PIB mondial mais souvent absents des portefeuilles.",options:[
+    {ticker:"PAEEM",label:"Marchés émergents · Amundi",desc:"Chine, Inde, Taiwan, Brésil — grandes capitalisations.",ter:"0.20%",tags:["✅ Éligible PEA","⭐ Le plus populaire"]},
+    {ticker:"EIMI",label:"Marchés émergents · iShares",desc:"Chine, Inde, Taiwan + mid et small caps émergentes.",ter:"0.18%",tags:["💰 Le moins cher","🔬 + Small caps"]},
+  ]},
+  smallcaps:{title:"Petites capitalisations",emoji:"🔬",color:"#c084fc",why:"Prime de rendement historique — complément idéal à un ETF large caps.",options:[
+    {ticker:"IUSN",label:"Small caps mondiales · iShares",desc:"Complémentaire à un ETF Monde — diversifie sur les petites entreprises.",ter:"0.35%",tags:["🌍 Le plus diversifié","🔬 Small caps mondiales"]},
+  ]},
+  eurobonds:{title:"Obligations euro",emoji:"💶",color:"#34d399",why:"Forte exposition USD détectée. Des obligations en euros éliminent le risque de change.",options:[
+    {ticker:"IEAG",label:"Obligations euro · iShares",desc:"Souveraines et corporate en euros — risque de change nul.",ter:"0.09%",tags:["💰 Le moins cher","🇪🇺 Zéro risque €"]},
+  ]},
 };
-
-function buildSuggestions(scores, holdings) {
-  const keys = [];
-  const { classes, geoMap, secMap, currencies } = scores;
-  const tickers = new Set(holdings.map(h => h.ticker));
-  const bondPct   = classes["bond"]        || 0;
-  const rePct     = classes["real_estate"] || 0;
-  const commPct   = classes["commodity"]   || 0;
-  const equityPct = classes["equity"]      || 0;
-  const usW  = geoMap["Amér. du Nord"] || 0;
-  const emW  = ["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie"].reduce((s,k)=>s+(geoMap[k]||0),0);
-  const euW  = ["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(geoMap[k]||0),0);
-  const techW = secMap["Technologie"] || 0;
-  const usdW  = currencies["USD"] || 0;
-
-  if(!holdings.length) { keys.push("world","bonds","gold"); }
-  if(bondPct < 10)  keys.push(usdW > 80 ? "eurobonds" : "bonds");
-  if(commPct < 5)   keys.push("gold");
-  if(rePct < 5 && holdings.length >= 2) keys.push("realestate");
-  if(usW > 70 && euW < 15) keys.push("europe");
-  if(emW < 8)       keys.push("emerging");
-  if(!tickers.has("IUSN") && equityPct > 50 && holdings.length >= 2) keys.push("smallcaps");
-
-  // deduplicate and map to catalog entries with emoji/color for the chip
-  return [...new Set(keys)].slice(0,4).map(k => ({
-    key: k,
-    label: SUGGESTION_CATALOG[k].title,
-    emoji: SUGGESTION_CATALOG[k].emoji,
-    color: SUGGESTION_CATALOG[k].color,
-  }));
+function buildSuggestions(scores,holdings){
+  const keys=[];const{classes,geoMap,secMap,currencies}=scores;const tickers=new Set(holdings.map(h=>h.ticker));
+  const bondPct=classes["bond"]||0,rePct=classes["real_estate"]||0,commPct=classes["commodity"]||0,equityPct=classes["equity"]||0;
+  const usW=geoMap["Amér. du Nord"]||0,emW=["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie"].reduce((s,k)=>s+(geoMap[k]||0),0);
+  const euW=["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(geoMap[k]||0),0);
+  const usdW=currencies["USD"]||0;
+  if(!holdings.length){keys.push("world","bonds","gold");return keys.map(k=>({key:k,...CAT[k]}));}
+  if(bondPct<10)keys.push(usdW>80?"eurobonds":"bonds");
+  if(commPct<5)keys.push("gold");
+  if(rePct<5&&holdings.length>=2)keys.push("realestate");
+  if(usW>70&&euW<15)keys.push("europe");
+  if(emW<8)keys.push("emerging");
+  if(!tickers.has("IUSN")&&equityPct>50&&holdings.length>=2)keys.push("smallcaps");
+  return [...new Set(keys)].slice(0,4).map(k=>({key:k,...CAT[k]}));
 }
 
-/* ─── DESIGN TOKENS ──────────────────────────────────────────────────────────── */
-function scoreStyle(s) {
-  if(s>=15) return { from:"#4ade80", to:"#16a34a", text:"#4ade80", label:"Excellent" };
-  if(s>=10) return { from:"#facc15", to:"#ca8a04", text:"#facc15", label:"Correct" };
-  if(s>= 5) return { from:"#fb923c", to:"#ea580c", text:"#fb923c", label:"Faible" };
-  return           { from:"#f87171", to:"#dc2626", text:"#f87171", label:"Très faible" };
-}
-const BAR = ["#818cf8","#38bdf8","#a78bfa","#6ee7b7","#c084fc","#67e8f9","#4ade80","#93c5fd","#e879f9","#7dd3fc"];
-const ASSET_LABELS = { equity:"Actions", bond:"Obligations", real_estate:"Immobilier", commodity:"Matières 1ères" };
-const ASSET_COLORS = { equity:"#818cf8", bond:"#34d399", real_estate:"#facc15", commodity:"#fb923c" };
+const ASSET_LABELS={equity:"Actions",bond:"Obligations",real_estate:"Immobilier",commodity:"Matières prem."};
+const ASSET_COLORS={equity:"#818cf8",bond:"#34d399",real_estate:"#fb923c",commodity:"#facc15"};
+const STORAGE_KEY_V2="etf-portfolio-v2";
 
-/* ─── GLASS CARD ─────────────────────────────────────────────────────────────── */
-function GlassCard({ children, style={} }) {
-  return (
+/* ─── DESIGN SYSTEM ─────────────────────────────────────────────────────────── */
+function scoreColor(s){
+  if(s>=15)return{from:"#00f5a0",to:"#00d9f5",text:"#00f0a0",glow:"rgba(0,245,160,0.3)",label:"Excellent"};
+  if(s>=10)return{from:"#f7971e",to:"#ffd200",text:"#ffd200",glow:"rgba(255,210,0,0.3)",label:"Correct"};
+  if(s>=5) return{from:"#f97316",to:"#ef4444",text:"#f97316",glow:"rgba(249,115,22,0.3)",label:"Faible"};
+  return       {from:"#ef4444",to:"#dc2626",text:"#ef4444",glow:"rgba(239,68,68,0.3)",label:"Critique"};
+}
+
+/* ─── GRADIENT CARD ──────────────────────────────────────────────────────────── */
+function GCard({children, gradient, style={}}){
+  return(
     <div style={{
-      borderRadius:20, background:"rgba(255,255,255,0.04)",
-      border:"1px solid rgba(255,255,255,0.07)",
-      position:"relative", overflow:"hidden", ...style,
+      background: gradient || "rgba(255,255,255,0.04)",
+      borderRadius:20, position:"relative", overflow:"hidden",
+      border: gradient ? "none" : "1px solid rgba(255,255,255,0.08)",
+      ...style
     }}>
-      <div aria-hidden="true" style={{
-        position:"absolute", inset:0, pointerEvents:"none",
-        background:`
-          radial-gradient(ellipse 65% 55% at 5% 15%, rgba(99,102,241,0.10) 0%, transparent 70%),
-          radial-gradient(ellipse 50% 60% at 95% 85%, rgba(139,92,246,0.08) 0%, transparent 65%),
-          radial-gradient(ellipse 38% 42% at 72% 8%,  rgba(56,189,248,0.06) 0%, transparent 55%)
-        `,
-      }}/>
-      <div style={{position:"relative"}}>{children}</div>
+      {children}
     </div>
   );
 }
 
-/* ─── SCORE ARC ──────────────────────────────────────────────────────────────── */
-function ScoreArc({ value, label, size=158 }) {
-  const r=size/2-13, circ=2*Math.PI*r;
-  const g=scoreStyle(value);
-  const id=`sg-${label.replace(/\W/g,"")}`;
-  return (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,flex:1}}>
+/* ─── SCORE RING ─────────────────────────────────────────────────────────────── */
+function ScoreRing({value,label,size=148}){
+  const r=size/2-12,circ=2*Math.PI*r,g=scoreColor(value);
+  const id=`r${label.replace(/\W/g,"")}`;
+  return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
       <div style={{position:"relative",width:size,height:size}}>
-        <svg width={size} height={size} style={{transform:"rotate(-90deg)"}}>
+        {/* Glow behind ring */}
+        <div style={{position:"absolute",inset:0,borderRadius:"50%",background:`radial-gradient(circle,${g.glow} 0%,transparent 70%)`,pointerEvents:"none"}}/>
+        <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"relative",zIndex:1}}>
           <defs>
             <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor={g.from}/><stop offset="100%" stopColor={g.to}/>
             </linearGradient>
           </defs>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="7"/>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`url(#${id})`} strokeWidth="7"
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8"/>
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`url(#${id})`} strokeWidth="8"
             strokeDasharray={`${(value/20)*circ} ${(1-value/20)*circ}`} strokeLinecap="round"
-            style={{transition:"stroke-dasharray 0.9s cubic-bezier(.16,1,.3,1)",filter:`drop-shadow(0 0 7px ${g.from}99)`}}/>
+            style={{transition:"stroke-dasharray 1s cubic-bezier(.16,1,.3,1)",filter:`drop-shadow(0 0 8px ${g.from})`}}/>
         </svg>
-        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1}}>
-          <span style={{fontSize:36,fontWeight:700,color:g.text,lineHeight:1,letterSpacing:-1}}>{value.toFixed(1)}</span>
-          <span style={{fontSize:10,color:"#94a3b8",letterSpacing:2}}>/20</span>
+        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,zIndex:2}}>
+          <span style={{fontSize:34,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-1,fontVariantNumeric:"tabular-nums"}}>{value.toFixed(1)}</span>
+          <span style={{fontSize:9,color:"rgba(255,255,255,0.3)",letterSpacing:2}}>/20</span>
         </div>
       </div>
-      <div style={{textAlign:"center",display:"flex",flexDirection:"column",gap:2}}>
-        <span style={{fontSize:13,fontWeight:600,color:"#e2e8f0"}}>{label}</span>
-        {value>0&&<span style={{fontSize:11,color:g.text,fontWeight:500}}>{g.label}</span>}
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.8)",letterSpacing:0.3}}>{label}</div>
+        {value>0&&<div style={{fontSize:10,color:g.text,fontWeight:500,marginTop:2}}>{g.label}</div>}
       </div>
     </div>
   );
 }
 
-/* ─── MINI SCORE BAR ─────────────────────────────────────────────────────────── */
-function MiniScoreBar({ label, value, weight }) {
-  const g = scoreStyle(value);
-  return (
+/* ─── MINI BAR ───────────────────────────────────────────────────────────────── */
+function MiniBar({label,value,weight}){
+  const g=scoreColor(value);
+  return(
     <div style={{display:"flex",alignItems:"center",gap:10}}>
-      <div style={{width:120,fontSize:12,color:"#94a3b8",flexShrink:0}}>{label}</div>
-      <div style={{flex:1,height:5,background:"rgba(255,255,255,0.07)",borderRadius:3,overflow:"hidden"}}>
-        <div style={{height:"100%",width:`${(value/20)*100}%`,
-          background:`linear-gradient(90deg,${g.from},${g.to})`,borderRadius:3,
-          transition:"width 0.7s cubic-bezier(.16,1,.3,1)",
-          boxShadow:`0 0 8px ${g.from}66`}}/>
+      <div style={{fontSize:12,color:"rgba(255,255,255,0.55)",width:118,flexShrink:0}}>{label}</div>
+      <div style={{flex:1,height:4,background:"rgba(255,255,255,0.06)",borderRadius:2,overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${(value/20)*100}%`,background:`linear-gradient(90deg,${g.from},${g.to})`,borderRadius:2,transition:"width .7s cubic-bezier(.16,1,.3,1)",boxShadow:`0 0 8px ${g.from}88`}}/>
       </div>
-      <span style={{fontSize:12,color:g.text,fontWeight:700,width:32,textAlign:"right"}}>{value.toFixed(1)}</span>
-      <span style={{fontSize:10,color:"rgba(255,255,255,0.25)",width:30,textAlign:"right"}}>{weight}</span>
+      <span style={{fontSize:12,color:g.text,fontWeight:700,width:30,textAlign:"right"}}>{value.toFixed(1)}</span>
+      <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",width:30,textAlign:"right"}}>{weight}</span>
     </div>
   );
 }
 
 /* ─── COLOR BARS ─────────────────────────────────────────────────────────────── */
-const SECTOR_INFO = {
-  "Technologie":"Logiciels, semi-conducteurs, matériel informatique, cloud.",
-  "Finance":"Banques, assurances, sociétés de gestion d'actifs.",
-  "Santé":"Pharmaceutique, biotechnologie, dispositifs médicaux.",
-  "Industrie":"Fabrication, aérospatiale, défense, transports.",
-  "Conso. discrétionnaire":"Biens non essentiels : mode, automobile, loisirs, e-commerce.",
-  "Conso. courante":"Produits de première nécessité : alimentation, hygiène, tabac.",
-  "Énergie":"Pétrole, gaz, énergies renouvelables.",
-  "Matériaux":"Métaux, mines, chimie, matières premières.",
-  "Télécom":"Opérateurs, câble, internet, médias.",
-  "Immobilier":"REITs et foncières cotées.",
-  "Services pub.":"Électricité, gaz, eau — revenus stables et régulés.",
-  "Oblig. souv.":"Obligations d'États souverains, risque faible.",
-  "Oblig. corp.":"Obligations d'entreprises, rendement supérieur.",
-  "Or":"Valeur refuge, couverture contre l'inflation.",
-  "Énergie renou.":"Solaire, éolien, hydraulique — transition énergétique.",
-};
-const GEO_INFO = {
-  "Amér. du Nord":"États-Unis et Canada — marchés les plus profonds et liquides.",
-  "Europe":"UE + UK, Suisse, Norvège — économies développées matures.",
-  "Japon":"3ème économie mondiale, automobile et électronique.",
-  "Asie-Pac.":"Australie, NZ, Hong Kong, Singapour — développés asiatiques.",
-  "Émergents":"Chine, Inde, Brésil… fort potentiel, risque plus élevé.",
-  "Chine":"2ème économie mondiale, risque réglementaire élevé.",
-  "Inde":"Fort potentiel de croissance, démographie favorable.",
-  "Taiwan":"Leader mondial semi-conducteurs (TSMC), risque géopolitique.",
-  "Corée du Sud":"Tech et industrie (Samsung, Hyundai).",
-  "Brésil":"Plus grande économie d'Amérique latine, riche en matières premières.",
-  "Autres EM":"Afrique du Sud, Mexique, Indonésie, Thaïlande…",
-  "Royaume-Uni":"Finance, énergie et biens de conso — marché post-Brexit.",
-  "France":"CAC 40 : luxe, énergie, aéronautique.",
-  "Suisse":"Pharma, finance et luxe — très défensif.",
-  "Allemagne":"Première économie européenne, industrie automobile.",
-  "Pays-Bas":"Hub logistique, technologie (ASML).",
-  "Autres EU":"Espagne, Italie, Suède, Belgique…",
-  "Australie":"Matières premières, finance — liée à la Chine.",
-  "Singapour":"Hub financier asiatique.",
-  "Autres Asie":"Vietnam, Malaisie… émergents asiatiques en forte croissance.",
-  "Global":"Exposition mondiale sans concentration particulière.",
-  "Autres":"Autres régions diversifiées.",
-};
+const PALETTE=["#818cf8","#22d3ee","#a78bfa","#34d399","#c084fc","#67e8f9","#4ade80","#38bdf8","#e879f9","#60a5fa"];
+const SECTOR_INFO={"Technologie":"Logiciels, semi-conducteurs, cloud, matériel informatique.","Finance":"Banques, assurances, gestion d'actifs.","Santé":"Pharma, biotech, dispositifs médicaux.","Industrie":"Fabrication, aérospatiale, défense, transports.","Conso. discr.":"Mode, automobile, loisirs, e-commerce.","Conso. cour.":"Alimentation, hygiène, tabac — produits essentiels.","Énergie":"Pétrole, gaz, énergies renouvelables.","Matériaux":"Métaux, mines, chimie.","Télécom":"Opérateurs, câble, internet.","Immobilier":"REITs et foncières cotées.","Services pub.":"Électricité, gaz, eau.","Oblig. souv.":"Obligations d'États — risque faible.","Oblig. corp.":"Obligations d'entreprises.","Or":"Valeur refuge, couverture inflation.","Énergie renou.":"Solaire, éolien, hydraulique."};
+const GEO_INFO={"Amér. du Nord":"États-Unis et Canada — marchés les plus profonds.","Europe":"UE + UK, Suisse — économies développées.","Japon":"3ème économie mondiale.","Asie-Pac.":"Australie, NZ, Hong Kong, Singapour.","Émergents":"Chine, Inde, Brésil — fort potentiel.","Chine":"2ème économie mondiale, risque réglementaire.","Inde":"Fort potentiel de croissance.","Taiwan":"Leader semi-conducteurs (TSMC).","Corée du Sud":"Samsung, Hyundai.","Brésil":"Plus grande économie d'Amérique latine.","Autres EM":"Mexique, Indonésie, Thaïlande…","Royaume-Uni":"Finance, énergie, post-Brexit.","France":"Luxe, énergie, aéronautique.","Suisse":"Pharma et luxe — très défensif.","Allemagne":"Industrie automobile.","Pays-Bas":"ASML, logistique.","Autres EU":"Espagne, Italie, Suède…","Australie":"Matières premières.","Singapour":"Hub financier asiatique.","Autres Asie":"Vietnam, Malaisie…","Global":"Exposition mondiale.","Autres":"Autres régions."};
 
-function InfoModal({ label, text, onClose }) {
-  useEffect(()=>{ const fn=e=>{if(e.key==="Escape")onClose();}; document.addEventListener("keydown",fn); return()=>document.removeEventListener("keydown",fn); },[onClose]);
-  return (
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(8px)",
-      display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999,padding:"0 16px 40px"}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:"rgba(18,18,26,0.98)",border:"1px solid rgba(255,255,255,0.1)",
-        borderRadius:20,padding:"24px 22px",width:"100%",maxWidth:400,boxShadow:"0 -8px 40px rgba(0,0,0,0.5)",
-        animation:"fadeUp 0.25s cubic-bezier(.16,1,.3,1)"}}>
+function InfoModal({label,text,onClose}){
+  useEffect(()=>{const f=e=>{if(e.key==="Escape")onClose();};document.addEventListener("keydown",f);return()=>document.removeEventListener("keydown",f);},[onClose]);
+  return(
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(12px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999,padding:"0 16px 40px"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#111118",border:"1px solid rgba(255,255,255,0.1)",borderRadius:24,padding:"24px 22px",width:"100%",maxWidth:420,animation:"slideUp .28s cubic-bezier(.16,1,.3,1)"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-          <span style={{fontSize:14,fontWeight:700,color:"#e2e8f0"}}>{label}</span>
-          <button onClick={onClose} style={{background:"rgba(255,255,255,0.07)",border:"none",borderRadius:"50%",
-            width:28,height:28,color:"#94a3b8",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+          <span style={{fontSize:15,fontWeight:700,color:"#f1f5f9"}}>{label}</span>
+          <button onClick={onClose} style={{background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:30,height:30,color:"#94a3b8",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         </div>
         <p style={{margin:0,fontSize:13,color:"#94a3b8",lineHeight:1.7}}>{text}</p>
       </div>
     </div>
   );
 }
+function IBtn({label,text}){const[s,ss]=useState(false);return(<><button onClick={()=>ss(true)} style={{background:"none",border:"none",cursor:"pointer",padding:"0 0 0 5px",display:"inline-flex",alignItems:"center"}}><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="6" stroke="rgba(255,255,255,0.2)" strokeWidth="1"/><text x="6.5" y="10" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="8" fontFamily="system-ui" fontWeight="600">i</text></svg></button>{s&&<InfoModal label={label} text={text} onClose={()=>ss(false)}/>}</>);}
 
-function InfoBtn({ label, text }) {
-  const [show, setShow] = useState(false);
-  return (
-    <>
-      <button onClick={()=>setShow(true)} style={{background:"none",border:"none",cursor:"pointer",
-        padding:"0 0 0 5px",display:"inline-flex",alignItems:"center",lineHeight:1}}>
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <circle cx="6.5" cy="6.5" r="6" stroke="rgba(255,255,255,0.25)" strokeWidth="1"/>
-          <text x="6.5" y="10" textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="8" fontFamily="system-ui" fontWeight="600">i</text>
-        </svg>
-      </button>
-      {show&&<InfoModal label={label} text={text} onClose={()=>setShow(false)}/>}
-    </>
-  );
-}
-
-function ColorBars({ data, title, infoMap={} }) {
+function ColorBars({data,title,infoMap={}}){
   const sorted=Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,9);
   const max=sorted[0]?.[1]||1;
-  return (
-    <GlassCard>
+  return(
+    <GCard>
       <div style={{padding:"20px 18px"}}>
-        <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",letterSpacing:2,textTransform:"uppercase",marginBottom:18}}>{title}</div>
+        <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.3)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:18}}>{title}</div>
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           {sorted.map(([k,v],i)=>(
             <div key={k}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                 <div style={{display:"flex",alignItems:"center"}}>
-                  <span style={{fontSize:13,color:"#e2e8f0",fontWeight:500}}>{k}</span>
-                  {infoMap[k]&&<InfoBtn label={k} text={infoMap[k]}/>}
+                  <span style={{fontSize:13,color:"rgba(255,255,255,0.85)",fontWeight:500}}>{k}</span>
+                  {infoMap[k]&&<IBtn label={k} text={infoMap[k]}/>}
                 </div>
-                <span style={{fontSize:13,color:BAR[i%BAR.length],fontWeight:700}}>{v.toFixed(1)}%</span>
+                <span style={{fontSize:13,color:PALETTE[i%PALETTE.length],fontWeight:700}}>{v.toFixed(1)}%</span>
               </div>
-              <div style={{height:5,background:"rgba(255,255,255,0.07)",borderRadius:3,overflow:"hidden"}}>
-                <div style={{height:"100%",width:`${(v/max)*100}%`,
-                  background:`linear-gradient(90deg,${BAR[i%BAR.length]},${BAR[i%BAR.length]}aa)`,
-                  borderRadius:3,transition:"width 0.8s cubic-bezier(.16,1,.3,1)",
-                  boxShadow:`0 0 10px ${BAR[i%BAR.length]}55`}}/>
+              <div style={{height:5,background:"rgba(255,255,255,0.06)",borderRadius:3,overflow:"hidden"}}>
+                <div style={{height:"100%",width:`${(v/max)*100}%`,background:`linear-gradient(90deg,${PALETTE[i%PALETTE.length]},${PALETTE[i%PALETTE.length]}bb)`,borderRadius:3,transition:"width .8s cubic-bezier(.16,1,.3,1)",boxShadow:`0 0 12px ${PALETTE[i%PALETTE.length]}55`}}/>
               </div>
             </div>
           ))}
         </div>
       </div>
-    </GlassCard>
+    </GCard>
   );
 }
 
-/* ─── SEARCH ─────────────────────────────────────────────────────────────────── */
-/* ─── SUGGESTION MODAL ──────────────────────────────────────────────────────── */
-function SuggestionModal({ catalog, onSelect, onClose }) {
-  useEffect(()=>{ const fn=e=>{if(e.key==="Escape")onClose();}; document.addEventListener("keydown",fn); return()=>document.removeEventListener("keydown",fn); },[onClose]);
-  return (
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",
-      backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-end",justifyContent:"center",
-      zIndex:9999,padding:"0 16px 40px"}}>
-      <div onClick={e=>e.stopPropagation()} style={{
-        background:"rgba(14,14,22,0.98)",border:"1px solid rgba(255,255,255,0.1)",
-        borderRadius:24,padding:"24px 20px",width:"100%",maxWidth:420,
-        boxShadow:"0 -8px 48px rgba(0,0,0,0.6)",
-        animation:"fadeUp 0.28s cubic-bezier(.16,1,.3,1)",
-      }}>
-        {/* Header */}
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <span style={{fontSize:22}}>{catalog.emoji}</span>
-            <span style={{fontSize:16,fontWeight:700,color:"#e2e8f0"}}>{catalog.title}</span>
-          </div>
-          <button onClick={onClose} style={{background:"rgba(255,255,255,0.07)",border:"none",
-            borderRadius:"50%",width:30,height:30,color:"#94a3b8",fontSize:17,cursor:"pointer",
-            display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+/* ─── SUGGESTION MODAL ───────────────────────────────────────────────────────── */
+function SuggestionModal({catalog,onSelect,onClose}){
+  const sheetRef = useRef(null);
+  const startY = useRef(0);
+  const currentY = useRef(0);
+
+  useEffect(()=>{
+    const f=e=>{if(e.key==="Escape")onClose();};
+    document.addEventListener("keydown",f);
+    return()=>document.removeEventListener("keydown",f);
+  },[onClose]);
+
+  // Drag to dismiss
+  const onTouchStart = e => { startY.current = e.touches[0].clientY; };
+  const onTouchMove = e => {
+    const dy = e.touches[0].clientY - startY.current;
+    if(dy > 0 && sheetRef.current) {
+      currentY.current = dy;
+      sheetRef.current.style.transform = `translateY(${dy}px)`;
+    }
+  };
+  const onTouchEnd = () => {
+    if(currentY.current > 80) { onClose(); }
+    else if(sheetRef.current) { sheetRef.current.style.transform = "translateY(0)"; }
+    currentY.current = 0;
+  };
+
+  return(
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
+      <div
+        ref={sheetRef}
+        onClick={e=>e.stopPropagation()}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{
+          background:"#111118",
+          borderTop:"1px solid rgba(255,255,255,0.1)",
+          borderRadius:"24px 24px 0 0",
+          padding:"0 18px 40px",
+          width:"100%", maxWidth:430,
+          transition:"transform 0.2s cubic-bezier(.16,1,.3,1)",
+          animation:"slideUp .3s cubic-bezier(.16,1,.3,1)",
+        }}>
+
+        {/* Drag handle */}
+        <div style={{display:"flex",justifyContent:"center",padding:"12px 0 6px",cursor:"grab"}}>
+          <div style={{width:36,height:4,borderRadius:2,background:"rgba(255,255,255,0.15)"}}/>
         </div>
+
+        {/* Header */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,paddingTop:4}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:20}}>{catalog.emoji}</span>
+            <span style={{fontSize:15,fontWeight:700,color:"#f1f5f9"}}>{catalog.title}</span>
+          </div>
+          <button onClick={onClose} style={{background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:28,height:28,color:"#94a3b8",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        </div>
+
         {/* Why */}
-        <p style={{margin:"0 0 20px",fontSize:13,color:"#94a3b8",lineHeight:1.65,
-          padding:"12px 14px",background:"rgba(255,255,255,0.04)",borderRadius:12,
-          border:"1px solid rgba(255,255,255,0.06)"}}>{catalog.why}</p>
+        <p style={{margin:"0 0 16px",fontSize:12,color:"#7c8fa8",lineHeight:1.55}}>{catalog.why}</p>
+
         {/* Options */}
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",letterSpacing:1.5,textTransform:"uppercase",fontWeight:600,marginBottom:2}}>Choisir un ETF</div>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
           {catalog.options.map(opt=>(
             <button key={opt.ticker} onClick={()=>onSelect(opt.ticker)}
-              style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",
-                borderRadius:14,padding:"14px 16px",cursor:"pointer",textAlign:"left",width:"100%",
-                transition:"all 0.15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.borderColor="rgba(255,255,255,0.14)";}}
+              style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"13px 14px",cursor:"pointer",textAlign:"left",width:"100%",transition:"all .15s",WebkitTapHighlightColor:"transparent"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.borderColor="rgba(255,255,255,0.16)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.borderColor="rgba(255,255,255,0.08)";}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-                <span style={{fontSize:13,fontWeight:700,fontFamily:"ui-monospace,monospace",
-                  color:"#a5b4fc",letterSpacing:0.8}}>{opt.ticker}</span>
-                <span style={{fontSize:11,color:"rgba(255,255,255,0.3)",fontWeight:500}}>{opt.label}</span>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                <span style={{fontSize:13,fontWeight:700,color:"#f1f5f9"}}>{opt.label.split(" · ")[0]}</span>
+                <div style={{display:"flex",alignItems:"center",gap:5}}>
+                  {opt.ter&&<span style={{fontSize:10,color:"#34d399",fontWeight:700,background:"rgba(52,211,153,0.12)",padding:"2px 6px",borderRadius:5}}>TER {opt.ter}</span>}
+                  <span style={{fontSize:9,color:"rgba(255,255,255,0.2)",fontFamily:"monospace"}}>{opt.ticker}</span>
+                </div>
               </div>
-              <div style={{fontSize:12,color:"#7c8fa8",lineHeight:1.5}}>{opt.desc}</div>
+              <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                {opt.tags?.map((tag,i)=>(
+                  <span key={i} style={{fontSize:10,color:"rgba(255,255,255,0.5)",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:20,padding:"2px 8px"}}>{tag}</span>
+                ))}
+              </div>
             </button>
           ))}
         </div>
-        <p style={{margin:"16px 0 0",fontSize:10,color:"rgba(255,255,255,0.18)",textAlign:"center",lineHeight:1.6}}>
-          Ces suggestions sont indicatives. D'autres ETF couvrent la même catégorie.
-        </p>
+        <p style={{margin:"14px 0 0",fontSize:9,color:"rgba(255,255,255,0.15)",textAlign:"center",letterSpacing:.3}}>Suggestions indicatives — d'autres ETF couvrent la même catégorie.</p>
       </div>
     </div>
   );
 }
 
-function Search({ onAdd, suggestions=[] }) {
-  const [q,setQ]=useState(""); const [amt,setAmt]=useState(""); const [open,setOpen]=useState(false);
-  const [hi,setHi]=useState(0); const [err,setErr]=useState(""); const [activeSuggestion,setActiveSuggestion]=useState(null);
-  const ref=useRef(null); const amtRef=useRef(null);
+/* ─── SEARCH ─────────────────────────────────────────────────────────────────── */
+function Search({onAdd,suggestions=[]}){
+  const[q,setQ]=useState(""),[amt,setAmt]=useState(""),[open,setOpen]=useState(false);
+  const[hi,setHi]=useState(0),[err,setErr]=useState(""),[activeSug,setActiveSug]=useState(null);
+  // selectedTicker stores the resolved ticker separately from the display string
+  const[selectedTicker,setSelectedTicker]=useState(null);
+  const ref=useRef(null),amtRef=useRef(null);
+  useEffect(()=>{const f=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",f);return()=>document.removeEventListener("mousedown",f);},[]);
 
-  useEffect(()=>{ const fn=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);}; document.addEventListener("mousedown",fn); return()=>document.removeEventListener("mousedown",fn); },[]);
+  // When user types, clear any previous selection
+  const handleInput=(val)=>{setQ(val);setSelectedTicker(null);setErr("");setHi(0);setOpen(true);};
 
-  const resolved=useMemo(()=>{ const up=q.trim().toUpperCase(); if(/^[A-Z]{2}[A-Z0-9]{10}$/.test(up)&&ISIN_MAP[up])return ISIN_MAP[up]; return up; },[q]);
-  const results=useMemo(()=>{ if(resolved.length<1)return []; return Object.entries(DB).filter(([t,e])=>t.includes(resolved)||e.name.toUpperCase().includes(resolved)||(e.isin&&e.isin.toUpperCase().includes(resolved))||e.p.toUpperCase().includes(resolved)).slice(0,5); },[resolved]);
+  // Resolve: if we have a confirmed selection use it, else try ISIN map
+  const resolved=useMemo(()=>{
+    if(selectedTicker) return selectedTicker;
+    const u=q.trim().toUpperCase();
+    if(/^[A-Z]{2}[A-Z0-9]{10}$/.test(u)&&ISIN_MAP[u]) return ISIN_MAP[u];
+    return u;
+  },[q,selectedTicker]);
+
+  const results=useMemo(()=>{
+    if(selectedTicker) return []; // already selected, no dropdown
+    const u=q.trim().toUpperCase();
+    if(u.length<1) return [];
+    const search=(/^[A-Z]{2}[A-Z0-9]{10}$/.test(u)&&ISIN_MAP[u])?ISIN_MAP[u]:u;
+    return Object.entries(DB).filter(([t,e])=>t.includes(search)||e.name.toUpperCase().includes(search)||(e.isin&&e.isin.toUpperCase().includes(search))||e.p.toUpperCase().includes(search)).slice(0,6);
+  },[q,selectedTicker]);
+
+  const selectItem=(ticker,etfName)=>{
+    setSelectedTicker(ticker);
+    setQ(etfName); // show the name in the input
+    setOpen(false);
+    setTimeout(()=>amtRef.current?.focus(),60);
+  };
 
   const doAdd=()=>{
     const t=resolved,a=parseFloat(amt);
-    if(!t){setErr("Ticker ou ISIN requis");return;}
-    if(!DB[t]){setErr(`"${t}" introuvable`);return;}
+    if(!t){setErr("Saisissez un ETF");return;}
+    if(!DB[t]){setErr("ETF introuvable — sélectionnez-en un dans la liste");return;}
     if(isNaN(a)||a<=0){setErr("Montant invalide");return;}
-    onAdd(t,a); setQ(""); setAmt(""); setErr(""); setOpen(false);
+    onAdd(t,a);setQ("");setAmt("");setErr("");setOpen(false);setSelectedTicker(null);
   };
+
   const onKey=e=>{
     if(!open||!results.length){if(e.key==="Enter")doAdd();return;}
     if(e.key==="ArrowDown"){e.preventDefault();setHi(h=>Math.min(h+1,results.length-1));}
     else if(e.key==="ArrowUp"){e.preventDefault();setHi(h=>Math.max(h-1,0));}
-    else if(e.key==="Enter"){e.preventDefault();setQ(results[hi][0]);setOpen(false);setTimeout(()=>amtRef.current?.focus(),60);}
+    else if(e.key==="Enter"){e.preventDefault();const[t,e2]=results[hi];selectItem(t,e2.name);}
     else if(e.key==="Escape")setOpen(false);
   };
-  const inp={width:"100%",background:"rgba(255,255,255,0.06)",border:"1.5px solid rgba(255,255,255,0.12)",borderRadius:12,padding:"14px 16px",color:"#e2e8f0",fontSize:15,fontFamily:"ui-monospace,'SF Mono',monospace",letterSpacing:0.5,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color 0.2s"};
 
-  return (
+  const inp={width:"100%",background:"rgba(255,255,255,0.05)",border:"1.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:"#f1f5f9",fontSize:15,fontFamily:"-apple-system,BlinkMacSystemFont,system-ui,sans-serif",outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s"};
+  return(
     <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10}}>
       <div style={{position:"relative"}}>
-        <input value={q} onChange={e=>{setQ(e.target.value);setErr("");setHi(0);setOpen(true);}}
-          onFocus={e=>{setOpen(true);e.target.style.borderColor="rgba(99,102,241,0.6)";}}
-          onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.12)"}
-          onKeyDown={onKey} placeholder="Ticker ou ISIN…" style={inp}/>
+        <input value={q} onChange={e=>handleInput(e.target.value)} onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor="rgba(129,140,248,0.6)";}} onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"} onKeyDown={onKey} placeholder="Nom, ISIN ou ticker…" style={inp}/>
+        {/* Clear button when item selected */}
+        {selectedTicker&&(
+          <button onMouseDown={()=>{setQ("");setSelectedTicker(null);setOpen(false);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:22,height:22,color:"rgba(255,255,255,0.5)",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
+        )}
         {open&&results.length>0&&(
-          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,
-            background:"rgba(16,16,24,0.96)",border:"1px solid rgba(99,102,241,0.2)",
-            borderRadius:16,overflow:"hidden",backdropFilter:"blur(24px)",boxShadow:"0 24px 60px rgba(0,0,0,0.8)"}}>
+          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:"rgba(14,14,22,0.98)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:16,overflow:"hidden",backdropFilter:"blur(24px)",boxShadow:"0 24px 60px rgba(0,0,0,0.8)"}}>
             {results.map(([t,e],i)=>(
-              <div key={t} onMouseDown={()=>{setQ(t);setOpen(false);setTimeout(()=>amtRef.current?.focus(),60);}}
-                style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",cursor:"pointer",
-                  background:i===hi?"rgba(99,102,241,0.1)":"transparent",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
-                <span style={{fontSize:12,fontFamily:"ui-monospace,monospace",color:"#a5b4fc",fontWeight:700,minWidth:44,letterSpacing:0.8}}>{t}</span>
+              <div key={t} onMouseDown={()=>selectItem(t,e.name)}
+                style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",cursor:"pointer",background:i===hi?"rgba(129,140,248,0.1)":"transparent",borderBottom:"1px solid rgba(255,255,255,0.05)",transition:"background .1s"}}>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:13,color:"#e2e8f0",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{e.name}</div>
-                  <div style={{display:"flex",gap:8,marginTop:2}}>
-                    <span style={{fontSize:10,color:"#7c8fa8",fontFamily:"monospace"}}>{e.isin}</span>
-                    <span style={{fontSize:10,color:"#7c8fa8"}}>· {e.p}</span>
-                    <span style={{fontSize:10,color:ASSET_COLORS[e.assetClass]||"#7c8fa8",fontWeight:600}}>· {ASSET_LABELS[e.assetClass]||e.assetClass}</span>
+                  <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginBottom:4}}>{e.name}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"nowrap"}}>
+                    <span style={{fontSize:10,fontFamily:"'SF Mono',monospace",color:"rgba(255,255,255,0.25)",letterSpacing:.4,flexShrink:0}}>{e.isin}</span>
+                    <span style={{fontSize:10,color:ASSET_COLORS[e.assetClass]||"#7c8fa8",fontWeight:600,background:`${ASSET_COLORS[e.assetClass]||"#818cf8"}15`,padding:"1px 6px",borderRadius:4,flexShrink:0}}>{ASSET_LABELS[e.assetClass]||e.assetClass}</span>
+                    <span style={{fontSize:10,fontFamily:"'SF Mono',monospace",color:"rgba(255,255,255,0.15)",letterSpacing:.5,marginLeft:"auto",flexShrink:0}}>{t}</span>
                   </div>
                 </div>
               </div>
@@ -763,80 +490,52 @@ function Search({ onAdd, suggestions=[] }) {
           </div>
         )}
         {open&&q.length>=2&&results.length===0&&(
-          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,
-            background:"rgba(16,16,24,0.96)",border:"1px solid rgba(255,255,255,0.08)",
-            borderRadius:16,padding:"18px",textAlign:"center",backdropFilter:"blur(24px)"}}>
+          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:"rgba(14,14,22,0.98)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"18px",textAlign:"center",backdropFilter:"blur(24px)"}}>
             <div style={{fontSize:13,color:"#94a3b8"}}>Aucun résultat pour « {q} »</div>
           </div>
         )}
       </div>
       <div style={{display:"flex",gap:10}}>
-        <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
-          onKeyDown={e=>e.key==="Enter"&&doAdd()}
-          onFocus={e=>e.target.style.borderColor="rgba(99,102,241,0.6)"}
-          onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.12)"}
-          placeholder="Montant (€)" style={{...inp,flex:1}}/>
-        <button onClick={doAdd} style={{background:"linear-gradient(135deg,#6366f1,#4f46e5)",border:"none",
-          borderRadius:12,padding:"14px 22px",color:"#fff",fontSize:18,fontWeight:700,cursor:"pointer",
-          flexShrink:0,boxShadow:"0 4px 20px rgba(99,102,241,0.4)",transition:"transform 0.15s,box-shadow 0.15s"}}
-          onMouseEnter={e=>{e.currentTarget.style.transform="scale(1.04)";e.currentTarget.style.boxShadow="0 6px 24px rgba(99,102,241,0.55)";}}
-          onMouseLeave={e=>{e.currentTarget.style.transform="scale(1)";e.currentTarget.style.boxShadow="0 4px 20px rgba(99,102,241,0.4)";}}>+</button>
+        <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doAdd()} onFocus={e=>e.target.style.borderColor="rgba(129,140,248,0.6)"} onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"} placeholder="Montant (€)" style={{...inp,flex:1}}/>
+        <button onClick={doAdd} style={{background:"linear-gradient(135deg,#6366f1,#4f46e5)",border:"none",borderRadius:14,padding:"14px 22px",color:"#fff",fontSize:20,fontWeight:700,cursor:"pointer",flexShrink:0,boxShadow:"0 4px 24px rgba(99,102,241,0.45)",transition:"transform .15s,box-shadow .15s"}} onMouseEnter={e=>{e.currentTarget.style.transform="scale(1.05)";e.currentTarget.style.boxShadow="0 6px 28px rgba(99,102,241,0.6)";}} onMouseLeave={e=>{e.currentTarget.style.transform="scale(1)";e.currentTarget.style.boxShadow="0 4px 24px rgba(99,102,241,0.45)";}}>+</button>
       </div>
       {err&&<div style={{fontSize:13,color:"#fca5a5",padding:"10px 14px",background:"rgba(248,113,113,0.1)",border:"1px solid rgba(248,113,113,0.2)",borderRadius:10}}>{err}</div>}
       {suggestions.length>0&&(
-        <div style={{display:"flex",flexDirection:"column",gap:6,paddingTop:2}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",letterSpacing:1.5,textTransform:"uppercase",fontWeight:600}}>Suggestions</div>
+        <div style={{display:"flex",flexDirection:"column",gap:8,paddingTop:4}}>
+          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",fontWeight:700}}>Suggestions pour vous</div>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             {suggestions.map(s=>(
-              <button key={s.key} onClick={()=>setActiveSuggestion(s.key)}
-                style={{background:`${s.color}12`,border:`1px solid ${s.color}30`,borderRadius:20,
-                  padding:"7px 14px",color:s.color,fontSize:12,cursor:"pointer",fontWeight:600,
-                  WebkitTapHighlightColor:"transparent",display:"flex",alignItems:"center",gap:6,
-                  transition:"all 0.15s"}}
-                onMouseEnter={e=>e.currentTarget.style.background=`${s.color}22`}
-                onMouseLeave={e=>e.currentTarget.style.background=`${s.color}12`}>
-                <span>{s.emoji}</span>
-                <span>{s.label}</span>
+              <button key={s.key} onClick={()=>setActiveSug(s.key)}
+                style={{background:`${s.color}14`,border:`1px solid ${s.color}35`,borderRadius:20,padding:"7px 14px",color:s.color,fontSize:12,cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:6,transition:"all .15s",WebkitTapHighlightColor:"transparent"}}
+                onMouseEnter={e=>e.currentTarget.style.background=`${s.color}26`}
+                onMouseLeave={e=>e.currentTarget.style.background=`${s.color}14`}>
+                <span>{s.emoji}</span><span>{s.title}</span>
               </button>
             ))}
           </div>
         </div>
       )}
-      {activeSuggestion&&(
-        <SuggestionModal
-          catalog={SUGGESTION_CATALOG[activeSuggestion]}
-          onSelect={ticker=>{setQ(ticker);setActiveSuggestion(null);setOpen(false);setTimeout(()=>amtRef.current?.focus(),60);}}
-          onClose={()=>setActiveSuggestion(null)}
-        />
-      )}
+      {activeSug&&<SuggestionModal catalog={CAT[activeSug]} onSelect={t=>{selectItem(t,DB[t]?.name||t);setActiveSug(null);}} onClose={()=>setActiveSug(null)}/>}
     </div>
   );
 }
 
 /* ─── TABS ───────────────────────────────────────────────────────────────────── */
-function Tabs({ active, onChange, highlight=[] }) {
+function Tabs({active,onChange,highlight=[]}){
   const icons={
-    scores:(<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" strokeDasharray="2.5 1.5" strokeLinecap="round"/><circle cx="8" cy="8" r="2" fill="currentColor" opacity="0.7"/></svg>),
-    geo:(<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><ellipse cx="8" cy="8" rx="2.8" ry="6" stroke="currentColor" strokeWidth="1.4"/><line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.4"/></svg>),
-    sec:(<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="8" width="3" height="6" rx="0.8" fill="currentColor" opacity="0.5"/><rect x="6.5" y="5" width="3" height="9" rx="0.8" fill="currentColor" opacity="0.7"/><rect x="11" y="2" width="3" height="12" rx="0.8" fill="currentColor"/></svg>),
-    ptf:(<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 11.5 C4 11.5 4.5 7 6.5 7 C8.5 7 8.5 9.5 10.5 9.5 C12 9.5 12.5 6 14 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>),
+    scores:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" strokeDasharray="2.5 1.5" strokeLinecap="round"/><circle cx="8" cy="8" r="2" fill="currentColor" opacity="0.8"/></svg>,
+    geo:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><ellipse cx="8" cy="8" rx="2.8" ry="6" stroke="currentColor" strokeWidth="1.4"/><line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.4"/></svg>,
+    sec:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="8" width="3" height="6" rx=".8" fill="currentColor" opacity=".5"/><rect x="6.5" y="5" width="3" height="9" rx=".8" fill="currentColor" opacity=".75"/><rect x="11" y="2" width="3" height="12" rx=".8" fill="currentColor"/></svg>,
+    ptf:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 11.5C4 11.5 4.5 7 6.5 7c2 0 2 2.5 4 2.5 1.5 0 2-3.5 3.5-5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   };
-  return (
-    <div style={{display:"flex",background:"rgba(255,255,255,0.05)",borderRadius:14,padding:3,gap:2,border:"1px solid rgba(255,255,255,0.08)"}}>
+  return(
+    <div style={{display:"flex",background:"rgba(255,255,255,0.04)",borderRadius:16,padding:4,gap:2,border:"1px solid rgba(255,255,255,0.07)"}}>
       {[{id:"scores",label:"Scores"},{id:"geo",label:"Géo."},{id:"sec",label:"Secteurs"},{id:"ptf",label:"ETF"}].map(t=>(
-        <button key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,
-          background:active===t.id?"rgba(99,102,241,0.15)":"transparent",
-          border:active===t.id?"1px solid rgba(99,102,241,0.3)":"1px solid transparent",
-          borderRadius:11,padding:"9px 4px",color:active===t.id?"#c7d2fe":"#94a3b8",
-          fontSize:11,fontWeight:active===t.id?700:500,cursor:"pointer",transition:"all 0.2s",
-          WebkitTapHighlightColor:"transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+        <button key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,background:active===t.id?"rgba(99,102,241,0.2)":"transparent",border:active===t.id?"1px solid rgba(99,102,241,0.35)":"1px solid transparent",borderRadius:12,padding:"9px 4px",color:active===t.id?"#c7d2fe":"rgba(255,255,255,0.4)",fontSize:11,fontWeight:active===t.id?700:400,cursor:"pointer",transition:"all .2s",WebkitTapHighlightColor:"transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
           {icons[t.id]}
-          <div style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4}}>
-            <span style={{letterSpacing:0.3}}>{t.label}</span>
-            {highlight.includes(t.id)&&(
-              <div style={{width:5,height:5,borderRadius:"50%",background:"#818cf8",
-                boxShadow:"0 0 6px #818cf899",flexShrink:0,animation:"pulse 2s infinite"}}/>
-            )}
+          <div style={{position:"relative",display:"inline-flex",alignItems:"center",gap:3}}>
+            <span style={{letterSpacing:.3}}>{t.label}</span>
+            {highlight.includes(t.id)&&<div style={{width:5,height:5,borderRadius:"50%",background:"#818cf8",boxShadow:"0 0 6px #818cf8",animation:"pulse 2s infinite"}}/>}
           </div>
         </button>
       ))}
@@ -844,66 +543,27 @@ function Tabs({ active, onChange, highlight=[] }) {
   );
 }
 
-/* ─── STAT CHIP ──────────────────────────────────────────────────────────────── */
-function StatChip({ value, label, color }) {
-  return (
-    <GlassCard style={{flex:1}}>
-      <div style={{padding:"14px 12px",textAlign:"center"}}>
-        <div style={{fontSize:26,fontWeight:700,color,lineHeight:1,letterSpacing:-1}}>{value}</div>
-        <div style={{fontSize:10,color:"#94a3b8",marginTop:5,letterSpacing:0.5,fontWeight:500}}>{label}</div>
-      </div>
-    </GlassCard>
-  );
-}
-
-/* ─── DISCLAIMER MODAL ───────────────────────────────────────────────────────── */
-function Disclaimer({ onAccept }) {
-  return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",backdropFilter:"blur(12px)",
-      display:"flex",alignItems:"center",justifyContent:"center",zIndex:99999,padding:"20px 16px"}}>
-      <div style={{background:"rgba(14,14,22,0.98)",border:"1px solid rgba(255,255,255,0.1)",
-        borderRadius:24,padding:"28px 24px",width:"100%",maxWidth:400,
-        boxShadow:"0 24px 60px rgba(0,0,0,0.8)"}}>
+/* ─── DISCLAIMER ─────────────────────────────────────────────────────────────── */
+function Disclaimer({onAccept}){
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:99999,padding:"20px 16px"}}>
+      <div style={{background:"#0e0e16",border:"1px solid rgba(255,255,255,0.1)",borderRadius:24,padding:"32px 24px",width:"100%",maxWidth:400,boxShadow:"0 32px 80px rgba(0,0,0,0.8)"}}>
         <div style={{marginBottom:20}}>
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="48" height="48" rx="12" fill="url(#disc_bg)"/>
-            <defs>
-              <linearGradient id="disc_bg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#4f46e5"/>
-                <stop offset="100%" stopColor="#7c3aed"/>
-              </linearGradient>
-              <linearGradient id="disc_line" x1="0" y1="0" x2="48" y2="0" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#38bdf8"/>
-                <stop offset="100%" stopColor="#c084fc"/>
-              </linearGradient>
-            </defs>
-            {/* Scale beam */}
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="12" fill="url(#dbg)"/>
+            <defs><linearGradient id="dbg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#4f46e5"/><stop offset="100%" stopColor="#7c3aed"/></linearGradient><linearGradient id="dl" x1="0" y1="0" x2="48" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#38bdf8"/><stop offset="100%" stopColor="#c084fc"/></linearGradient></defs>
             <line x1="14" y1="18" x2="34" y2="18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-            {/* Center pole */}
             <line x1="24" y1="18" x2="24" y2="34" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-            {/* Base */}
             <line x1="18" y1="34" x2="30" y2="34" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-            {/* Left pan */}
             <path d="M14 18 Q11 22 14 26 Q17 22 14 18Z" fill="rgba(255,255,255,0.9)"/>
-            {/* Right pan */}
             <path d="M34 18 Q31 22 34 26 Q37 22 34 18Z" fill="rgba(255,255,255,0.9)"/>
-            {/* Gradient accent line on top */}
-            <line x1="14" y1="18" x2="34" y2="18" stroke="url(#disc_line)" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="14" y1="18" x2="34" y2="18" stroke="url(#dl)" strokeWidth="2.5" strokeLinecap="round"/>
           </svg>
         </div>
-        <div style={{fontSize:16,fontWeight:700,color:"#e2e8f0",marginBottom:12}}>À titre informatif uniquement</div>
-        <p style={{fontSize:13,color:"#94a3b8",lineHeight:1.7,margin:"0 0 20px"}}>
-          ETF Score est un outil d'analyse personnel. Les scores, indicateurs et suggestions affichés
-          <strong style={{color:"#e2e8f0"}}> ne constituent pas un conseil en investissement</strong> au sens
-          de la réglementation AMF.
-        </p>
-        <p style={{fontSize:13,color:"#94a3b8",lineHeight:1.7,margin:"0 0 24px"}}>
-          Tout investissement comporte un risque de perte en capital. Consultez un conseiller financier
-          agréé avant toute décision d'investissement.
-        </p>
-        <button onClick={onAccept} style={{width:"100%",background:"linear-gradient(135deg,#6366f1,#4f46e5)",
-          border:"none",borderRadius:14,padding:"15px",color:"#fff",fontSize:14,fontWeight:700,
-          cursor:"pointer",boxShadow:"0 4px 20px rgba(99,102,241,0.4)"}}>
+        <div style={{fontSize:18,fontWeight:700,color:"#f1f5f9",marginBottom:14,letterSpacing:-.3}}>À titre informatif uniquement</div>
+        <p style={{fontSize:13,color:"#94a3b8",lineHeight:1.7,margin:"0 0 16px"}}>ETF Score est un outil d'analyse personnel. Les scores et suggestions affichés <strong style={{color:"#f1f5f9"}}>ne constituent pas un conseil en investissement</strong> au sens de la réglementation AMF.</p>
+        <p style={{fontSize:13,color:"#94a3b8",lineHeight:1.7,margin:"0 0 28px"}}>Tout investissement comporte un risque de perte en capital. Consultez un conseiller financier agréé avant toute décision.</p>
+        <button onClick={onAccept} style={{width:"100%",background:"linear-gradient(135deg,#6366f1,#4f46e5)",border:"none",borderRadius:14,padding:"16px",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 24px rgba(99,102,241,0.5)",letterSpacing:.3}}>
           J'ai compris, accéder à l'app
         </button>
       </div>
@@ -911,285 +571,353 @@ function Disclaimer({ onAccept }) {
   );
 }
 
-/* ─── TOASTER ────────────────────────────────────────────────────────────────── */
-function Toaster({ message, visible }) {
-  return (
-    <div style={{
-      position:"fixed", bottom:72, left:"50%", transform:`translateX(-50%) translateY(${visible?0:16}px)`,
-      opacity: visible ? 1 : 0,
-      transition:"all 0.3s cubic-bezier(.16,1,.3,1)",
-      background:"rgba(30,30,42,0.97)", border:"1px solid rgba(255,255,255,0.12)",
-      borderRadius:20, padding:"11px 18px", zIndex:9000,
-      display:"flex", alignItems:"center", gap:8,
-      boxShadow:"0 8px 32px rgba(0,0,0,0.5)",
-      pointerEvents:"none", whiteSpace:"nowrap",
-    }}>
-      <div style={{width:7,height:7,borderRadius:"50%",background:"#4ade80",boxShadow:"0 0 8px #4ade8099",flexShrink:0}}/>
-      <span style={{fontSize:13,color:"#e2e8f0",fontWeight:500}}>{message}</span>
+/* ─── TOAST ──────────────────────────────────────────────────────────────────── */
+function Toast({msg,visible}){
+  return(
+    <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${visible?0:12}px)`,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:"rgba(20,20,32,0.97)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:20,padding:"11px 18px",zIndex:9000,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:"none",whiteSpace:"nowrap"}}>
+      <div style={{width:7,height:7,borderRadius:"50%",background:"#4ade80",boxShadow:"0 0 8px #4ade80",flexShrink:0}}/>
+      <span style={{fontSize:13,color:"#f1f5f9",fontWeight:500}}>{msg}</span>
     </div>
   );
 }
 
 /* ─── MAIN ───────────────────────────────────────────────────────────────────── */
-export default function App() {
-  const [holdings, setHoldings] = useState([]);
-  const [ready, setReady] = useState(false);
-  const [saved, setSaved] = useState(true);
-  const [tab, setTab] = useState("scores");
-  const [confirmReset, setConfirmReset] = useState(false);
-  const [editAmt, setEditAmt] = useState({});
-  const [disclaimerSeen, setDisclaimerSeen] = useState(false);
-  const [savedAt, setSavedAt] = useState(null);
-  const [toast, setToast] = useState({msg:"",visible:false});
-  const toastTimer = useRef(null);
-  const [installToast, setInstallToast] = useState(false);
+export default function App(){
+  const[holdings,setHoldings]=useState([]);
+  const[ready,setReady]=useState(false);
+  const[saved,setSaved]=useState(true);
+  const[tab,setTab]=useState("scores");
+  const[confirmReset,setConfirmReset]=useState(false);
+  const[editAmt,setEditAmt]=useState({});
+  const[disclaimerSeen,setDisclaimerSeen]=useState(false);
+  const[savedAt,setSavedAt]=useState(null);
+  const[toast,setToast]=useState({msg:"",visible:false});
+  const[installToast,setInstallToast]=useState(false);
+  const[activeRec,setActiveRec]=useState(null);
+  const[recMode,setRecMode]=useState("essential"); // 'essential' | 'advanced'
+  const toastTimer=useRef(null);
 
+  // Load
   useEffect(()=>{
     try{
-        const raw=localStorage.getItem(STORAGE_KEY);
-        if(raw){ const p=JSON.parse(raw); if(p.holdings) setHoldings(p.holdings); if(p.disclaimerSeen) setDisclaimerSeen(true); if(p.savedAt) setSavedAt(new Date(p.savedAt)); }
-
+      const raw=localStorage.getItem(STORAGE_KEY);
+      if(raw){const p=JSON.parse(raw);if(p.holdings)setHoldings(p.holdings);if(p.disclaimerSeen)setDisclaimerSeen(true);if(p.savedAt)setSavedAt(new Date(p.savedAt));}
     }catch(_){}
     setReady(true);
+    const isStandalone=window.navigator.standalone||window.matchMedia("(display-mode: standalone)").matches;
+    const seen=localStorage.getItem("etf-install-seen");
+    if(!isStandalone&&!seen){setTimeout(()=>{setInstallToast(true);setTimeout(()=>setInstallToast(false),6000);localStorage.setItem("etf-install-seen","1");},2500);}
   },[]);
 
+  // Save
   useEffect(()=>{
-    if(!ready) return;
+    if(!ready)return;
     setSaved(false);
     const t=setTimeout(async()=>{
-      try{ localStorage.setItem(STORAGE_KEY,JSON.stringify({holdings,disclaimerSeen,savedAt:new Date().toISOString()})); }catch(_){}
+      try{localStorage.setItem(STORAGE_KEY,JSON.stringify({holdings,disclaimerSeen,savedAt:new Date().toISOString()}));}catch(_){}
       setSaved(true);
     },700);
     return()=>clearTimeout(t);
   },[holdings,disclaimerSeen,ready]);
 
-  const acceptDisclaimer=useCallback(()=>setDisclaimerSeen(true),[]);
   const addHolding=useCallback((ticker,amount)=>{
-    setHoldings(prev=>{ const ex=prev.find(h=>h.ticker===ticker); if(ex)return prev.map(h=>h.ticker===ticker?{...h,amount:h.amount+amount}:h); return [...prev,{ticker,name:DB[ticker].name,amount}]; });
-
+    setHoldings(prev=>{const ex=prev.find(h=>h.ticker===ticker);if(ex)return prev.map(h=>h.ticker===ticker?{...h,amount:h.amount+amount}:h);return[...prev,{ticker,name:DB[ticker].name,amount}];});
+    if(toastTimer.current)clearTimeout(toastTimer.current);
+    setToast({msg:`${ticker} ajouté au portefeuille`,visible:true});
+    toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);
   },[]);
-  const removeHolding=useCallback((ticker)=>setHoldings(p=>p.filter(h=>h.ticker!==ticker)),[]);
-  const updateAmount=(ticker,val)=>{ const a=parseFloat(val); if(!isNaN(a)&&a>0)setHoldings(p=>p.map(h=>h.ticker===ticker?{...h,amount:a}:h)); };
+  const removeHolding=useCallback(ticker=>setHoldings(p=>p.filter(h=>h.ticker!==ticker)),[]);
+  const updateAmount=(ticker,val)=>{const a=parseFloat(val);if(!isNaN(a)&&a>0)setHoldings(p=>p.map(h=>h.ticker===ticker?{...h,amount:a}:h));};
 
-  const scores=useMemo(()=>computeExpertScore(holdings),[holdings]);
-  const recs=useMemo(()=>buildRecommendations(scores,holdings,holdings.reduce((s,h)=>s+h.amount,0)),[scores,holdings]);
+  const scores=useMemo(()=>computeScores(holdings),[holdings]);
+  const recs=useMemo(()=>buildRecs(scores,holdings,holdings.reduce((s,h)=>s+h.amount,0)),[scores,holdings]);
+  const positives=useMemo(()=>buildPositive(scores,holdings),[scores,holdings]);
+  const suggestions=useMemo(()=>buildSuggestions(scores,holdings),[scores,holdings]);
   const total=holdings.reduce((s,h)=>s+h.amount,0);
+  const g=scoreColor(scores.total);
 
-  if(!ready) return (<div style={{minHeight:"100vh",background:"#0e0e0f",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:36,height:36,borderRadius:"50%",border:"2.5px solid rgba(99,102,241,0.2)",borderTopColor:"#6366f1",animation:"spin 0.8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.85)}}`}</style></div>);
+  if(!ready)return(<div style={{minHeight:"100vh",background:"#080810",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:36,height:36,borderRadius:"50%",border:"2.5px solid rgba(99,102,241,0.2)",borderTopColor:"#6366f1",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
 
-  return (
-    <div style={{minHeight:"100vh",minHeight:"100dvh",background:"#0e0e0f",color:"#e2e8f0",
-      fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif",
-      maxWidth:430,margin:"0 auto",position:"relative"}}>
-
+  return(
+    <div style={{minHeight:"100vh",background:"#080810",color:"#f1f5f9",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif",maxWidth:430,margin:"0 auto",position:"relative"}}>
       <style>{`
         *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
-        input{outline:none;-webkit-appearance:none}
-        input::placeholder{color:#4a5568}
+        input{outline:none;-webkit-appearance:none}input::placeholder{color:rgba(255,255,255,0.2)}
         input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         button{font-family:inherit;-webkit-tap-highlight-color:transparent}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.85)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         ::-webkit-scrollbar{display:none}
-        .anim{animation:fadeUp 0.4s cubic-bezier(.16,1,.3,1) both}
+        .anim{animation:fadeUp .4s cubic-bezier(.16,1,.3,1) both}
       `}</style>
 
-      {!disclaimerSeen && <Disclaimer onAccept={acceptDisclaimer}/>}
+      {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)}/>}
 
-      {/* Ambient blobs */}
+      {/* Ambient background */}
       <div aria-hidden="true" style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
-        <div style={{position:"absolute",top:"-20%",left:"-15%",width:"65%",height:"58%",background:"radial-gradient(ellipse,rgba(99,102,241,0.11) 0%,transparent 68%)",filter:"blur(1px)"}}/>
-        <div style={{position:"absolute",bottom:"-15%",right:"-12%",width:"60%",height:"55%",background:"radial-gradient(ellipse,rgba(139,92,246,0.09) 0%,transparent 65%)",filter:"blur(1px)"}}/>
-        <div style={{position:"absolute",top:"35%",left:"50%",width:"50%",height:"45%",background:"radial-gradient(ellipse,rgba(56,189,248,0.05) 0%,transparent 60%)",filter:"blur(1px)"}}/>
-        <div style={{position:"absolute",top:"60%",left:"-8%",width:"42%",height:"38%",background:"radial-gradient(ellipse,rgba(79,70,229,0.07) 0%,transparent 65%)",filter:"blur(1px)"}}/>
+        <div style={{position:"absolute",top:"-25%",left:"-20%",width:"70%",height:"65%",background:"radial-gradient(ellipse,rgba(79,70,229,0.18) 0%,transparent 70%)"}}/>
+        <div style={{position:"absolute",bottom:"-20%",right:"-15%",width:"65%",height:"60%",background:"radial-gradient(ellipse,rgba(124,58,237,0.14) 0%,transparent 70%)"}}/>
+        <div style={{position:"absolute",top:"40%",left:"40%",width:"55%",height:"50%",background:"radial-gradient(ellipse,rgba(34,211,238,0.06) 0%,transparent 65%)"}}/>
       </div>
 
       <div style={{position:"relative",zIndex:1}}>
-        {/* Header */}
-        <header style={{
-          padding:"12px 20px 14px",
-          display:"flex",alignItems:"center",justifyContent:"space-between",
-          borderBottom:"1px solid rgba(255,255,255,0.07)",
-          backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-          background:"rgba(14,14,15,0.92)",
-          position:"sticky",top:0,zIndex:50,
-          marginTop:0,
-        }}>
+        {/* ── HEADER ── */}
+        <header style={{padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",background:"rgba(8,8,16,0.85)",position:"sticky",top:0,zIndex:50,borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <img src="/icon-180.png" alt="ETF Score"
-              style={{width:34,height:34,borderRadius:9,flexShrink:0,objectFit:"cover"}}/>
+            <div style={{width:32,height:32,flexShrink:0}}>
+              <svg viewBox="0 0 512 512" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="ll" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#38bdf8"/><stop offset="50%" stopColor="#818cf8"/><stop offset="100%" stopColor="#c084fc"/></linearGradient>
+                  <linearGradient id="lf" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#6366f1" stopOpacity="0.2"/><stop offset="100%" stopColor="#6366f1" stopOpacity="0"/></linearGradient>
+                  <filter id="lg"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                  <filter id="lb"><feGaussianBlur stdDeviation="50"/></filter>
+                  <clipPath id="ls"><rect width="512" height="512" rx="115" ry="115"/></clipPath>
+                </defs>
+                <g clipPath="url(#ls)">
+                  <rect width="512" height="512" fill="#08080c"/>
+                  <ellipse cx="300" cy="260" rx="200" ry="150" fill="#6366f1" opacity="0.14" filter="url(#lb)"/>
+                  <ellipse cx="150" cy="350" rx="120" ry="100" fill="#38bdf8" opacity="0.08" filter="url(#lb)"/>
+                  <path d="M72 360C110 360 120 310 155 295C190 280 200 320 235 300C265 282 275 230 310 200C340 175 355 210 385 185C408 165 420 145 440 128L440 400L72 400Z" fill="url(#lf)"/>
+                  <path d="M72 360C110 360 120 310 155 295C190 280 200 320 235 300C265 282 275 230 310 200C340 175 355 210 385 185C408 165 420 145 440 128" fill="none" stroke="url(#ll)" strokeWidth="18" strokeLinecap="round" strokeLinejoin="round" filter="url(#lg)"/>
+                  <circle cx="440" cy="128" r="14" fill="#c084fc" filter="url(#lg)"/>
+                  <circle cx="440" cy="128" r="7" fill="white" opacity="0.9"/>
+                </g>
+              </svg>
+            </div>
             <div>
-              <div style={{fontSize:15,fontWeight:700,color:"#e2e8f0",letterSpacing:-0.3}}>ETF Score <span style={{fontSize:10,color:"#6366f1",fontWeight:700,letterSpacing:1,background:"rgba(99,102,241,0.12)",padding:"2px 6px",borderRadius:4,border:"1px solid rgba(99,102,241,0.2)"}}>EXPERT</span></div>
-              <div style={{fontSize:11,color:"#7c8fa8",marginTop:1}}>Analyse multicritères</div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:15,fontWeight:700,color:"#f1f5f9",letterSpacing:-.3}}>ETF Score</span>
+                <span style={{fontSize:9,fontWeight:800,color:"#818cf8",letterSpacing:1.5,background:"rgba(99,102,241,0.15)",border:"1px solid rgba(99,102,241,0.3)",padding:"2px 7px",borderRadius:4}}>EXPERT</span>
+              </div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",letterSpacing:.5}}>Analyse multicritères</div>
             </div>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 11px",background:"rgba(255,255,255,0.05)",borderRadius:20,border:"1px solid rgba(255,255,255,0.08)"}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:saved?"#4ade80":"#facc15",boxShadow:saved?"0 0 6px #4ade8099":"0 0 6px #facc1599",transition:"all 0.4s"}}/>
-            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-start"}}>
-              <span style={{fontSize:10,color:"#7c8fa8",letterSpacing:0.5,fontWeight:500,lineHeight:1}}>{saved?"Sync":"..."}</span>
-              {savedAt&&<span style={{fontSize:9,color:"rgba(255,255,255,0.2)",lineHeight:1,marginTop:1}}>{savedAt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</span>}
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",background:"rgba(255,255,255,0.04)",borderRadius:20,border:"1px solid rgba(255,255,255,0.07)"}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:saved?"#4ade80":"#facc15",boxShadow:saved?"0 0 6px #4ade8099":"0 0 6px #facc1599",transition:"all .4s"}}/>
+              <div style={{display:"flex",flexDirection:"column"}}>
+                <span style={{fontSize:10,color:"rgba(255,255,255,0.4)",letterSpacing:.5,lineHeight:1}}>{saved?"Sync":"..."}</span>
+                {savedAt&&<span style={{fontSize:8,color:"rgba(255,255,255,0.2)",lineHeight:1,marginTop:1}}>{savedAt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</span>}
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Total banner */}
+        {/* ── HERO SCORE BANNER ── */}
         {holdings.length>0&&(
-          <div style={{margin:"14px 16px 0"}}>
-            <GlassCard>
-              <div style={{padding:"16px 18px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div>
-                  <div style={{fontSize:10,color:"#7c8fa8",letterSpacing:1.5,textTransform:"uppercase",marginBottom:4,fontWeight:600}}>Total portefeuille</div>
-                  <div style={{fontSize:24,fontWeight:700,letterSpacing:-0.5,color:"#a5b4fc"}}>{total.toLocaleString("fr-FR")} €</div>
+          <div style={{margin:"14px 16px 0",padding:1.5,borderRadius:22,background:`linear-gradient(135deg,${g.from}44,${g.to}22,rgba(255,255,255,0.05))`}}>
+            <div style={{background:"rgba(8,8,16,0.92)",borderRadius:20.5,padding:"20px 22px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div>
+                <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",letterSpacing:2,textTransform:"uppercase",marginBottom:6,fontWeight:600}}>Score global</div>
+                <div style={{display:"flex",alignItems:"baseline",gap:4}}>
+                  <span style={{fontSize:42,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-2,fontVariantNumeric:"tabular-nums"}}>{scores.total.toFixed(1)}</span>
+                  <span style={{fontSize:16,color:"rgba(255,255,255,0.25)",fontWeight:400}}>/20</span>
                 </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:10,color:"#7c8fa8",letterSpacing:1,marginBottom:4,fontWeight:600}}>SCORE GLOBAL</div>
-                  <div style={{fontSize:24,fontWeight:700,color:scoreStyle(scores.total).text}}>{scores.total.toFixed(1)}<span style={{fontSize:13,color:"#7c8fa8",fontWeight:400}}>/20</span></div>
-                </div>
+                <div style={{fontSize:12,color:g.text,fontWeight:600,marginTop:4}}>{g.label}</div>
               </div>
-            </GlassCard>
+              <div style={{textAlign:"right"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:5,marginBottom:6}}>
+                  <span style={{fontSize:10,color:"rgba(255,255,255,0.3)",letterSpacing:2,textTransform:"uppercase",fontWeight:600}}>Apports</span>
+                  <IBtn label="Montant investi" text="Ce montant correspond à vos apports nets — la somme totale que vous avez versée. Il ne tient pas compte des variations de marché. La valeur réelle de votre portefeuille peut être différente selon les performances des ETF."/>
+                </div>
+                <div style={{fontSize:26,fontWeight:700,color:"rgba(255,255,255,0.85)",letterSpacing:-.5}}>{total.toLocaleString("fr-FR")} €</div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.3)",marginTop:4}}>{holdings.length} position{holdings.length>1?"s":""}</div>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Tabs */}
+        {/* ── TABS ── */}
         <div style={{padding:"14px 16px 0"}}><Tabs active={tab} onChange={setTab} highlight={holdings.length===0?["ptf"]:[]}/></div>
 
-        {/* Content */}
-        <div style={{padding:"14px 16px calc(100px + env(safe-area-inset-bottom))"}}>
+        {/* ── CONTENT ── */}
+        <div style={{padding:"14px 16px 100px"}}>
 
-          {/* ── SCORES TAB ── */}
+          {/* SCORES */}
           {tab==="scores"&&(
             <div className="anim" style={{display:"flex",flexDirection:"column",gap:14}}>
 
-              {/* Main arcs */}
-              <GlassCard>
-                <div style={{padding:"28px 16px 24px",display:"flex",justifyContent:"space-around",alignItems:"flex-start"}}>
-                  <ScoreArc value={scores.geo} label="Géographique"/>
-                  <div style={{width:1,background:"rgba(255,255,255,0.08)",alignSelf:"stretch",margin:"10px 0"}}/>
-                  <ScoreArc value={scores.sector} label="Sectorielle"/>
+              {/* Score rings */}
+              <div style={{padding:1.5,borderRadius:22,background:"linear-gradient(135deg,rgba(99,102,241,0.4),rgba(139,92,246,0.2),rgba(56,189,248,0.1))"}}>
+                <div style={{background:"rgba(8,8,16,0.93)",borderRadius:20.5,padding:"28px 16px 24px",display:"flex",justifyContent:"space-around",alignItems:"flex-start"}}>
+                  <ScoreRing value={scores.geo} label="Géographique"/>
+                  <div style={{width:1,background:"rgba(255,255,255,0.07)",alignSelf:"stretch",margin:"10px 0"}}/>
+                  <ScoreRing value={scores.sector} label="Sectorielle"/>
                 </div>
-              </GlassCard>
+              </div>
 
-              {/* Detailed sub-scores */}
+              {/* Criteria detail */}
               {holdings.length>0&&(
-                <GlassCard>
+                <GCard>
                   <div style={{padding:"18px 18px"}}>
-                    <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",letterSpacing:2,textTransform:"uppercase",marginBottom:16}}>Détail des critères</div>
-                    <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                      <MiniScoreBar label="Géographie" value={scores.geo} weight="25%"/>
-                      <MiniScoreBar label="Secteurs" value={scores.sector} weight="25%"/>
-                      <MiniScoreBar label="Chevauchement" value={scores.overlap} weight="20%"/>
-                      <MiniScoreBar label="Classes d'actifs" value={scores.assetClass} weight="15%"/>
-                      <MiniScoreBar label="Devises" value={scores.currency} weight="15%"/>
+                    <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.3)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:16}}>Détail des critères</div>
+                    <div style={{display:"flex",flexDirection:"column",gap:13}}>
+                      <MiniBar label="Géographie" value={scores.geo} weight="25%"/>
+                      <MiniBar label="Secteurs" value={scores.sector} weight="25%"/>
+                      <MiniBar label="Chevauchement" value={scores.overlap} weight="20%"/>
+                      <MiniBar label="Classes d'actifs" value={scores.assetClass} weight="15%"/>
+                      <MiniBar label="Devises" value={scores.currency} weight="15%"/>
                     </div>
-                    {/* Asset class breakdown */}
+
+                    {/* Asset class chips */}
                     {Object.keys(scores.classes).length>0&&(
-                      <div style={{marginTop:20,paddingTop:16,borderTop:"1px solid rgba(255,255,255,0.06)"}}>
-                        <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",letterSpacing:2,textTransform:"uppercase",marginBottom:12}}>Classes d'actifs</div>
+                      <div style={{marginTop:18,paddingTop:16,borderTop:"1px solid rgba(255,255,255,0.06)"}}>
+                        <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.3)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:12}}>Classes d'actifs</div>
                         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                           {Object.entries(scores.classes).sort((a,b)=>b[1]-a[1]).map(([cls,pct])=>(
-                            <div key={cls} style={{background:`${ASSET_COLORS[cls]||"#818cf8"}15`,border:`1px solid ${ASSET_COLORS[cls]||"#818cf8"}30`,borderRadius:20,padding:"5px 12px",display:"flex",alignItems:"center",gap:6}}>
-                              <div style={{width:6,height:6,borderRadius:"50%",background:ASSET_COLORS[cls]||"#818cf8",boxShadow:`0 0 6px ${ASSET_COLORS[cls]||"#818cf8"}99`}}/>
-                              <span style={{fontSize:12,color:"#e2e8f0",fontWeight:500}}>{ASSET_LABELS[cls]||cls}</span>
-                              <span style={{fontSize:12,color:ASSET_COLORS[cls]||"#818cf8",fontWeight:700}}>{pct.toFixed(0)}%</span>
+                            <div key={cls} style={{padding:1,borderRadius:20,background:`linear-gradient(135deg,${ASSET_COLORS[cls]||"#818cf8"}60,${ASSET_COLORS[cls]||"#818cf8"}20)`}}>
+                              <div style={{background:"rgba(8,8,16,0.85)",borderRadius:18.5,padding:"5px 12px",display:"flex",alignItems:"center",gap:6}}>
+                                <div style={{width:6,height:6,borderRadius:"50%",background:ASSET_COLORS[cls]||"#818cf8",boxShadow:`0 0 8px ${ASSET_COLORS[cls]||"#818cf8"}`}}/>
+                                <span style={{fontSize:12,color:"rgba(255,255,255,0.8)",fontWeight:500}}>{ASSET_LABELS[cls]||cls}</span>
+                                <span style={{fontSize:12,color:ASSET_COLORS[cls]||"#818cf8",fontWeight:700}}>{pct.toFixed(0)}%</span>
+                              </div>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
                   </div>
-                </GlassCard>
+                </GCard>
               )}
 
               {/* Stat chips */}
               {holdings.length>0&&(
-                <div style={{display:"flex",gap:10}}>
-                  <StatChip value={Object.keys(scores.geoMap).length} label="Zones géo." color="#818cf8"/>
-                  <StatChip value={Object.keys(scores.secMap).length} label="Secteurs" color="#38bdf8"/>
-                  <StatChip value={holdings.length} label="ETF" color="#a78bfa"/>
-                </div>
-              )}
-
-              {/* Recommendations */}
-              {recs.length>0&&(
-                <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",letterSpacing:2,textTransform:"uppercase",padding:"0 2px"}}>Recommandations</div>
-                  {recs.map((r,i)=>(
-                    <div key={i} style={{background:r.bg,border:`1px solid ${r.border}`,borderRadius:16,padding:"14px 16px"}}>
-                      <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-                        <span style={{fontSize:18,flexShrink:0}}>{r.emoji}</span>
-                        <div>
-                          <div style={{fontSize:13,fontWeight:700,color:r.color,marginBottom:4}}>{r.title}</div>
-                          <p style={{margin:0,fontSize:13,color:"#e2e8f0",lineHeight:1.65}}>{r.text}</p>
-                        </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                  {[{v:Object.keys(scores.geoMap).length,l:"Zones",c:"#818cf8"},{v:Object.keys(scores.secMap).length,l:"Secteurs",c:"#22d3ee"},{v:holdings.length,l:"ETF",c:"#a78bfa"}].map(({v,l,c})=>(
+                    <div key={l} style={{padding:1,borderRadius:16,background:`linear-gradient(135deg,${c}40,${c}10)`}}>
+                      <div style={{background:"rgba(8,8,16,0.9)",borderRadius:15,padding:"14px 12px",textAlign:"center"}}>
+                        <div style={{fontSize:26,fontWeight:800,color:c,lineHeight:1,letterSpacing:-1}}>{v}</div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginTop:5,letterSpacing:.5,textTransform:"uppercase",fontWeight:600}}>{l}</div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
 
-              {!holdings.length&&(
-                <GlassCard>
-                  <div style={{padding:"48px 24px",textAlign:"center"}}>
-                    <div style={{fontSize:44,marginBottom:16}}>📊</div>
-                    <div style={{fontSize:15,fontWeight:600,color:"#e2e8f0",marginBottom:8}}>Aucun ETF renseigné</div>
-                    <div style={{fontSize:13,color:"#7c8fa8",lineHeight:1.65}}>Allez dans l'onglet <strong style={{color:"#a5b4fc"}}>ETF</strong> pour ajouter vos positions.</div>
+              {/* Recommendations */}
+              {(recs.length>0||positives.length>0)&&(
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  {/* Section header */}
+                  <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 2px",marginBottom:2}}>
+                    <div style={{flex:1,height:1,background:"linear-gradient(90deg,rgba(99,102,241,0.4),transparent)"}}/>
+                    <span style={{fontSize:11,fontWeight:700,color:"#c7d2fe",letterSpacing:2,textTransform:"uppercase"}}>Analyse & Recommandations</span>
+                    <div style={{flex:1,height:1,background:"linear-gradient(270deg,rgba(99,102,241,0.4),transparent)"}}/>
                   </div>
-                </GlassCard>
+
+                  {/* Positive feedback — always shown */}
+                  {positives.map((p,i)=>(
+                    <div key={i} style={{background:"rgba(74,222,128,0.06)",border:"1px solid rgba(74,222,128,0.15)",borderRadius:16,padding:"13px 16px",display:"flex",gap:10,alignItems:"flex-start"}}>
+                      <span style={{fontSize:16,flexShrink:0}}>🌟</span>
+                      <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.75)",lineHeight:1.65}}>{p}</p>
+                    </div>
+                  ))}
+
+                  {/* Essential recs */}
+                  {recs.filter(r=>r.level==="essential").map((r,i)=>(
+                    <div key={i} style={{background:r.bg,border:`1px solid ${r.border}`,borderRadius:16,padding:"14px 16px"}}>
+                      <div style={{fontSize:12,fontWeight:700,color:r.color,marginBottom:5}}>{r.title}</div>
+                      <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.7)",lineHeight:1.65}}>{r.text}</p>
+                      {r.cat&&CAT[r.cat]&&(
+                        <button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:r.color,fontSize:12,fontWeight:600}}>
+                          <span style={{fontSize:14,lineHeight:1}}>→</span>
+                          <span style={{borderBottom:`1px solid ${r.color}55`}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Advanced toggle */}
+                  {recs.filter(r=>r.level==="advanced").length>0&&(
+                    <button onClick={()=>setRecMode(m=>m==="essential"?"advanced":"essential")}
+                      style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:"11px 16px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",WebkitTapHighlightColor:"transparent"}}>
+                      <span style={{fontSize:12,color:"rgba(255,255,255,0.5)",fontWeight:500}}>
+                        {recMode==="essential"
+                          ? `Analyse avancée · ${recs.filter(r=>r.level==="advanced").length} point${recs.filter(r=>r.level==="advanced").length>1?"s":""} supplémentaire${recs.filter(r=>r.level==="advanced").length>1?"s":""}`
+                          : "Masquer l'analyse avancée"}
+                      </span>
+                      <span style={{fontSize:14,color:"rgba(255,255,255,0.3)",transition:"transform 0.2s",transform:recMode==="advanced"?"rotate(180deg)":"rotate(0deg)"}}>›</span>
+                    </button>
+                  )}
+
+                  {/* Advanced recs */}
+                  {recMode==="advanced"&&recs.filter(r=>r.level==="advanced").map((r,i)=>(
+                    <div key={i} style={{background:r.bg,border:`1px solid ${r.border}`,borderRadius:16,padding:"14px 16px",animation:"fadeUp .3s cubic-bezier(.16,1,.3,1)"}}>
+                      <div style={{fontSize:12,fontWeight:700,color:r.color,marginBottom:5}}>{r.title}</div>
+                      <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.7)",lineHeight:1.65}}>{r.text}</p>
+                      {r.cat&&CAT[r.cat]&&(
+                        <button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:r.color,fontSize:12,fontWeight:600}}>
+                          <span style={{fontSize:14,lineHeight:1}}>→</span>
+                          <span style={{borderBottom:`1px solid ${r.color}55`}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!holdings.length&&(
+                <div style={{padding:1.5,borderRadius:22,background:"linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.1))"}}>
+                  <div style={{background:"rgba(8,8,16,0.92)",borderRadius:20.5,padding:"48px 24px",textAlign:"center"}}>
+                    <div style={{fontSize:48,marginBottom:16}}>📊</div>
+                    <div style={{fontSize:16,fontWeight:700,color:"#f1f5f9",marginBottom:10}}>Aucun ETF renseigné</div>
+                    <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7}}>Allez dans l'onglet <strong style={{color:"#a5b4fc"}}>ETF</strong> pour ajouter vos positions.</div>
+                  </div>
+                </div>
               )}
             </div>
           )}
 
-          {tab==="geo"&&(<div className="anim">{Object.keys(scores.geoMap).length>0?<ColorBars data={scores.geoMap} title="Répartition géographique" infoMap={GEO_INFO}/>:<div style={{textAlign:"center",padding:"48px 0",color:"#7c8fa8",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}</div>)}
-          {tab==="sec"&&(<div className="anim">{Object.keys(scores.secMap).length>0?<ColorBars data={scores.secMap} title="Répartition sectorielle" infoMap={SECTOR_INFO}/>:<div style={{textAlign:"center",padding:"48px 0",color:"#7c8fa8",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}</div>)}
+          {tab==="geo"&&(<div className="anim">{Object.keys(scores.geoMap).length>0?<ColorBars data={scores.geoMap} title="Répartition géographique" infoMap={GEO_INFO}/>:<div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.3)",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}</div>)}
+          {tab==="sec"&&(<div className="anim">{Object.keys(scores.secMap).length>0?<ColorBars data={scores.secMap} title="Répartition sectorielle" infoMap={SECTOR_INFO}/>:<div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.3)",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}</div>)}
 
           {/* ETF TAB */}
           {tab==="ptf"&&(
             <div className="anim" style={{display:"flex",flexDirection:"column",gap:14}}>
-              <GlassCard>
-                <div style={{padding:"18px 16px"}}>
-                  <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",letterSpacing:2,textTransform:"uppercase",marginBottom:14}}>Ajouter un ETF</div>
-                  <Search onAdd={addHolding} suggestions={buildSuggestions(scores, holdings)}/>
+              <div style={{padding:1.5,borderRadius:22,background:"linear-gradient(135deg,rgba(99,102,241,0.35),rgba(139,92,246,0.2))"}}>
+                <div style={{background:"rgba(8,8,16,0.92)",borderRadius:20.5,padding:"18px 16px"}}>
+                  <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.3)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:14}}>Ajouter un ETF</div>
+                  <Search onAdd={addHolding} suggestions={suggestions}/>
                 </div>
-              </GlassCard>
+              </div>
 
               {holdings.length>0&&(
                 <div>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,padding:"0 4px"}}>
-                    <span style={{fontSize:11,fontWeight:700,color:"#94a3b8",letterSpacing:2,textTransform:"uppercase"}}>Positions</span>
-                    <button onClick={()=>setConfirmReset(true)} style={{background:"none",border:"none",color:"#f87171",fontSize:12,cursor:"pointer",fontWeight:500}}>Tout effacer</button>
+                    <span style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.3)",letterSpacing:2.5,textTransform:"uppercase"}}>Positions</span>
+                    <button onClick={()=>setConfirmReset(true)} style={{background:"none",border:"none",color:"rgba(248,113,113,0.6)",fontSize:12,cursor:"pointer",fontWeight:500}}>Tout effacer</button>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     {holdings.map((h,i)=>{
                       const pct=total>0?(h.amount/total*100):0;
                       const etf=DB[h.ticker];
-                      const dotColor=BAR[i%BAR.length];
+                      const c=PALETTE[i%PALETTE.length];
                       const isEditing=editAmt[h.ticker]!==undefined;
                       return(
-                        <GlassCard key={h.ticker}>
-                          <div style={{padding:"13px 14px",display:"flex",alignItems:"center",gap:11,
-                            animation:`fadeUp 0.35s ${i*0.04}s cubic-bezier(.16,1,.3,1) both`}}>
-                            <div style={{width:8,height:8,borderRadius:"50%",background:dotColor,flexShrink:0,boxShadow:`0 0 10px ${dotColor}99`}}/>
+                        <div key={h.ticker} style={{padding:1.5,borderRadius:16,background:`linear-gradient(135deg,${c}30,${c}10)`,animation:`fadeUp .35s ${i*.04}s cubic-bezier(.16,1,.3,1) both`}}>
+                          <div style={{background:"rgba(8,8,16,0.88)",borderRadius:14.5,padding:"13px 14px",display:"flex",alignItems:"center",gap:11}}>
+                            <div style={{width:8,height:8,borderRadius:"50%",background:c,flexShrink:0,boxShadow:`0 0 12px ${c}`}}/>
                             <div style={{flex:1,minWidth:0}}>
-                              <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:2}}>
-                                <span style={{fontSize:13,fontWeight:700,fontFamily:"ui-monospace,monospace",color:"#a5b4fc",letterSpacing:0.5}}>{h.ticker}</span>
-                                <span style={{fontSize:10,color:"#7c8fa8",fontWeight:500}}>{pct.toFixed(1)}%</span>
-                                {etf&&<span style={{fontSize:10,color:ASSET_COLORS[etf.assetClass]||"#7c8fa8",fontWeight:600,background:`${ASSET_COLORS[etf.assetClass]||"#818cf8"}15`,padding:"1px 6px",borderRadius:4}}>{ASSET_LABELS[etf.assetClass]||etf.assetClass}</span>}
+                              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                                <span style={{fontSize:13,fontWeight:700,color:"#f1f5f9",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{h.name}</span>
+                                <span style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:600,flexShrink:0}}>{pct.toFixed(1)}%</span>
                               </div>
-                              <div style={{fontSize:11,color:"#7c8fa8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{h.name}</div>
+                              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                                {etf?.isin&&<span style={{fontSize:10,fontFamily:"'SF Mono',monospace",color:"rgba(255,255,255,0.25)",letterSpacing:.4}}>{etf.isin}</span>}
+                                {etf&&<span style={{fontSize:9,color:ASSET_COLORS[etf.assetClass]||"#818cf8",fontWeight:700,background:`${ASSET_COLORS[etf.assetClass]||"#818cf8"}15`,padding:"1px 6px",borderRadius:4,letterSpacing:.3,flexShrink:0}}>{ASSET_LABELS[etf.assetClass]||etf.assetClass}</span>}
+
+                              </div>
                             </div>
                             <input type="number" value={isEditing?editAmt[h.ticker]:h.amount}
                               onFocus={()=>setEditAmt(p=>({...p,[h.ticker]:String(h.amount)}))}
                               onChange={e=>setEditAmt(p=>({...p,[h.ticker]:e.target.value}))}
-                              onBlur={()=>{ updateAmount(h.ticker,editAmt[h.ticker]); setEditAmt(p=>{const n={...p};delete n[h.ticker];return n;}); }}
-                              style={{width:76,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"5px 8px",color:"#e2e8f0",fontSize:12,textAlign:"right",fontFamily:"monospace"}}/>
-                            <span style={{fontSize:11,color:"#7c8fa8",flexShrink:0}}>€</span>
-                            <button onClick={()=>removeHolding(h.ticker)} style={{background:"none",border:"none",color:"#4a5568",cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 2px",flexShrink:0,transition:"color 0.15s"}}
-                              onMouseEnter={e=>e.currentTarget.style.color="#f87171"}
-                              onMouseLeave={e=>e.currentTarget.style.color="#4a5568"}>×</button>
+                              onBlur={()=>{updateAmount(h.ticker,editAmt[h.ticker]);setEditAmt(p=>{const n={...p};delete n[h.ticker];return n;});}}
+                              style={{width:76,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"5px 8px",color:"#f1f5f9",fontSize:12,textAlign:"right",fontFamily:"monospace"}}/>
+                            <span style={{fontSize:11,color:"rgba(255,255,255,0.25)",flexShrink:0}}>€</span>
+                            <button onClick={()=>removeHolding(h.ticker)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.15)",cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 2px",flexShrink:0,transition:"color .15s"}} onMouseEnter={e=>e.currentTarget.style.color="#f87171"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.15)"}>×</button>
                           </div>
-                        </GlassCard>
+                        </div>
                       );
                     })}
                   </div>
@@ -1200,49 +928,42 @@ export default function App() {
         </div>
       </div>
 
-      <Toaster message={toast.msg} visible={toast.visible}/>
-
-      {/* Install prompt toast */}
-      <div style={{
-        position:"fixed", bottom:72, left:"50%",
-        transform:`translateX(-50%) translateY(${installToast?0:16}px)`,
-        opacity: installToast ? 1 : 0,
-        transition:"all 0.4s cubic-bezier(.16,1,.3,1)",
-        background:"rgba(30,30,42,0.97)", border:"1px solid rgba(129,140,248,0.25)",
-        borderRadius:20, padding:"12px 18px", zIndex:9000,
-        display:"flex", alignItems:"center", gap:10,
-        boxShadow:"0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,102,241,0.1)",
-        pointerEvents:"none", maxWidth:320, width:"calc(100% - 40px)",
-      }}>
+      {/* Toasts */}
+      <Toast msg={toast.msg} visible={toast.visible}/>
+      <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${installToast?0:12}px)`,opacity:installToast?1:0,transition:"all .4s cubic-bezier(.16,1,.3,1)",background:"rgba(20,20,32,0.97)",border:"1px solid rgba(129,140,248,0.25)",borderRadius:20,padding:"12px 18px",zIndex:8999,display:"flex",alignItems:"center",gap:10,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:"none",maxWidth:320,width:"calc(100% - 40px)"}}>
         <span style={{fontSize:20,flexShrink:0}}>📲</span>
-        <div>
-          <div style={{fontSize:13,color:"#e2e8f0",fontWeight:600,marginBottom:2}}>Installer l'app</div>
-          <div style={{fontSize:11,color:"#7c8fa8",lineHeight:1.5}}>Partager → Sur l'écran d'accueil pour une expérience optimale</div>
-        </div>
+        <div><div style={{fontSize:13,color:"#f1f5f9",fontWeight:600,marginBottom:2}}>Installer l'app</div><div style={{fontSize:11,color:"rgba(255,255,255,0.4)",lineHeight:1.5}}>Partager → Sur l'écran d'accueil</div></div>
       </div>
 
       {/* Disclaimer banner */}
       {disclaimerSeen&&(
-        <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,
-          background:"rgba(14,14,15,0.95)",borderTop:"1px solid rgba(255,255,255,0.06)",
-          padding:"8px 20px calc(8px + env(safe-area-inset-bottom))",textAlign:"center",zIndex:40,backdropFilter:"blur(10px)"}}>
-          <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",letterSpacing:0.3}}>
-            À titre informatif uniquement — pas un conseil en investissement · <button onClick={()=>setDisclaimerSeen(false)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:10,cursor:"pointer",padding:0,textDecoration:"underline"}}>Revoir</button>
-          </span>
+        <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:"rgba(8,8,16,0.95)",borderTop:"1px solid rgba(255,255,255,0.05)",padding:"8px 20px",textAlign:"center",zIndex:40,backdropFilter:"blur(10px)"}}>
+          <span style={{fontSize:10,color:"rgba(255,255,255,0.18)",letterSpacing:.3}}>À titre informatif — pas un conseil en investissement · <button onClick={()=>setDisclaimerSeen(false)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:10,cursor:"pointer",padding:0,textDecoration:"underline"}}>Revoir</button></span>
         </div>
+      )}
+
+      {/* Rec action modal */}
+      {activeRec&&CAT[activeRec]&&(
+        <SuggestionModal
+          catalog={CAT[activeRec]}
+          onSelect={ticker=>{
+            // Switch to ETF tab and pre-fill
+            setTab("ptf");
+            setActiveRec(null);
+          }}
+          onClose={()=>setActiveRec(null)}
+        />
       )}
 
       {/* Reset confirm */}
       {confirmReset&&(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.78)",backdropFilter:"blur(12px)",
-          display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:999,padding:"0 16px 40px"}}>
-          <div style={{background:"rgba(18,14,18,0.97)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:20,
-            padding:"28px 24px",width:"100%",maxWidth:398,textAlign:"center",backdropFilter:"blur(20px)"}}>
-            <div style={{fontSize:15,fontWeight:700,color:"#e2e8f0",marginBottom:8}}>Effacer le portefeuille ?</div>
-            <div style={{fontSize:13,color:"#94a3b8",marginBottom:24,lineHeight:1.65}}>Toutes vos positions seront supprimées. Cette action est irréversible.</div>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",backdropFilter:"blur(12px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:999,padding:"0 16px 40px"}}>
+          <div style={{background:"#0e0e16",border:"1px solid rgba(255,255,255,0.1)",borderRadius:24,padding:"28px 24px",width:"100%",maxWidth:398,textAlign:"center"}}>
+            <div style={{fontSize:15,fontWeight:700,color:"#f1f5f9",marginBottom:8}}>Effacer le portefeuille ?</div>
+            <div style={{fontSize:13,color:"#94a3b8",marginBottom:24,lineHeight:1.65}}>Toutes vos positions seront supprimées. Irréversible.</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <button onClick={()=>{setHoldings([]);setConfirmReset(false);}} style={{background:"rgba(248,113,113,0.12)",border:"1px solid rgba(248,113,113,0.3)",borderRadius:14,padding:"15px",color:"#fca5a5",fontSize:15,fontWeight:600,cursor:"pointer",width:"100%"}}>Effacer tout</button>
-              <button onClick={()=>setConfirmReset(false)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px",color:"#e2e8f0",fontSize:15,cursor:"pointer",width:"100%"}}>Annuler</button>
+              <button onClick={()=>setConfirmReset(false)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px",color:"#f1f5f9",fontSize:15,cursor:"pointer",width:"100%"}}>Annuler</button>
             </div>
           </div>
         </div>
