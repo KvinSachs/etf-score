@@ -995,6 +995,9 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
           </div>
         )}
 
+        <p style={{margin:"0 0 14px",fontSize:11,color:"rgba(255,255,255,0.25)",lineHeight:1.6,textAlign:"center",fontStyle:"italic"}}>
+          Ce calcul suppose un versement constant depuis la date de départ. Les changements de montant ne sont pas pris en compte.
+        </p>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <button onClick={()=>{if(parseFloat(amount)>0&&startDate){onSave({freq,amount:parseFloat(amount),startDate});onClose();}}}
             style={{width:"100%",background:parseFloat(amount)>0?"#0ecb81":"rgba(255,255,255,0.06)",border:"none",borderRadius:14,padding:"16px",color:parseFloat(amount)>0?"#000":"rgba(255,255,255,0.3)",fontSize:15,fontWeight:700,cursor:"pointer",transition:"all .2s"}}>
