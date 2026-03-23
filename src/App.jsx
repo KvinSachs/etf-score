@@ -795,12 +795,12 @@ function Onboarding({onAdd,onDone}){
       </div>
 
       {/* ── UNIFIED TRACK — all 3 slides ── */}
-      <div style={{flex:1,display:"flex",overflow:"hidden",paddingTop:"calc(env(safe-area-inset-top,16px) + 52px)"}}>
-        <div style={{display:"flex",height:"100%",width:`${TOTAL_SLIDES*100}%`,transform:`translateX(calc(${-step*(100/TOTAL_SLIDES)}% + ${dragX/TOTAL_SLIDES}px))`,transition:isDragging.current?"none":"transform .4s cubic-bezier(.16,1,.3,1)",willChange:"transform"}}>
+      <div style={{flex:1,overflow:"hidden",position:"relative",paddingTop:"calc(env(safe-area-inset-top,16px) + 52px)"}}>
+        <div style={{display:"flex",height:"100%",width:`${TOTAL_SLIDES*100}%`,transform:`translateX(calc(${-step*(100/TOTAL_SLIDES)}% + ${dragX}px))`,transition:isDragging.current?"none":"transform .4s cubic-bezier(.16,1,.3,1)",willChange:"transform"}}>
 
           {/* Slide 1 & 2 — info */}
           {screens.map((s,i)=>(
-            <div key={i} style={{width:`${100/TOTAL_SLIDES}%`,flexShrink:0,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"0 0 48px",boxSizing:"border-box"}}>
+            <div key={i} style={{width:`${100/TOTAL_SLIDES}%`,flexShrink:0,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"0 0 48px",boxSizing:"border-box",overflow:"hidden"}}>
               <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,textAlign:"center",padding:"0 32px"}}>
                 {s.icon}
                 <div>
@@ -816,7 +816,7 @@ function Onboarding({onAdd,onDone}){
           ))}
 
           {/* Slide 3 — Add ETF */}
-          <div style={{width:`${100/TOTAL_SLIDES}%`,flexShrink:0,display:"flex",flexDirection:"column",position:"relative",boxSizing:"border-box"}}>
+          <div style={{width:`${100/TOTAL_SLIDES}%`,flexShrink:0,display:"flex",flexDirection:"column",position:"relative",boxSizing:"border-box",overflow:"hidden"}}>
             <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"0 24px",paddingBottom:120,transform:inputFocused?"translateY(-8vh)":"translateY(0)",transition:"transform .35s cubic-bezier(.16,1,.3,1)"}}>
               <div style={{textAlign:"center",marginBottom:28,marginTop:"12vh"}}>
                 <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:8,letterSpacing:-.3}}>Constituez votre portefeuille</div>
