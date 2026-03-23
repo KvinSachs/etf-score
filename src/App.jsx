@@ -800,17 +800,11 @@ function Onboarding({onAdd,onDone}){
 
           {/* Slide 1 & 2 — info */}
           {screens.map((s,i)=>(
-            <div key={i} style={{width:`${100/TOTAL_SLIDES}%`,flexShrink:0,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"0 0 48px",boxSizing:"border-box",overflow:"hidden"}}>
-              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,textAlign:"center",padding:"0 32px"}}>
-                {s.icon}
-                <div>
-                  <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{s.title}</div>
-                  <div style={{fontSize:15,color:"rgba(255,255,255,0.4)",lineHeight:1.75}}>{s.text}</div>
-                </div>
-              </div>
-              <div style={{padding:"0 24px"}}>
-                <Dots/>
-                <button onClick={()=>setStep(st=>st+1)} style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2}}>Suivant</button>
+            <div key={i} style={{width:`${100/TOTAL_SLIDES}%`,flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 32px",boxSizing:"border-box",overflow:"hidden",paddingBottom:120}}>
+              {s.icon}
+              <div style={{marginTop:36,textAlign:"center"}}>
+                <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{s.title}</div>
+                <div style={{fontSize:15,color:"rgba(255,255,255,0.4)",lineHeight:1.75}}>{s.text}</div>
               </div>
             </div>
           ))}
@@ -897,6 +891,19 @@ function Onboarding({onAdd,onDone}){
 
         </div>
       </div>
+
+      {/* ── FIXED BOTTOM CONTROLS — outside track, never moves ── */}
+      {step<2&&(
+        <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"12px 24px 40px",background:"linear-gradient(to bottom,transparent,#050506 50%)"}}>
+          <Dots/>
+          <button onClick={()=>setStep(s=>s+1)}
+            style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .15s"}}
+            onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
+            onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}>
+            Suivant
+          </button>
+        </div>
+      )}
     </div>
   );
 }
