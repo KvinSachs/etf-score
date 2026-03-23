@@ -1178,11 +1178,6 @@ export default function App(){
             <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
               {Object.keys(scores.geoMap).length>0?(
                 <>
-                  {/* Donut */}
-                  <Glass style={{padding:"24px 16px"}}>
-                    <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:20,textAlign:"center"}}>Répartition géographique</div>
-                    <Donut data={scores.geoMap} palette={BARS}/>
-                  </Glass>
                   {/* Context stats */}
                   <Glass style={{padding:"18px 18px"}}>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
@@ -1209,11 +1204,6 @@ export default function App(){
             <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
               {Object.keys(scores.secMap).length>0?(
                 <>
-                  {/* Donut */}
-                  <Glass style={{padding:"24px 16px"}}>
-                    <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:20,textAlign:"center"}}>Répartition sectorielle</div>
-                    <Donut data={scores.secMap} palette={BARS}/>
-                  </Glass>
                   {/* Context stats */}
                   <Glass style={{padding:"18px 18px"}}>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
