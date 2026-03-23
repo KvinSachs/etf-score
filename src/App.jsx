@@ -864,7 +864,7 @@ export default function App(){
     setReady(true);
     const onboardingSeen=localStorage.getItem("etf-onboarding-seen");
     if(!onboardingSeen) setOnboarding(true);
-    setTimeout(()=>setSplash(false), 1800);
+    setTimeout(()=>setSplash(false), 2800);
     const standalone=window.navigator.standalone||window.matchMedia("(display-mode: standalone)").matches;
     if(!standalone&&!localStorage.getItem("etf-install-seen")){setTimeout(()=>{setInstallToast(true);setTimeout(()=>setInstallToast(false),6000);localStorage.setItem("etf-install-seen","1");},2500);}
   },[]);
@@ -954,32 +954,6 @@ export default function App(){
             </div>
           </div>
         </header>
-
-        {/* ── HERO ── */}
-        {holdings.length>0&&(
-          <div style={{margin:"14px 16px 0"}}>
-            <Glass style={{padding:"22px 20px"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                <div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:8,fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontWeight:600}}>Score global</div>
-                  <div style={{display:"flex",alignItems:"baseline",gap:4}}>
-                    <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:52,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-2}}>{scores.total.toFixed(1)}</span>
-                    <span style={{fontSize:18,color:"rgba(255,255,255,0.2)",fontWeight:300}}>/20</span>
-                  </div>
-                  <div style={{fontSize:11,color:g.text,marginTop:4,fontWeight:500}}>{g.label}</div>
-                </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4,marginBottom:8}}>
-                    <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontWeight:600}}>Apports</span>
-                    <IBtn label="Montant investi" text="Somme totale versée — ne tient pas compte des variations de marché."/>
-                  </div>
-                  <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:24,fontWeight:800,color:"rgba(255,255,255,0.8)",letterSpacing:-.5}}>{total.toLocaleString("fr-FR")} €</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,0.25)",marginTop:4}}>{holdings.length} position{holdings.length>1?"s":""}</div>
-                </div>
-              </div>
-            </Glass>
-          </div>
-        )}
 
         {/* ── CONTENT ── */}
         <div style={{padding:"14px 16px 90px"}}>
