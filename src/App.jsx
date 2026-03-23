@@ -93,7 +93,11 @@ function assetClassScore(holdings,total){if(!holdings.length)return 0;const cls=
 function currencyScore(holdings,total){if(!holdings.length)return 0;const cur={};for(const h of holdings){const e=DB[h.ticker];if(!e)continue;const w=h.amount/total;for(const[k,v] of Object.entries(e.currencies||{}))cur[k]=(cur[k]||0)+(v/100)*w;}const n=Math.max(Object.keys(cur).length,4);return hhiToScore(hhi(cur),n);}
 function computeScores(holdings){
   if(!holdings.length)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
-  const total=holdings.reduce((s,h)=>s+h.amount,0);if(!total)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
+  const total=holdings.reduce((s,h)=>{
+    const plan=plans[h.ticker];
+    const stats=plan?planStats(plan):null;
+    return s+h.amount+(stats?.totalInvested||0);
+  },0);if(!total)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
   const geoMap={},secMap={},classes={},curs={};
   for(const h of holdings){const e=DB[h.ticker];if(!e)continue;const w=h.amount/total;for(const[k,v] of Object.entries(e.geo))geoMap[k]=(geoMap[k]||0)+(v/100)*w*100;for(const[k,v] of Object.entries(e.sec))secMap[k]=(secMap[k]||0)+(v/100)*w*100;classes[e.assetClass]=(classes[e.assetClass]||0)+w*100;for(const[k,v] of Object.entries(e.currencies||{}))curs[k]=(curs[k]||0)+(v/100)*w*100;}
   const s1=geoScore(geoMap),s2=sectorScore(secMap),s3=overlapScore(holdings,total),s4=assetClassScore(holdings,total),s5=currencyScore(holdings,total);
@@ -970,7 +974,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
 
         {/* Start date */}
         <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Depuis le</div>
-        <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
+        <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
           style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:"rgba(255,255,255,0.7)",fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:"dark"}}/>
 
         {/* Preview */}
@@ -1061,7 +1065,11 @@ export default function App(){
   const recs=useMemo(()=>buildRecs(scores,holdings,holdings.reduce((s,h)=>s+h.amount,0)),[scores,holdings]);
   const positives=useMemo(()=>buildPositive(scores,holdings),[scores,holdings]);
   const suggestions=useMemo(()=>buildSuggestions(scores,holdings),[scores,holdings]);
-  const total=holdings.reduce((s,h)=>s+h.amount,0);
+  const total=holdings.reduce((s,h)=>{
+    const plan=plans[h.ticker];
+    const stats=plan?planStats(plan):null;
+    return s+h.amount+(stats?.totalInvested||0);
+  },0);
   const g=sc(scores.total);
 
   if(!ready)return(<div style={{minHeight:"100vh",background:"#050506",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.1)",borderTopColor:"#0ecb81",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
