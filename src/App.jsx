@@ -91,32 +91,9 @@ function sectorScore(m){if(!Object.keys(m).length)return 0;const n=Math.max(Obje
 function overlapScore(holdings,total){if(holdings.length<=1)return 1;let p=0;for(let i=0;i<holdings.length;i++)for(let j=i+1;j<holdings.length;j++){const a=holdings[i],b=holdings[j],eA=DB[a.ticker],eB=DB[b.ticker];if(!eA||!eB)continue;const ov=(eA.overlaps?.[b.ticker]||0)/100;p+=ov*(Math.min(a.amount,b.amount)/total)*2;}return Math.max(0,1-p*1.5);}
 function assetClassScore(holdings,total){if(!holdings.length)return 0;const cls={};for(const h of holdings){const e=DB[h.ticker];if(!e)continue;cls[e.assetClass]=(cls[e.assetClass]||0)+h.amount/total;}const ideal={equity:.60,bond:.25,real_estate:.08,commodity:.07};const n=Math.min(Object.keys(cls).length/4,1);let dev=0;for(const[k,v] of Object.entries(ideal))dev+=Math.abs((cls[k]||0)-v)*.5;return Math.max(0,n-Math.min(.4,dev));}
 function currencyScore(holdings,total){if(!holdings.length)return 0;const cur={};for(const h of holdings){const e=DB[h.ticker];if(!e)continue;const w=h.amount/total;for(const[k,v] of Object.entries(e.currencies||{}))cur[k]=(cur[k]||0)+(v/100)*w;}const n=Math.max(Object.keys(cur).length,4);return hhiToScore(hhi(cur),n);}
-function planStats(plan){
-  if(!plan?.amount||!plan?.startDate) return null;
-  const start=new Date(plan.startDate);
-  const now=new Date();
-  const freq=FREQS.find(f=>f.id===plan.freq)||FREQS[1];
-  const weeksElapsed=Math.max(0,(now-start)/(1000*60*60*24*7));
-  const periods=Math.floor(weeksElapsed/freq.weeks*freq.weeks/freq.weeks);
-  // simpler: weeks elapsed / weeks per period
-  const periodsElapsed=Math.floor(weeksElapsed/(52/freq.weeks));
-  const totalInvested=periodsElapsed*plan.amount;
-  const perYear=plan.amount*freq.weeks;
-  // next date
-  const msPerPeriod=(52/freq.weeks)*7*24*60*60*1000;
-  const periodsSinceStart=Math.floor((now-start)/msPerPeriod);
-  const nextDate=new Date(start.getTime()+(periodsSinceStart+1)*msPerPeriod);
-  const daysUntilNext=Math.ceil((nextDate-now)/(1000*60*60*24));
-  return{totalInvested,perYear,daysUntilNext,periodsElapsed,freq};
-}
-
 function computeScores(holdings){
   if(!holdings.length)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
-  const total=holdings.reduce((s,h)=>{
-    const plan=plans[h.ticker];
-    const stats=plan?planStats(plan):null;
-    return s+h.amount+(stats?.totalInvested||0);
-  },0);if(!total)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
+  const total=holdings.reduce((s,h)=>s+h.amount,0);if(!total)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
   const geoMap={},secMap={},classes={},curs={};
   for(const h of holdings){const e=DB[h.ticker];if(!e)continue;const w=h.amount/total;for(const[k,v] of Object.entries(e.geo))geoMap[k]=(geoMap[k]||0)+(v/100)*w*100;for(const[k,v] of Object.entries(e.sec))secMap[k]=(secMap[k]||0)+(v/100)*w*100;classes[e.assetClass]=(classes[e.assetClass]||0)+w*100;for(const[k,v] of Object.entries(e.currencies||{}))curs[k]=(curs[k]||0)+(v/100)*w*100;}
   const s1=geoScore(geoMap),s2=sectorScore(secMap),s3=overlapScore(holdings,total),s4=assetClassScore(holdings,total),s5=currencyScore(holdings,total);
@@ -931,6 +908,24 @@ const FREQS=[
   {id:"quarterly",label:"Trimestriel",short:"/ trim.",weeks:13},
 ];
 
+function planStats(plan){
+  if(!plan?.amount||!plan?.startDate) return null;
+  const start=new Date(plan.startDate);
+  const now=new Date();
+  const freq=FREQS.find(f=>f.id===plan.freq)||FREQS[1];
+  const weeksElapsed=Math.max(0,(now-start)/(1000*60*60*24*7));
+  const periods=Math.floor(weeksElapsed/freq.weeks*freq.weeks/freq.weeks);
+  // simpler: weeks elapsed / weeks per period
+  const periodsElapsed=Math.floor(weeksElapsed/(52/freq.weeks));
+  const totalInvested=periodsElapsed*plan.amount;
+  const perYear=plan.amount*freq.weeks;
+  // next date
+  const msPerPeriod=(52/freq.weeks)*7*24*60*60*1000;
+  const periodsSinceStart=Math.floor((now-start)/msPerPeriod);
+  const nextDate=new Date(start.getTime()+(periodsSinceStart+1)*msPerPeriod);
+  const daysUntilNext=Math.ceil((nextDate-now)/(1000*60*60*24));
+  return{totalInvested,perYear,daysUntilNext,periodsElapsed,freq};
+}
 
 function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
   const[freq,setFreq]=useState(plan?.freq||"monthly");
@@ -975,7 +970,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
 
         {/* Start date */}
         <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Depuis le</div>
-        <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
+        <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
           style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:"rgba(255,255,255,0.7)",fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:"dark"}}/>
 
         {/* Preview */}
@@ -1030,6 +1025,7 @@ export default function App(){
   const[savedAt,setSavedAt]=useState(null);
   const[toast,setToast]=useState({msg:"",visible:false});
   const[onboarding,setOnboarding]=useState(false);
+  const[onboardStep,setOnboardStep]=useState(0);
   const[splash,setSplash]=useState(true);
   const[activeRec,setActiveRec]=useState(null);
   const[plans,setPlans]=useState({}); // {ticker: {freq, amount, startDate}}
@@ -1065,11 +1061,7 @@ export default function App(){
   const recs=useMemo(()=>buildRecs(scores,holdings,holdings.reduce((s,h)=>s+h.amount,0)),[scores,holdings]);
   const positives=useMemo(()=>buildPositive(scores,holdings),[scores,holdings]);
   const suggestions=useMemo(()=>buildSuggestions(scores,holdings),[scores,holdings]);
-  const total=holdings.reduce((s,h)=>{
-    const plan=plans[h.ticker];
-    const stats=plan?planStats(plan):null;
-    return s+h.amount+(stats?.totalInvested||0);
-  },0);
+  const total=holdings.reduce((s,h)=>s+h.amount,0);
   const g=sc(scores.total);
 
   if(!ready)return(<div style={{minHeight:"100vh",background:"#050506",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.1)",borderTopColor:"#0ecb81",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
