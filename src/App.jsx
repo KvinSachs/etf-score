@@ -93,12 +93,7 @@ function assetClassScore(holdings,total){if(!holdings.length)return 0;const cls=
 function currencyScore(holdings,total){if(!holdings.length)return 0;const cur={};for(const h of holdings){const e=DB[h.ticker];if(!e)continue;const w=h.amount/total;for(const[k,v] of Object.entries(e.currencies||{}))cur[k]=(cur[k]||0)+(v/100)*w;}const n=Math.max(Object.keys(cur).length,4);return hhiToScore(hhi(cur),n);}
 function computeScores(holdings){
   if(!holdings.length)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
-  const planTotal=useMemo(()=>holdings.reduce((s,h)=>{
-    const plan=plans[h.ticker];
-    const stats=plan?planStats(plan):null;
-    return s+(stats?.totalInvested||0);
-  },0),[holdings,plans]);
-  const total=holdings.reduce((s,h)=>s+h.amount,0)+planTotal;if(!total)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
+  const total=holdings.reduce((s,h)=>s+h.amount,0);if(!total)return{total:0,geo:0,sector:0,overlap:0,assetClass:0,currency:0,geoMap:{},secMap:{},classes:{},currencies:{}};
   const geoMap={},secMap={},classes={},curs={};
   for(const h of holdings){const e=DB[h.ticker];if(!e)continue;const w=h.amount/total;for(const[k,v] of Object.entries(e.geo))geoMap[k]=(geoMap[k]||0)+(v/100)*w*100;for(const[k,v] of Object.entries(e.sec))secMap[k]=(secMap[k]||0)+(v/100)*w*100;classes[e.assetClass]=(classes[e.assetClass]||0)+w*100;for(const[k,v] of Object.entries(e.currencies||{}))curs[k]=(curs[k]||0)+(v/100)*w*100;}
   const s1=geoScore(geoMap),s2=sectorScore(secMap),s3=overlapScore(holdings,total),s4=assetClassScore(holdings,total),s5=currencyScore(holdings,total);
@@ -1066,12 +1061,7 @@ export default function App(){
   const recs=useMemo(()=>buildRecs(scores,holdings,holdings.reduce((s,h)=>s+h.amount,0)),[scores,holdings]);
   const positives=useMemo(()=>buildPositive(scores,holdings),[scores,holdings]);
   const suggestions=useMemo(()=>buildSuggestions(scores,holdings),[scores,holdings]);
-  const planTotal=useMemo(()=>holdings.reduce((s,h)=>{
-    const plan=plans[h.ticker];
-    const stats=plan?planStats(plan):null;
-    return s+(stats?.totalInvested||0);
-  },0),[holdings,plans]);
-  const total=holdings.reduce((s,h)=>s+h.amount,0)+planTotal;
+  const total=holdings.reduce((s,h)=>s+h.amount,0);
   const g=sc(scores.total);
 
   if(!ready)return(<div style={{minHeight:"100vh",background:"#050506",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.1)",borderTopColor:"#0ecb81",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
