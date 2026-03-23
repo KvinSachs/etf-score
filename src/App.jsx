@@ -282,6 +282,61 @@ function MiniBar({label,value,weight}){
   );
 }
 
+/* ─── DONUT CHART ────────────────────────────────────────────────────────────── */
+function Donut({data,palette,size=200}){
+  const entries=Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  if(!total)return null;
+  const cx=size/2,cy=size/2,r=size/2-18,inner=r-28;
+  let angle=-Math.PI/2;
+  const slices=entries.map(([k,v],i)=>{
+    const pct=v/total;
+    const start=angle;
+    angle+=pct*Math.PI*2;
+    const end=angle;
+    const x1=cx+r*Math.cos(start),y1=cy+r*Math.sin(start);
+    const x2=cx+r*Math.cos(end),y2=cy+r*Math.sin(end);
+    const xi1=cx+inner*Math.cos(start),yi1=cy+inner*Math.sin(start);
+    const xi2=cx+inner*Math.cos(end),yi2=cy+inner*Math.sin(end);
+    const large=pct>0.5?1:0;
+    const path=`M${xi1} ${yi1} L${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} L${xi2} ${yi2} A${inner} ${inner} 0 ${large} 0 ${xi1} ${yi1} Z`;
+    return{k,v,pct,path,color:palette[i%palette.length],mid:(start+end)/2};
+  });
+  const top=slices[0];
+  return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:20}}>
+      <div style={{position:"relative",width:size,height:size}}>
+        {/* Ambient glow */}
+        <div style={{position:"absolute",inset:0,borderRadius:"50%",background:`radial-gradient(circle,${slices[0]?.color}18 0%,transparent 65%)`,pointerEvents:"none"}}/>
+        <svg width={size} height={size} style={{position:"relative",zIndex:1}}>
+          {slices.map((s,i)=>(
+            <path key={s.k} d={s.path} fill={s.color}
+              style={{filter:`drop-shadow(0 0 6px ${s.color}55)`,transition:"opacity .2s",opacity:.9}}
+              onMouseEnter={e=>e.currentTarget.style.opacity="1"}
+              onMouseLeave={e=>e.currentTarget.style.opacity=".9"}/>
+          ))}
+          {/* Inner circle */}
+          <circle cx={cx} cy={cy} r={inner-4} fill="#050506"/>
+          {/* Center label */}
+          <text x={cx} y={cy-8} textAnchor="middle" fill="rgba(255,255,255,0.9)" fontSize="22" fontWeight="800" fontFamily="-apple-system,system-ui">{top?.pct>=0.01?(top.v).toFixed(0):""}</text>
+          <text x={cx} y={cy+10} textAnchor="middle" fill="rgba(255,255,255,0.25)" fontSize="9" fontFamily="-apple-system,system-ui">%</text>
+          <text x={cx} y={cy+26} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="9" fontFamily="-apple-system,system-ui" fontWeight="500">{top?.k?.length>12?top.k.slice(0,12)+"…":top?.k}</text>
+        </svg>
+      </div>
+      {/* Legend */}
+      <div style={{display:"flex",flexWrap:"wrap",gap:"8px 16px",justifyContent:"center",maxWidth:320}}>
+        {slices.map((s,i)=>(
+          <div key={s.k} style={{display:"flex",alignItems:"center",gap:6}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:s.color,flexShrink:0,boxShadow:`0 0 6px ${s.color}88`}}/>
+            <span style={{fontSize:11,color:"rgba(255,255,255,0.55)"}}>{s.k}</span>
+            <span style={{fontSize:11,color:s.color,fontWeight:600}}>{s.v.toFixed(1)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── BAR CHART ──────────────────────────────────────────────────────────────── */
 const BARS=["#0ecb81","rgba(255,255,255,0.7)","#f0b90b","#3b82f6","#a78bfa","#38bdf8","#ff9500","rgba(255,255,255,0.5)","#0ecb81","#f0b90b"];
 const SECTOR_INFO={"Technologie":"Logiciels, semi-conducteurs, cloud.","Finance":"Banques, assurances, gestion d'actifs.","Santé":"Pharma, biotech, dispositifs médicaux.","Industrie":"Fabrication, aérospatiale, transports.","Conso. discr.":"Mode, automobile, loisirs, e-commerce.","Conso. cour.":"Alimentation, hygiène — produits essentiels.","Énergie":"Pétrole, gaz, renouvelables.","Matériaux":"Métaux, mines, chimie.","Télécom":"Opérateurs, câble, internet.","Immobilier":"REITs et foncières cotées.","Services pub.":"Électricité, gaz, eau.","Oblig. souv.":"Obligations d'États.","Oblig. corp.":"Obligations d'entreprises.","Or":"Valeur refuge contre l'inflation."};
@@ -445,9 +500,12 @@ function Search({onAdd,suggestions=[]}){
         )}
       </div>
       <div style={{display:"flex",gap:10}}>
-        <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doAdd()}
-          onFocus={e=>e.target.style.borderColor="rgba(255,255,255,0.25)"} onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
-          placeholder="Montant (€)" style={{...inp,flex:1}}/>
+        <div style={{flex:1,position:"relative"}}>
+          <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doAdd()}
+            onFocus={e=>e.target.style.borderColor="rgba(255,255,255,0.25)"} onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
+            placeholder="Montant" style={{...inp,width:"100%",paddingRight:36}}/>
+          <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.3)",fontWeight:500,pointerEvents:"none"}}>€</span>
+        </div>
         <button onClick={doAdd} style={{background:"#0ecb81",border:"none",borderRadius:14,padding:"14px 22px",color:"#000",fontSize:18,fontWeight:800,cursor:"pointer",flexShrink:0,fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",transition:"opacity .15s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".85"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>+</button>
       </div>
@@ -805,12 +863,15 @@ function Onboarding({onAdd,onDone}){
                     </div>
                   )}
                 </div>
-                <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
-                  onKeyDown={e=>e.key==="Enter"&&addOne()}
-                  onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);if(selectedTicker&&parseFloat(amt)>0)addOne();}}
-                  onFocus={e=>{e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
-                  inputMode="decimal" placeholder="Montant investi (€) — Entrée pour valider"
-                  style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
+                <div style={{position:"relative"}}>
+                  <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
+                    onKeyDown={e=>e.key==="Enter"&&addOne()}
+                    onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);if(selectedTicker&&parseFloat(amt)>0)addOne();}}
+                    onFocus={e=>{e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
+                    inputMode="decimal" placeholder="Montant investi"
+                    style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 36px 15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
+                  <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.3)",fontWeight:500,pointerEvents:"none"}}>€</span>
+                </div>
                 {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
                 <div>
                   <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Populaires</div>
@@ -1113,8 +1174,68 @@ export default function App(){
             </div>
           )}
 
-          {tab==="geo"&&(<div style={{animation:"fadeIn .3s ease"}}>{Object.keys(scores.geoMap).length>0?<ColorBars data={scores.geoMap} title="Répartition géographique" infoMap={GEO_INFO}/>:<div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.2)",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}</div>)}
-          {tab==="sec"&&(<div style={{animation:"fadeIn .3s ease"}}>{Object.keys(scores.secMap).length>0?<ColorBars data={scores.secMap} title="Répartition sectorielle" infoMap={SECTOR_INFO}/>:<div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.2)",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}</div>)}
+          {tab==="geo"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
+              {Object.keys(scores.geoMap).length>0?(
+                <>
+                  {/* Donut */}
+                  <Glass style={{padding:"24px 16px"}}>
+                    <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:20,textAlign:"center"}}>Répartition géographique</div>
+                    <Donut data={scores.geoMap} palette={BARS}/>
+                  </Glass>
+                  {/* Context stats */}
+                  <Glass style={{padding:"18px 18px"}}>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+                      {[
+                        {label:"Zones couvertes",value:Object.keys(scores.geoMap).length,unit:""},
+                        {label:"Score géo.",value:scores.geo.toFixed(1),unit:"/20",color:sc(scores.geo).text},
+                        {label:"Marchés dév.",value:((scores.geoMap["Amér. du Nord"]||0)+(["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(scores.geoMap[k]||0),0))+(scores.geoMap["Japon"]||0)).toFixed(0),unit:"%"},
+                        {label:"Marchés ém.",value:(["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie","Afrique du Sud","Émirats Arabes","Autres EMEA"].reduce((s,k)=>s+(scores.geoMap[k]||0),0)).toFixed(0),unit:"%"},
+                      ].map(({label,value,unit,color})=>(
+                        <div key={label} style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"12px 14px"}}>
+                          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
+                          <div style={{fontSize:22,fontWeight:700,color:color||"#fff",letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:"rgba(255,255,255,0.3)",fontWeight:400}}>{unit}</span></div>
+                        </div>
+                      ))}
+                    </div>
+                  </Glass>
+                  {/* Detail bars */}
+                  <ColorBars data={scores.geoMap} title="Détail par zone" infoMap={GEO_INFO}/>
+                </>
+              ):<div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.2)",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}
+            </div>
+          )}
+          {tab==="sec"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
+              {Object.keys(scores.secMap).length>0?(
+                <>
+                  {/* Donut */}
+                  <Glass style={{padding:"24px 16px"}}>
+                    <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:20,textAlign:"center"}}>Répartition sectorielle</div>
+                    <Donut data={scores.secMap} palette={BARS}/>
+                  </Glass>
+                  {/* Context stats */}
+                  <Glass style={{padding:"18px 18px"}}>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+                      {[
+                        {label:"Secteurs couverts",value:Object.keys(scores.secMap).length,unit:""},
+                        {label:"Score secteurs",value:scores.sector.toFixed(1),unit:"/20",color:sc(scores.sector).text},
+                        {label:"Secteur dominant",value:Object.entries(scores.secMap).sort((a,b)=>b[1]-a[1])[0]?.[1].toFixed(0)||0,unit:"%"},
+                        {label:"Technologie",value:(scores.secMap["Technologie"]||0).toFixed(0),unit:"%",color:(scores.secMap["Technologie"]||0)>35?"#ff4d4d":undefined},
+                      ].map(({label,value,unit,color})=>(
+                        <div key={label} style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"12px 14px"}}>
+                          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
+                          <div style={{fontSize:22,fontWeight:700,color:color||"#fff",letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:"rgba(255,255,255,0.3)",fontWeight:400}}>{unit}</span></div>
+                        </div>
+                      ))}
+                    </div>
+                  </Glass>
+                  {/* Detail bars */}
+                  <ColorBars data={scores.secMap} title="Détail par secteur" infoMap={SECTOR_INFO}/>
+                </>
+              ):<div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.2)",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}
+            </div>
+          )}
 
           {/* ETF TAB */}
           {tab==="ptf"&&(
