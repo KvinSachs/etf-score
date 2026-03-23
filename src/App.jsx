@@ -880,12 +880,15 @@ function Onboarding({onAdd,onDone}){
               </div>
             </div>
 
-            {/* Fixed bottom */}
-            <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"12px 24px 40px",background:"linear-gradient(to bottom,transparent,#050506 40%)",zIndex:2}}>
-              <Dots/>
-              <button onClick={done} style={{width:"100%",background:added.length>0?"#0ecb81":"rgba(255,255,255,0.06)",border:added.length>0?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:added.length>0?"#000":"rgba(255,255,255,0.4)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}} onMouseEnter={e=>e.currentTarget.style.opacity=".85"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-                {added.length>0?`Analyser mon portefeuille (${added.length} ETF) →`:"Passer cette étape"}
-              </button>
+            {/* Fixed bottom — gradient fade then solid black */}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:2}}>
+              <div style={{height:48,background:"linear-gradient(to bottom,transparent,#050506)",pointerEvents:"none"}}/>
+              <div style={{background:"#050506",padding:"4px 24px 40px"}}>
+                <Dots/>
+                <button onClick={done} style={{width:"100%",background:added.length>0?"#0ecb81":"rgba(255,255,255,0.06)",border:added.length>0?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:added.length>0?"#000":"rgba(255,255,255,0.4)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}} onMouseEnter={e=>e.currentTarget.style.opacity=".85"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                  {added.length>0?`Analyser mon portefeuille (${added.length} ETF) →`:"Passer cette étape"}
+                </button>
+              </div>
             </div>
           </div>
 
