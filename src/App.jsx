@@ -1027,7 +1027,6 @@ export default function App(){
   const[onboarding,setOnboarding]=useState(false);
   const[onboardStep,setOnboardStep]=useState(0);
   const[splash,setSplash]=useState(true);
-  const[installToast,setInstallToast]=useState(false);
   const[activeRec,setActiveRec]=useState(null);
   const[plans,setPlans]=useState({}); // {ticker: {freq, amount, startDate}}
   const[editPlan,setEditPlan]=useState(null); // ticker being edited
@@ -1040,8 +1039,7 @@ export default function App(){
     const onboardingSeen=localStorage.getItem("etf-onboarding-seen");
     if(!onboardingSeen) setOnboarding(true);
     setTimeout(()=>setSplash(false), 2800);
-    const standalone=window.navigator.standalone||window.matchMedia("(display-mode: standalone)").matches;
-    if(!standalone&&!localStorage.getItem("etf-install-seen")){setTimeout(()=>{setInstallToast(true);setTimeout(()=>setInstallToast(false),6000);localStorage.setItem("etf-install-seen","1");},2500);}
+
   },[]);
 
   useEffect(()=>{
@@ -1427,6 +1425,22 @@ export default function App(){
                   Les scores et recommandations sont fournis à titre indicatif uniquement.
                 </p>
               </Glass>
+
+              {/* Install card */}
+              {!window.navigator.standalone&&!window.matchMedia("(display-mode: standalone)").matches&&(
+                <Glass style={{padding:"18px 20px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:14}}>
+                    <div style={{width:40,height:40,borderRadius:12,background:"rgba(14,203,129,0.1)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:20}}>📲</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,fontWeight:600,color:"#fff",marginBottom:4}}>Installer l'app</div>
+                      <div style={{fontSize:12,color:"rgba(255,255,255,0.35)",lineHeight:1.55}}>
+                        Pour une expérience optimale, ajoutez ETF Score à votre écran d'accueil.<br/>
+                        <span style={{color:"rgba(255,255,255,0.5)"}}>Safari → Partager → Sur l'écran d'accueil</span>
+                      </div>
+                    </div>
+                  </div>
+                </Glass>
+              )}
 
               {/* Legal */}
               <Glass style={{padding:"20px"}}>
