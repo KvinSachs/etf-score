@@ -658,7 +658,7 @@ function Onboarding({onAdd,onDone}){
   };
 
   // Swipe handling — content follows finger
-  const onTouchStart=e=>{swipeStart.current=e.touches[0].clientX;isDragging.current=true;};
+  const onTouchStart=e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON')return;swipeStart.current=e.touches[0].clientX;isDragging.current=true;};
   const onTouchMove=e=>{
     if(!isDragging.current)return;
     const dx=e.touches[0].clientX-swipeStart.current;
@@ -713,185 +713,129 @@ function Onboarding({onAdd,onDone}){
     </div>
   );
 
-  return(
-    <div style={{position:"fixed",inset:0,background:"#050506",zIndex:99998,display:"flex",flexDirection:"column",maxWidth:430,margin:"0 auto"}}
-      onTouchStart={!isAddStep?onTouchStart:undefined}
-      onTouchMove={!isAddStep?onTouchMove:undefined}
-      onTouchEnd={!isAddStep?onTouchEnd:undefined}>
+  // All 3 slides in one unified track
+  const TOTAL_SLIDES = 3;
 
-      {/* ETF added toast — top center */}
-      <div style={{
-        position:"fixed",top:`calc(env(safe-area-inset-top, 16px) + 60px)`,left:"50%",
-        transform:`translateX(-50%) translateY(${showCheck?0:-16}px)`,
-        opacity:showCheck?1:0,
-        transition:"all .3s cubic-bezier(.16,1,.3,1)",
-        background:"rgba(14,203,129,0.15)",backdropFilter:"blur(20px)",
-        border:"0.5px solid rgba(14,203,129,0.4)",borderRadius:20,
-        padding:"10px 18px",zIndex:200,
-        display:"flex",alignItems:"center",gap:8,
-        pointerEvents:"none",whiteSpace:"nowrap",
-      }}>
-        <div style={{width:16,height:16,borderRadius:"50%",background:"#0ecb81",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </div>
+  return(
+    <div style={{position:"fixed",inset:0,background:"#050506",zIndex:99998,display:"flex",flexDirection:"column",maxWidth:430,margin:"0 auto",overflow:"hidden"}}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}>
+
+      {/* ETF added toast */}
+      <div style={{position:"fixed",top:`calc(env(safe-area-inset-top,16px) + 60px)`,left:"50%",transform:`translateX(-50%) translateY(${showCheck?0:-16}px)`,opacity:showCheck?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:"rgba(14,203,129,0.15)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(14,203,129,0.4)",borderRadius:20,padding:"10px 18px",zIndex:200,display:"flex",alignItems:"center",gap:8,pointerEvents:"none",whiteSpace:"nowrap"}}>
+        <div style={{width:16,height:16,borderRadius:"50%",background:"#0ecb81",display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
         <span style={{fontSize:13,color:"#0ecb81",fontWeight:600}}>ETF ajouté au portefeuille</span>
       </div>
 
-      {/* Top nav — fixed, above status bar */}
-      <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,display:"flex",justifyContent:"space-between",alignItems:"center",padding:"calc(env(safe-area-inset-top, 16px) + 8px) 20px 8px",zIndex:100,pointerEvents:"none"}}>
+      {/* Top nav */}
+      <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,display:"flex",justifyContent:"space-between",alignItems:"center",padding:"calc(env(safe-area-inset-top,16px) + 8px) 20px 8px",zIndex:100,pointerEvents:"none"}}>
         <div style={{pointerEvents:"auto"}}>
-          {step>0&&(
-            <button onClick={()=>setStep(s=>s-1)}
-              style={{background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:"rgba(255,255,255,0.6)",fontSize:20,cursor:"pointer",padding:"6px 14px",lineHeight:1}}>‹</button>
-          )}
+          {step>0&&<button onClick={()=>setStep(s=>s-1)} style={{background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:"rgba(255,255,255,0.6)",fontSize:20,cursor:"pointer",padding:"6px 14px",lineHeight:1}}>‹</button>}
         </div>
-        <button onClick={done} pointerEvents="auto"
-          style={{pointerEvents:"auto",background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:"rgba(255,255,255,0.35)",fontSize:12,cursor:"pointer",padding:"6px 14px"}}>Passer</button>
+        <button onClick={done} style={{pointerEvents:"auto",background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:"rgba(255,255,255,0.35)",fontSize:12,cursor:"pointer",padding:"6px 14px"}}>Passer</button>
       </div>
 
-      {!isAddStep?(
-        /* ── Info screens — sliding carousel ── */
-        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"80px 0 48px",overflow:"hidden"}}>
-          {/* Sliding track */}
-          <div style={{flex:1,overflow:"hidden",position:"relative"}}>
-            <div style={{
-              display:"flex",
-              height:"100%",
-              transform:`translateX(calc(${-step*100}% + ${dragX}px))`,
-              transition:isDragging.current?"none":"transform .35s cubic-bezier(.16,1,.3,1)",
-              willChange:"transform",
-            }}>
-              {screens.map((s,i)=>(
-                <div key={i} style={{minWidth:"100%",width:"100%",flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,textAlign:"center",padding:"0 32px",boxSizing:"border-box"}}>
-                  {s.icon}
-                  <div>
-                    <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{s.title}</div>
-                    <div style={{fontSize:15,color:"rgba(255,255,255,0.4)",lineHeight:1.75}}>{s.text}</div>
-                  </div>
+      {/* ── UNIFIED TRACK — all 3 slides ── */}
+      <div style={{flex:1,display:"flex",overflow:"hidden",paddingTop:"calc(env(safe-area-inset-top,16px) + 52px)"}}>
+        <div style={{display:"flex",height:"100%",width:`${TOTAL_SLIDES*100}%`,transform:`translateX(calc(${-step*(100/TOTAL_SLIDES)}% + ${dragX/TOTAL_SLIDES}px))`,transition:isDragging.current?"none":"transform .4s cubic-bezier(.16,1,.3,1)",willChange:"transform"}}>
+
+          {/* Slide 1 & 2 — info */}
+          {screens.map((s,i)=>(
+            <div key={i} style={{width:`${100/TOTAL_SLIDES}%`,flexShrink:0,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"0 0 48px",boxSizing:"border-box"}}>
+              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,textAlign:"center",padding:"0 32px"}}>
+                {s.icon}
+                <div>
+                  <div style={{fontSize:22,fontWeight:700,color:"#fff",lineHeight:1.3,marginBottom:14,letterSpacing:-.3}}>{s.title}</div>
+                  <div style={{fontSize:15,color:"rgba(255,255,255,0.4)",lineHeight:1.75}}>{s.text}</div>
                 </div>
-              ))}
+              </div>
+              <div style={{padding:"0 24px"}}>
+                <Dots/>
+                <button onClick={()=>setStep(st=>st+1)} style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2}}>Suivant</button>
+              </div>
             </div>
-          </div>
-          {/* Controls */}
-          <div style={{padding:"0 24px"}}>
-            <Dots/>
-            <button onClick={()=>setStep(s=>s+1)}
-              style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .15s"}}
-              onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
-              onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}>
-              Suivant
-            </button>
-          </div>
-        </div>
-      ):(
-        /* ── Add ETF screen ── */
-        <div style={{flex:1,display:"flex",flexDirection:"column",padding:"0",position:"relative",paddingTop:"calc(env(safe-area-inset-top, 16px) + 56px)"}}>
-          {/* Scrollable content — slides up when keyboard opens */}
-          <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"0 24px",paddingBottom:120,
-            transform:inputFocused?"translateY(-8vh)":"translateY(0)",
-            transition:"transform .35s cubic-bezier(.16,1,.3,1)"}}>
+          ))}
 
-          <div style={{textAlign:"center",marginBottom:28,marginTop:"15vh"}}>
-            <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:8,letterSpacing:-.3}}>Constituez votre portefeuille</div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,0.35)",lineHeight:1.7,maxWidth:300,margin:"0 auto"}}>Ajoutez autant d'ETF que vous souhaitez. Vous pourrez toujours modifier depuis l'app.</div>
-          </div>
+          {/* Slide 3 — Add ETF */}
+          <div style={{width:`${100/TOTAL_SLIDES}%`,flexShrink:0,display:"flex",flexDirection:"column",position:"relative",boxSizing:"border-box"}}>
+            <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"0 24px",paddingBottom:120,transform:inputFocused?"translateY(-8vh)":"translateY(0)",transition:"transform .35s cubic-bezier(.16,1,.3,1)"}}>
+              <div style={{textAlign:"center",marginBottom:28,marginTop:"12vh"}}>
+                <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:8,letterSpacing:-.3}}>Constituez votre portefeuille</div>
+                <div style={{fontSize:14,color:"rgba(255,255,255,0.35)",lineHeight:1.7,maxWidth:300,margin:"0 auto"}}>Ajoutez autant d'ETF que vous souhaitez. Vous pourrez toujours modifier depuis l'app.</div>
+              </div>
 
-          {/* Added ETFs */}
-          {added.length>0&&(
-            <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:6}}>
-              {added.map((h,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:10,background:lastAdded===i?"rgba(14,203,129,0.12)":"rgba(14,203,129,0.06)",border:`0.5px solid ${lastAdded===i?"rgba(14,203,129,0.4)":"rgba(14,203,129,0.15)"}`,borderRadius:12,padding:"10px 14px",animation:lastAdded===i?"popIn .4s cubic-bezier(.16,1,.3,1)":"none",boxShadow:lastAdded===i?"0 0 16px rgba(14,203,129,0.2)":"none",transition:"background .4s,border .4s,box-shadow .4s"}}>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:12,fontWeight:500,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{h.name}</div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginTop:2}}>{h.ticker}</div>
-                  </div>
-                  <input
-                    type="number"
-                    defaultValue={h.amount}
-                    onBlur={e=>{
-                      const v=parseFloat(e.target.value);
-                      if(!isNaN(v)&&v>0)setAdded(prev=>prev.map((x,j)=>j===i?{...x,amount:v}:x));
-                      else e.target.value=h.amount;
-                    }}
-                    onKeyDown={e=>e.key==="Enter"&&e.target.blur()}
-                    style={{width:72,background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"4px 8px",color:"#0ecb81",fontSize:12,fontWeight:600,textAlign:"right",outline:"none",fontFamily:"monospace",WebkitAppearance:"none"}}/>
-                  <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",flexShrink:0}}>€</span>
-                  <button onClick={()=>setAdded(prev=>prev.filter((_,j)=>j!==i))}
-                    style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:16,cursor:"pointer",padding:"0 2px",flexShrink:0,lineHeight:1,transition:"color .15s"}}
-                    onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"}
-                    onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.2)"}>×</button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Search */}
-          <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10}}>
-            <div style={{position:"relative"}}>
-              <input value={q}
-                onChange={e=>{setQ(e.target.value);setSelectedTicker(null);setErr("");setOpen(true);}}
-                onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
-                onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);}}
-                placeholder="Nom, ISIN ou ticker…"
-                style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s"}}/>
-              {selectedTicker&&(
-                <button onMouseDown={()=>{setQ("");setSelectedTicker(null);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:22,height:22,color:"rgba(255,255,255,0.5)",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-              )}
-              {open&&results.length>0&&(
-                <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:10,background:"rgba(14,14,14,0.99)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,overflow:"hidden",boxShadow:"0 16px 40px rgba(0,0,0,0.8)"}}>
-                  {results.map(([t,e])=>(
-                    <div key={t} onMouseDown={()=>selectItem(t,e.name)}
-                      style={{padding:"13px 16px",cursor:"pointer",borderBottom:"0.5px solid rgba(255,255,255,0.05)",transition:"background .1s"}}
-                      onMouseEnter={ev=>ev.currentTarget.style.background="rgba(255,255,255,0.05)"}
-                      onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
-                      <div style={{fontSize:13,fontWeight:500,color:"#fff",marginBottom:3}}>{e.name}</div>
-                      <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",fontFamily:"monospace"}}>{e.isin} · {ASSET_LABELS[e.assetClass]||e.assetClass}</div>
+              {/* Added list */}
+              {added.length>0&&(
+                <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:6}}>
+                  {added.map((h,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:10,background:lastAdded===i?"rgba(14,203,129,0.12)":"rgba(14,203,129,0.06)",border:`0.5px solid ${lastAdded===i?"rgba(14,203,129,0.4)":"rgba(14,203,129,0.15)"}`,borderRadius:12,padding:"10px 14px",animation:lastAdded===i?"popIn .4s cubic-bezier(.16,1,.3,1)":"none",boxShadow:lastAdded===i?"0 0 16px rgba(14,203,129,0.2)":"none",transition:"background .4s,border .4s,box-shadow .4s"}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:12,fontWeight:500,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{h.name}</div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginTop:2}}>{h.ticker}</div>
+                      </div>
+                      <input type="number" defaultValue={h.amount}
+                        onBlur={e=>{const v=parseFloat(e.target.value);if(!isNaN(v)&&v>0)setAdded(prev=>prev.map((x,j)=>j===i?{...x,amount:v}:x));else e.target.value=h.amount;}}
+                        onKeyDown={e=>e.key==="Enter"&&e.target.blur()}
+                        style={{width:72,background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"4px 8px",color:"#0ecb81",fontSize:12,fontWeight:600,textAlign:"right",outline:"none",fontFamily:"monospace",WebkitAppearance:"none"}}/>
+                      <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",flexShrink:0}}>€</span>
+                      <button onClick={()=>setAdded(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:16,cursor:"pointer",padding:"0 2px",flexShrink:0,lineHeight:1,transition:"color .15s"}} onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.2)"}>×</button>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
 
-            <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
-              onKeyDown={e=>e.key==="Enter"&&addOne()}
-              onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);if(selectedTicker&&parseFloat(amt)>0)addOne();}}
-              onFocus={e=>{e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
-              inputMode="decimal"
-              placeholder="Montant investi (€) — Entrée pour valider"
-              style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
-
-            {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
-
-            {/* Popular suggestions */}
-            <div>
-              <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Populaires</div>
-              <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-                {[{t:"IWDA",l:"iShares Monde"},{t:"VWCE",l:"Vanguard All-World"},{t:"MWRD",l:"Amundi Monde PEA"},{t:"PAEEM",l:"Émergents PEA"}].map(({t,l})=>(
-                  <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)}
-                    style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,padding:"6px 14px",color:"rgba(255,255,255,0.5)",fontSize:12,cursor:"pointer",transition:"all .15s"}}
-                    onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}}
-                    onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}>
-                    {l}
-                  </button>
-                ))}
+              {/* Search */}
+              <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10}}>
+                <div style={{position:"relative"}}>
+                  <input value={q} onChange={e=>{setQ(e.target.value);setSelectedTicker(null);setErr("");setOpen(true);}}
+                    onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
+                    onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);}}
+                    placeholder="Nom, ISIN ou ticker…"
+                    style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s"}}/>
+                  {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:22,height:22,color:"rgba(255,255,255,0.5)",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>}
+                  {open&&results.length>0&&(
+                    <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:10,background:"rgba(14,14,14,0.99)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,overflow:"hidden",boxShadow:"0 16px 40px rgba(0,0,0,0.8)"}}>
+                      {results.map(([t,e])=>(
+                        <div key={t} onMouseDown={()=>selectItem(t,e.name)} style={{padding:"13px 16px",cursor:"pointer",borderBottom:"0.5px solid rgba(255,255,255,0.05)",transition:"background .1s"}} onMouseEnter={ev=>ev.currentTarget.style.background="rgba(255,255,255,0.05)"} onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
+                          <div style={{fontSize:13,fontWeight:500,color:"#fff",marginBottom:3}}>{e.name}</div>
+                          <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",fontFamily:"monospace"}}>{e.isin} · {ASSET_LABELS[e.assetClass]||e.assetClass}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
+                  onKeyDown={e=>e.key==="Enter"&&addOne()}
+                  onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);if(selectedTicker&&parseFloat(amt)>0)addOne();}}
+                  onFocus={e=>{e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
+                  inputMode="decimal" placeholder="Montant investi (€) — Entrée pour valider"
+                  style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
+                {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
+                <div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Populaires</div>
+                  <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                    {[{t:"IWDA",l:"iShares Monde"},{t:"VWCE",l:"Vanguard All-World"},{t:"MWRD",l:"Amundi Monde PEA"},{t:"PAEEM",l:"Émergents PEA"}].map(({t,l})=>(
+                      <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)} style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,padding:"6px 14px",color:"rgba(255,255,255,0.5)",fontSize:12,cursor:"pointer",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Fixed bottom */}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"12px 24px 40px",background:"linear-gradient(to bottom,transparent,#050506 40%)",zIndex:2}}>
+              <Dots/>
+              <button onClick={done} style={{width:"100%",background:added.length>0?"#0ecb81":"rgba(255,255,255,0.06)",border:added.length>0?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:added.length>0?"#000":"rgba(255,255,255,0.4)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}} onMouseEnter={e=>e.currentTarget.style.opacity=".85"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                {added.length>0?`Analyser mon portefeuille (${added.length} ETF) →`:"Passer cette étape"}
+              </button>
+            </div>
           </div>
 
-          </div>{/* end scrollable */}
-
-          {/* Fixed bottom CTA */}
-          <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"12px 24px 40px",background:"linear-gradient(to bottom,transparent,#050506 40%)",zIndex:2}}>
-            <Dots/>
-            <button onClick={done}
-              style={{width:"100%",background:added.length>0?"#0ecb81":"rgba(255,255,255,0.06)",border:added.length>0?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:added.length>0?"#000":"rgba(255,255,255,0.4)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}}
-              onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
-              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              {added.length>0?`Analyser mon portefeuille (${added.length} ETF) →`:"Passer cette étape"}
-            </button>
-          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -995,11 +939,19 @@ export default function App(){
               <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",marginTop:0,letterSpacing:.3}}>Analyse multicritères</div>
             </div>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",background:"rgba(255,255,255,0.04)",borderRadius:20,border:"0.5px solid rgba(255,255,255,0.08)"}}>
-            <div style={{width:5,height:5,borderRadius:"50%",background:saved?"#0ecb81":"#f0b90b",boxShadow:saved?"0 0 6px #0ecb8166":"0 0 6px #f0b90b66",transition:"all .4s",flexShrink:0}}/>
-            <span style={{fontSize:11,color:"rgba(255,255,255,0.3)",letterSpacing:.3,lineHeight:1}}>
-              {saved?"Sync"+(savedAt?" · "+savedAt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):""):"..."}
-            </span>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            {holdings.length>0&&(
+              <div style={{padding:"5px 10px",background:`${g.glow.replace("0.25","0.08")}`,border:`0.5px solid ${g.stroke}44`,borderRadius:20,display:"flex",alignItems:"baseline",gap:3}}>
+                <span style={{fontSize:13,fontWeight:700,color:g.text,letterSpacing:-.3}}>{scores.total.toFixed(1)}</span>
+                <span style={{fontSize:9,color:"rgba(255,255,255,0.25)"}}>/20</span>
+              </div>
+            )}
+            <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",background:"rgba(255,255,255,0.04)",borderRadius:20,border:"0.5px solid rgba(255,255,255,0.08)"}}>
+              <div style={{width:5,height:5,borderRadius:"50%",background:saved?"#0ecb81":"#f0b90b",boxShadow:saved?"0 0 6px #0ecb8166":"0 0 6px #f0b90b66",transition:"all .4s",flexShrink:0}}/>
+              <span style={{fontSize:11,color:"rgba(255,255,255,0.3)",letterSpacing:.3,lineHeight:1}}>
+                {saved?"Sync"+(savedAt?" · "+savedAt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):""):"..."}
+              </span>
+            </div>
           </div>
         </header>
 
@@ -1035,6 +987,30 @@ export default function App(){
           {/* SCORES */}
           {tab==="scores"&&(
             <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn .3s ease"}}>
+
+              {/* Hero score block */}
+              {holdings.length>0&&(
+                <Glass style={{padding:"22px 20px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                    <div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:8,fontWeight:600}}>Score global</div>
+                      <div style={{display:"flex",alignItems:"baseline",gap:4}}>
+                        <span style={{fontSize:52,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-2}}>{scores.total.toFixed(1)}</span>
+                        <span style={{fontSize:18,color:"rgba(255,255,255,0.2)",fontWeight:300}}>/20</span>
+                      </div>
+                      <div style={{fontSize:11,color:g.text,marginTop:4,fontWeight:500}}>{g.label}</div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4,marginBottom:8}}>
+                        <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",fontWeight:600}}>Apports</span>
+                        <IBtn label="Montant investi" text="Somme totale versée — ne tient pas compte des variations de marché."/>
+                      </div>
+                      <div style={{fontSize:24,fontWeight:800,color:"rgba(255,255,255,0.8)",letterSpacing:-.5}}>{total.toLocaleString("fr-FR")} €</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,0.25)",marginTop:4}}>{holdings.length} position{holdings.length>1?"s":""}</div>
+                    </div>
+                  </div>
+                </Glass>
+              )}
 
               {/* Score rings */}
               <Glass style={{padding:"28px 16px 24px"}}>
