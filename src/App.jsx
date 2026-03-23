@@ -472,25 +472,31 @@ function Search({onAdd,suggestions=[]}){
   );
 }
 
-/* ─── TABS ───────────────────────────────────────────────────────────────────── */
+/* ─── BOTTOM TAB BAR ─────────────────────────────────────────────────────────── */
 function Tabs({active,onChange,highlight=[]}){
-  const icons={
-    scores:<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2 1.2" strokeLinecap="round"/><circle cx="7.5" cy="7.5" r="1.8" fill="currentColor"/></svg>,
-    geo:<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" strokeWidth="1.2"/><ellipse cx="7.5" cy="7.5" rx="2.5" ry="5.5" stroke="currentColor" strokeWidth="1.2"/><line x1="2" y1="7.5" x2="13" y2="7.5" stroke="currentColor" strokeWidth="1.2"/></svg>,
-    sec:<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="7.5" width="3" height="6" rx=".8" fill="currentColor" opacity=".4"/><rect x="6" y="4.5" width="3" height="9" rx=".8" fill="currentColor" opacity=".7"/><rect x="10.5" y="1.5" width="3" height="12" rx=".8" fill="currentColor"/></svg>,
-    ptf:<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 10.5C3 10.5 3.5 6.5 6 6.5c2.5 0 2.5 2.5 5 2.5 1.5 0 2-3.5 3.5-5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-  };
+  const tabs=[
+    {id:"scores",label:"Scores",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" strokeWidth="1.4" strokeDasharray="3 1.5" strokeLinecap="round"/><circle cx="11" cy="11" r="2.5" fill="currentColor"/></svg>},
+    {id:"geo",label:"Géo.",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" strokeWidth="1.4"/><ellipse cx="11" cy="11" rx="3.5" ry="7.5" stroke="currentColor" strokeWidth="1.4"/><line x1="3.5" y1="11" x2="18.5" y2="11" stroke="currentColor" strokeWidth="1.4"/></svg>},
+    {id:"sec",label:"Secteurs",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="12" width="4" height="8" rx="1" fill="currentColor" opacity=".4"/><rect x="9" y="7" width="4" height="13" rx="1" fill="currentColor" opacity=".7"/><rect x="16" y="2" width="4" height="18" rx="1" fill="currentColor"/></svg>},
+    {id:"ptf",label:"Mes ETF",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M2 15C5 15 5.5 9 9 9C12.5 9 12.5 13 16 11.5C18.5 10.5 19.5 5 21 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>},
+    {id:"about",label:"À propos",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.4"/><line x1="11" y1="10" x2="11" y2="16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="11" cy="7" r="1" fill="currentColor"/></svg>},
+  ];
   return(
-    <div style={{display:"flex",background:"rgba(255,255,255,0.03)",backdropFilter:"blur(40px)",WebkitBackdropFilter:"blur(40px)",borderRadius:16,padding:3,gap:2,border:"0.5px solid rgba(255,255,255,0.08)"}}>
-      {[{id:"scores",label:"Scores"},{id:"geo",label:"Géo."},{id:"sec",label:"Secteurs"},{id:"ptf",label:"Mes ETF"}].map(t=>(
-        <button key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,background:active===t.id?"rgba(255,255,255,0.08)":"transparent",border:active===t.id?"0.5px solid rgba(255,255,255,0.15)":"0.5px solid transparent",borderRadius:13,padding:"9px 4px",color:active===t.id?"#fff":"rgba(255,255,255,0.3)",fontSize:10,fontWeight:active===t.id?600:400,cursor:"pointer",transition:"all .2s",WebkitTapHighlightColor:"transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:4,fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"}}>
-          {icons[t.id]}
-          <div style={{position:"relative",display:"inline-flex",alignItems:"center",gap:3}}>
-            <span style={{letterSpacing:.5}}>{t.label}</span>
-            {highlight.includes(t.id)&&<div style={{width:4,height:4,borderRadius:"50%",background:"#0ecb81",animation:"pulse 2s infinite"}}/>}
-          </div>
-        </button>
-      ))}
+    <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:"rgba(5,5,6,0.92)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:"0.5px solid rgba(255,255,255,0.07)",paddingBottom:"env(safe-area-inset-bottom,0px)",zIndex:50}}>
+      <div style={{display:"flex",padding:"6px 0 2px"}}>
+        {tabs.map(t=>{
+          const isActive=active===t.id;
+          return(
+            <button key={t.id} onClick={()=>onChange(t.id)}
+              style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",color:isActive?"#fff":"rgba(255,255,255,0.3)",WebkitTapHighlightColor:"transparent",transition:"color .15s",position:"relative",fontFamily:"-apple-system,BlinkMacSystemFont,system-ui,sans-serif"}}>
+              {isActive&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:16,height:2,borderRadius:1,background:"#0ecb81"}}/>}
+              {t.icon}
+              <span style={{fontSize:9,fontWeight:isActive?600:400,letterSpacing:.3,lineHeight:1}}>{t.label}</span>
+              {highlight.includes(t.id)&&!isActive&&<div style={{position:"absolute",top:6,right:"20%",width:5,height:5,borderRadius:"50%",background:"#0ecb81",boxShadow:"0 0 6px #0ecb81",animation:"pulse 2s infinite"}}/>}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -790,8 +796,6 @@ function Onboarding({onAdd,onDone}){
             <div style={{fontSize:14,color:"rgba(255,255,255,0.35)",lineHeight:1.7,maxWidth:300,margin:"0 auto"}}>Ajoutez autant d'ETF que vous souhaitez. Vous pourrez toujours modifier depuis l'app.</div>
           </div>
 
-          <Dots/>
-
           {/* Added ETFs */}
           {added.length>0&&(
             <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:6}}>
@@ -878,6 +882,7 @@ function Onboarding({onAdd,onDone}){
 
           {/* Fixed bottom CTA */}
           <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"12px 24px 40px",background:"linear-gradient(to bottom,transparent,#050506 40%)",zIndex:2}}>
+            <Dots/>
             <button onClick={done}
               style={{width:"100%",background:added.length>0?"#0ecb81":"rgba(255,255,255,0.06)",border:added.length>0?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:added.length>0?"#000":"rgba(255,255,255,0.4)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}}
               onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
@@ -1024,11 +1029,8 @@ export default function App(){
           </div>
         )}
 
-        {/* ── TABS ── */}
-        <div style={{padding:"14px 16px 0"}}><Tabs active={tab} onChange={setTab} highlight={holdings.length===0?["ptf"]:[]}/></div>
-
         {/* ── CONTENT ── */}
-        <div style={{padding:"14px 16px 100px"}}>
+        <div style={{padding:"14px 16px 90px"}}>
 
           {/* SCORES */}
           {tab==="scores"&&(
@@ -1213,6 +1215,51 @@ export default function App(){
               )}
             </div>
           )}
+
+          {/* ABOUT TAB */}
+          {tab==="about"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
+              <Glass style={{padding:"24px 20px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
+                  <img src="/icon-180.png" alt="" style={{width:52,height:52,borderRadius:14,objectFit:"cover"}} onError={e=>e.target.style.display="none"}/>
+                  <div>
+                    <div style={{fontSize:18,fontWeight:700,color:"#fff",letterSpacing:-.3}}>ETF Score</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,0.3)",marginTop:2}}>Analyse multicritères · v3</div>
+                  </div>
+                </div>
+                <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7}}>
+                  Outil d'analyse de diversification de portefeuille ETF. Construit avec Claude (Anthropic).
+                  Les scores et recommandations sont fournis à titre indicatif uniquement.
+                </p>
+              </Glass>
+
+              {/* Legal */}
+              <Glass style={{padding:"20px"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Mentions légales</div>
+                <p style={{margin:"0 0 14px",fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7}}>
+                  ETF Score est un outil d'analyse personnel. Les scores, indicateurs et suggestions affichés <strong style={{color:"rgba(255,255,255,0.6)"}}>ne constituent pas un conseil en investissement</strong> au sens de la réglementation AMF.
+                </p>
+                <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7}}>
+                  Tout investissement comporte un risque de perte en capital. Consultez un conseiller financier agréé avant toute décision d'investissement.
+                </p>
+              </Glass>
+
+              {/* Data disclaimer */}
+              <Glass style={{padding:"20px"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Données</div>
+                <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7}}>
+                  Les compositions d'ETF sont approximatives et basées sur les données disponibles à la date de mise à jour. Elles peuvent différer des compositions réelles actuelles.
+                  Les apports renseignés ne tiennent pas compte des variations de marché.
+                </p>
+              </Glass>
+
+              {/* Reset onboarding */}
+              <button onClick={()=>{localStorage.removeItem("etf-onboarding-seen");window.location.reload();}}
+                style={{background:"rgba(255,255,255,0.03)",border:"0.5px solid rgba(255,255,255,0.07)",borderRadius:16,padding:"15px 20px",color:"rgba(255,255,255,0.3)",fontSize:13,cursor:"pointer",textAlign:"left",width:"100%"}}>
+                Revoir l'onboarding
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1226,12 +1273,8 @@ export default function App(){
       {/* Rec action sheet */}
       {activeRec&&CAT[activeRec]&&<SuggestionSheet catalog={CAT[activeRec]} onSelect={ticker=>{setTab("ptf");setActiveRec(null);}} onClose={()=>setActiveRec(null)}/>}
 
-      {/* Disclaimer banner */}
-      {disclaimerSeen&&(
-        <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:"rgba(5,5,6,0.95)",backdropFilter:"blur(20px)",borderTop:"0.5px solid rgba(255,255,255,0.05)",padding:"8px 20px",textAlign:"center",zIndex:40}}>
-          <span style={{fontSize:9,color:"rgba(255,255,255,0.15)",letterSpacing:.3}}>À titre informatif uniquement — pas un conseil en investissement · <button onClick={()=>setDisclaimerSeen(false)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.15)",fontSize:9,cursor:"pointer",padding:0,textDecoration:"underline"}}>Revoir</button></span>
-        </div>
-      )}
+      {/* Bottom Tab Bar */}
+      <Tabs active={tab} onChange={setTab} highlight={holdings.length===0?["ptf"]:[]}/>
 
       {/* Reset */}
       {confirmReset&&(
