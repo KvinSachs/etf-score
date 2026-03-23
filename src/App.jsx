@@ -1474,10 +1474,7 @@ export default function App(){
 
       {/* Toasts */}
       <Toast msg={toast.msg} visible={toast.visible}/>
-      <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${installToast?0:12}px)`,opacity:installToast?1:0,transition:"all .4s cubic-bezier(.16,1,.3,1)",background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,padding:"12px 18px",zIndex:8999,display:"flex",alignItems:"center",gap:10,pointerEvents:"none",maxWidth:320,width:"calc(100% - 40px)"}}>
-        <span style={{fontSize:18,flexShrink:0}}>📲</span>
-        <div><div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:13,color:"#fff",fontWeight:600,marginBottom:2}}>Installer l'app</div><div style={{fontSize:11,color:"rgba(255,255,255,0.3)",lineHeight:1.5}}>Partager → Sur l'écran d'accueil</div></div>
-      </div>
+
 
       {/* Rec action sheet */}
       {activeRec&&CAT[activeRec]&&<SuggestionSheet catalog={CAT[activeRec]} onSelect={ticker=>{setTab("ptf");setActiveRec(null);}} onClose={()=>setActiveRec(null)}/>}
