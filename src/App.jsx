@@ -901,6 +901,115 @@ function Onboarding({onAdd,onDone}){
   );
 }
 
+/* ─── PLAN SHEET ─────────────────────────────────────────────────────────────── */
+const FREQS=[
+  {id:"weekly",label:"Hebdomadaire",short:"/ sem.",weeks:52},
+  {id:"monthly",label:"Mensuel",short:"/ mois",weeks:4.33},
+  {id:"quarterly",label:"Trimestriel",short:"/ trim.",weeks:13},
+];
+
+function planStats(plan){
+  if(!plan?.amount||!plan?.startDate) return null;
+  const start=new Date(plan.startDate);
+  const now=new Date();
+  const freq=FREQS.find(f=>f.id===plan.freq)||FREQS[1];
+  const weeksElapsed=Math.max(0,(now-start)/(1000*60*60*24*7));
+  const periods=Math.floor(weeksElapsed/freq.weeks*freq.weeks/freq.weeks);
+  // simpler: weeks elapsed / weeks per period
+  const periodsElapsed=Math.floor(weeksElapsed/(52/freq.weeks));
+  const totalInvested=periodsElapsed*plan.amount;
+  const perYear=plan.amount*freq.weeks;
+  // next date
+  const msPerPeriod=(52/freq.weeks)*7*24*60*60*1000;
+  const periodsSinceStart=Math.floor((now-start)/msPerPeriod);
+  const nextDate=new Date(start.getTime()+(periodsSinceStart+1)*msPerPeriod);
+  const daysUntilNext=Math.ceil((nextDate-now)/(1000*60*60*24));
+  return{totalInvested,perYear,daysUntilNext,periodsElapsed,freq};
+}
+
+function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
+  const[freq,setFreq]=useState(plan?.freq||"monthly");
+  const[amount,setAmount]=useState(plan?.amount||"");
+  const[startDate,setStartDate]=useState(plan?.startDate||new Date().toISOString().split("T")[0]);
+  const etf=DB[ticker];
+  const preview=planStats({freq,amount:parseFloat(amount)||0,startDate});
+
+  return(
+    <Sheet onClose={onClose}>
+      <div style={{padding:"8px 20px 40px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+          <div>
+            <div style={{fontSize:15,fontWeight:700,color:"#fff"}}>Plan d'investissement</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.3)",marginTop:2}}>{etf?.name||ticker}</div>
+          </div>
+          <button onClick={onClose} style={{background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:28,height:28,color:"rgba(255,255,255,0.5)",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        </div>
+
+        {/* Frequency selector */}
+        <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Fréquence</div>
+        <div style={{display:"flex",gap:8,marginBottom:20}}>
+          {FREQS.map(f=>(
+            <button key={f.id} onClick={()=>setFreq(f.id)}
+              style={{flex:1,background:freq===f.id?"rgba(14,203,129,0.12)":"rgba(255,255,255,0.04)",border:`0.5px solid ${freq===f.id?"rgba(14,203,129,0.4)":"rgba(255,255,255,0.08)"}`,borderRadius:12,padding:"10px 4px",color:freq===f.id?"#0ecb81":"rgba(255,255,255,0.4)",fontSize:11,fontWeight:freq===f.id?700:400,cursor:"pointer",transition:"all .15s"}}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Amount */}
+        <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Montant par versement</div>
+        <div style={{position:"relative",marginBottom:20}}>
+          <input type="number" value={amount} onChange={e=>setAmount(e.target.value)}
+            placeholder="0"
+            inputMode="decimal"
+            style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 36px 14px 16px",color:"#fff",fontSize:20,fontWeight:700,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s"}}
+            onFocus={e=>e.target.style.borderColor="rgba(14,203,129,0.4)"}
+            onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
+          <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:16,color:"rgba(255,255,255,0.25)",fontWeight:500,pointerEvents:"none"}}>€</span>
+        </div>
+
+        {/* Start date */}
+        <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Depuis le</div>
+        <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
+          style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:"rgba(255,255,255,0.7)",fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:"dark"}}/>
+
+        {/* Preview */}
+        {preview&&preview.totalInvested>0&&(
+          <div style={{background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.15)",borderRadius:14,padding:"14px 16px",marginBottom:20,display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <div>
+              <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Total investi</div>
+              <div style={{fontSize:18,fontWeight:700,color:"#0ecb81"}}>{preview.totalInvested.toLocaleString("fr-FR")} €</div>
+            </div>
+            <div>
+              <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Par an</div>
+              <div style={{fontSize:18,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{preview.perYear.toLocaleString("fr-FR")} €</div>
+            </div>
+            <div>
+              <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Versements</div>
+              <div style={{fontSize:18,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{preview.periodsElapsed}</div>
+            </div>
+            <div>
+              <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Prochain dans</div>
+              <div style={{fontSize:18,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{preview.daysUntilNext}j</div>
+            </div>
+          </div>
+        )}
+
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          <button onClick={()=>{if(parseFloat(amount)>0&&startDate){onSave({freq,amount:parseFloat(amount),startDate});onClose();}}}
+            style={{width:"100%",background:parseFloat(amount)>0?"#0ecb81":"rgba(255,255,255,0.06)",border:"none",borderRadius:14,padding:"16px",color:parseFloat(amount)>0?"#000":"rgba(255,255,255,0.3)",fontSize:15,fontWeight:700,cursor:"pointer",transition:"all .2s"}}>
+            Enregistrer le plan
+          </button>
+          {plan&&<button onClick={()=>{onDelete();onClose();}}
+            style={{width:"100%",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:14,padding:"13px",color:"#ff4d4d",fontSize:13,cursor:"pointer"}}>
+            Supprimer le plan
+          </button>}
+        </div>
+      </div>
+    </Sheet>
+  );
+}
+
 /* ─── MAIN ───────────────────────────────────────────────────────────────────── */
 export default function App(){
   const[holdings,setHoldings]=useState([]);
@@ -917,11 +1026,13 @@ export default function App(){
   const[splash,setSplash]=useState(true);
   const[installToast,setInstallToast]=useState(false);
   const[activeRec,setActiveRec]=useState(null);
+  const[plans,setPlans]=useState({}); // {ticker: {freq, amount, startDate}}
+  const[editPlan,setEditPlan]=useState(null); // ticker being edited
   const[recMode,setRecMode]=useState("essential");
   const toastTimer=useRef(null);
 
   useEffect(()=>{
-    try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const p=JSON.parse(raw);if(p.holdings)setHoldings(p.holdings);if(p.disclaimerSeen)setDisclaimerSeen(true);if(p.savedAt)setSavedAt(new Date(p.savedAt));}}catch(_){}
+    try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const p=JSON.parse(raw);if(p.holdings)setHoldings(p.holdings);if(p.disclaimerSeen)setDisclaimerSeen(true);if(p.savedAt)setSavedAt(new Date(p.savedAt));if(p.plans)setPlans(p.plans);}}catch(_){}
     setReady(true);
     const onboardingSeen=localStorage.getItem("etf-onboarding-seen");
     if(!onboardingSeen) setOnboarding(true);
@@ -934,7 +1045,7 @@ export default function App(){
     if(!ready)return;setSaved(false);
     const t=setTimeout(async()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify({holdings,disclaimerSeen,savedAt:new Date().toISOString()}));}catch(_){}setSaved(true);},700);
     return()=>clearTimeout(t);
-  },[holdings,disclaimerSeen,ready]);
+  },[holdings,disclaimerSeen,plans,ready]);
 
   const addHolding=useCallback((ticker,amount)=>{
     setHoldings(prev=>{const ex=prev.find(h=>h.ticker===ticker);if(ex)return prev.map(h=>h.ticker===ticker?{...h,amount:h.amount+amount}:h);return[...prev,{ticker,name:DB[ticker].name,amount}];});
@@ -1252,7 +1363,7 @@ export default function App(){
                             <div style={{flex:1,minWidth:0}}>
                               <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
                                 <span style={{fontSize:13,fontWeight:500,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{h.name}</span>
-                                <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:11,color:"rgba(255,255,255,0.35)",fontWeight:600,flexShrink:0}}>{pct.toFixed(1)}%</span>
+                                <span style={{fontSize:11,color:"rgba(255,255,255,0.35)",fontWeight:600,flexShrink:0}}>{pct.toFixed(1)}%</span>
                               </div>
                               <div style={{display:"flex",alignItems:"center",gap:6}}>
                                 {etf?.isin&&<span style={{fontSize:9,fontFamily:"monospace",color:"rgba(255,255,255,0.2)",letterSpacing:.4}}>{etf.isin}</span>}
@@ -1265,9 +1376,29 @@ export default function App(){
                               onBlur={()=>{updateAmount(h.ticker,editAmt[h.ticker]);setEditAmt(p=>{const n={...p};delete n[h.ticker];return n;});}}
                               style={{width:72,background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"5px 8px",color:"#fff",fontSize:12,textAlign:"right",fontFamily:"monospace"}}/>
                             <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",flexShrink:0}}>€</span>
+                            {/* Plan button */}
+                            <button onClick={()=>setEditPlan(h.ticker)}
+                              style={{background:plans[h.ticker]?"rgba(14,203,129,0.1)":"rgba(255,255,255,0.05)",border:`0.5px solid ${plans[h.ticker]?"rgba(14,203,129,0.3)":"rgba(255,255,255,0.08)"}`,borderRadius:8,padding:"5px 7px",cursor:"pointer",flexShrink:0,lineHeight:1,transition:"all .15s"}}
+                              title="Plan d'investissement">
+                              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke={plans[h.ticker]?"#0ecb81":"rgba(255,255,255,0.3)"} strokeWidth="1"/><line x1="4" y1="1" x2="4" y2="3.5" stroke={plans[h.ticker]?"#0ecb81":"rgba(255,255,255,0.3)"} strokeWidth="1" strokeLinecap="round"/><line x1="9" y1="1" x2="9" y2="3.5" stroke={plans[h.ticker]?"#0ecb81":"rgba(255,255,255,0.3)"} strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="6" x2="10" y2="6" stroke={plans[h.ticker]?"#0ecb81":"rgba(255,255,255,0.3)"} strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="8.5" x2="7" y2="8.5" stroke={plans[h.ticker]?"#0ecb81":"rgba(255,255,255,0.3)"} strokeWidth="1" strokeLinecap="round"/></svg>
+                            </button>
                             <button onClick={()=>removeHolding(h.ticker)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.15)",cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 2px",flexShrink:0,transition:"color .15s"}}
                               onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.15)"}>×</button>
                           </div>
+                          {/* Plan summary if configured */}
+                          {plans[h.ticker]&&(()=>{const s=planStats(plans[h.ticker]);return s&&s.totalInvested>0?(
+                            <div style={{marginTop:10,paddingTop:10,borderTop:"0.5px solid rgba(255,255,255,0.06)",display:"flex",gap:16,alignItems:"center"}}>
+                              <div style={{display:"flex",alignItems:"center",gap:5}}>
+                                <svg width="10" height="10" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#0ecb81" strokeWidth="1"/><line x1="4" y1="1" x2="4" y2="3.5" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="6" x2="10" y2="6" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/></svg>
+                                <span style={{fontSize:10,color:"rgba(255,255,255,0.3)"}}>{FREQS.find(f=>f.id===plans[h.ticker].freq)?.label} · {plans[h.ticker].amount}€</span>
+                              </div>
+                              <div style={{display:"flex",alignItems:"baseline",gap:3}}>
+                                <span style={{fontSize:12,fontWeight:700,color:"#0ecb81"}}>{s.totalInvested.toLocaleString("fr-FR")} €</span>
+                                <span style={{fontSize:9,color:"rgba(255,255,255,0.25)"}}>investis</span>
+                              </div>
+                              <div style={{marginLeft:"auto",fontSize:10,color:"rgba(255,255,255,0.25)"}}>prochain dans <span style={{color:"rgba(255,255,255,0.5)",fontWeight:500}}>{s.daysUntilNext}j</span></div>
+                            </div>
+                          ):null;})()}
                         </Glass>
                       );
                     })}
@@ -1333,6 +1464,15 @@ export default function App(){
 
       {/* Rec action sheet */}
       {activeRec&&CAT[activeRec]&&<SuggestionSheet catalog={CAT[activeRec]} onSelect={ticker=>{setTab("ptf");setActiveRec(null);}} onClose={()=>setActiveRec(null)}/>}
+
+      {/* Plan sheet */}
+      {editPlan&&<PlanSheet
+        ticker={editPlan}
+        plan={plans[editPlan]||null}
+        onSave={p=>setPlans(prev=>({...prev,[editPlan]:p}))}
+        onDelete={()=>setPlans(prev=>{const n={...prev};delete n[editPlan];return n;})}
+        onClose={()=>setEditPlan(null)}
+      />}
 
       {/* Bottom Tab Bar */}
       <Tabs active={tab} onChange={setTab} highlight={holdings.length===0?["ptf"]:[]}/>
