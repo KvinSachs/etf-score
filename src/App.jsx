@@ -213,7 +213,7 @@ const REC_ICONS={
 };
 
 const ASSET_LABELS={equity:"Actions",bond:"Obligations",real_estate:"Immobilier",commodity:"Matières prem."};
-const ASSET_COLORS={equity:"rgba(255,255,255,0.7)",bond:"#0ecb81",real_estate:"#f0b90b",commodity:"#f0b90b"};
+const ASSET_COLORS={equity:"#a78bfa",bond:"#0ecb81",real_estate:"#f0b90b",commodity:"#facc15"};
 
 /* ─── SCORE COLOR (TR style) ─────────────────────────────────────────────────── */
 function sc(s){
@@ -1369,8 +1369,8 @@ export default function App(){
                                 <span style={{fontSize:11,color:"rgba(255,255,255,0.35)",fontWeight:600,flexShrink:0}}>{pct.toFixed(1)}%</span>
                               </div>
                               <div style={{display:"flex",alignItems:"center",gap:6}}>
-                                {etf?.isin&&<span style={{fontSize:9,fontFamily:"monospace",color:"rgba(255,255,255,0.2)",letterSpacing:.4}}>{etf.isin}</span>}
-                                {etf&&<span style={{fontSize:9,color:ASSET_COLORS[etf.assetClass]||"rgba(255,255,255,0.3)",fontWeight:500}}>{ASSET_LABELS[etf.assetClass]||etf.assetClass}</span>}
+                                {etf?.isin&&<span style={{fontSize:9,fontFamily:"'SF Mono',ui-monospace,monospace",color:"rgba(255,255,255,0.38)",letterSpacing:.5}}>{etf.isin}</span>}
+                                {etf&&<span style={{fontSize:9,color:ASSET_COLORS[etf.assetClass]||"rgba(255,255,255,0.4)",fontWeight:600,background:`${ASSET_COLORS[etf.assetClass]||"rgba(255,255,255,0.1)"}18`,padding:"1px 6px",borderRadius:4,letterSpacing:.3,flexShrink:0}}>{ASSET_LABELS[etf.assetClass]||etf.assetClass}</span>}
                               </div>
                             </div>
                             <input type="number" value={isEditing?editAmt[h.ticker]:h.amount}
