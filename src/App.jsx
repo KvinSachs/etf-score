@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
 
 /* ─── FONTS ──────────────────────────────────────────────────────────────────── */
 const FONTS = ``;
@@ -240,7 +239,54 @@ function Glass({children,style={},onClick}){
   );
 }
 
-/* ─── SCORE ARC ──────────────────────────────────────────────────────────────── */
+/* ─── SCORE CARD (replaces arcs) ────────────────────────────────────────────── */
+function ScoreCard({value,label,weight}){
+  const g=sc(value);
+  const pct=(value/20)*100;
+  const gradStart=g.stroke+"88";
+  const gradEnd=g.stroke;
+  return(
+    <div style={{
+      background:"rgba(255,255,255,0.03)",
+      border:`0.5px solid ${g.stroke}22`,
+      borderRadius:16,
+      padding:"14px 16px",
+      display:"flex",
+      flexDirection:"column",
+      gap:10,
+      position:"relative",
+      overflow:"hidden",
+    }}>
+      {/* Ambient background glow */}
+      <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 0% 100%,${g.stroke}0d 0%,transparent 60%)`,pointerEvents:"none"}}/>
+      {/* Top row */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",position:"relative"}}>
+        <div style={{fontSize:11,color:"rgba(255,255,255,0.4)",fontWeight:500,letterSpacing:.2}}>{label}</div>
+        <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:1}}>{weight}</div>
+      </div>
+      {/* Score */}
+      <div style={{display:"flex",alignItems:"baseline",gap:3,position:"relative"}}>
+        <span style={{fontSize:28,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-1}}>{value.toFixed(1)}</span>
+        <span style={{fontSize:11,color:"rgba(255,255,255,0.2)",fontWeight:400}}>/20</span>
+      </div>
+      {/* Progress bar */}
+      <div style={{height:3,background:"rgba(255,255,255,0.06)",borderRadius:2,overflow:"hidden",position:"relative"}}>
+        <div style={{
+          height:"100%",
+          width:`${pct}%`,
+          background:`linear-gradient(90deg,${gradStart},${gradEnd})`,
+          borderRadius:2,
+          transition:"width 1s cubic-bezier(.16,1,.3,1)",
+          boxShadow:`0 0 8px ${g.stroke}88`,
+        }}/>
+      </div>
+      {/* Label */}
+      <div style={{fontSize:10,color:g.text,fontWeight:600,letterSpacing:.3,position:"relative"}}>{g.label}</div>
+    </div>
+  );
+}
+
+/* ─── SCORE ARC (kept for compatibility) ────────────────────────────────────── */
 function ScoreArc({value,label,size=150}){
   const r=size/2-12,circ=2*Math.PI*r,g=sc(value),id=`a${label.replace(/\W/g,"")}`;
   return(
@@ -344,7 +390,7 @@ const GEO_INFO={"Amér. du Nord":"États-Unis et Canada — marchés les plus pr
 
 function InfoModal({label,text,onClose}){
   useEffect(()=>{const f=e=>{if(e.key==="Escape")onClose();};document.addEventListener("keydown",f);return()=>document.removeEventListener("keydown",f);},[onClose]);
-  return createPortal(
+  return(
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999,padding:"0 16px 32px"}}>
       <div onClick={e=>e.stopPropagation()} style={{background:"rgba(18,18,18,0.95)",backdropFilter:"blur(40px)",border:"0.5px solid rgba(255,255,255,0.12)",borderRadius:"24px 24px 0 0",padding:"12px 20px 24px",width:"100%",maxWidth:430,minHeight:"50vh",animation:"up .28s cubic-bezier(.16,1,.3,1)",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"}}>
         <div style={{display:"flex",justifyContent:"center",marginBottom:16}}><div style={{width:36,height:4,borderRadius:2,background:"rgba(255,255,255,0.15)"}}/></div>
@@ -352,7 +398,7 @@ function InfoModal({label,text,onClose}){
         <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.5)",lineHeight:1.7}}>{text}</p>
       </div>
     </div>
-  , document.body);
+  );
 }
 function IBtn({label,text}){const[s,ss]=useState(false);return(<><button onClick={()=>ss(true)} style={{background:"none",border:"none",cursor:"pointer",padding:"0 0 0 5px",display:"inline-flex",alignItems:"center",opacity:.5}}><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" stroke="rgba(255,255,255,0.6)" strokeWidth="1"/><text x="6" y="9.5" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="7.5" fontFamily="system-ui" fontWeight="600">i</text></svg></button>{s&&<InfoModal label={label} text={text} onClose={()=>ss(false)}/>}</>);}
 
@@ -391,7 +437,7 @@ function Sheet({children,onClose}){
   const onTS=e=>{startY.current=e.touches[0].clientY;};
   const onTM=e=>{const dy=e.touches[0].clientY-startY.current;if(dy>0&&ref.current){curY.current=dy;ref.current.style.transform=`translateY(${dy}px)`;}};
   const onTE=()=>{if(curY.current>80)onClose();else if(ref.current)ref.current.style.transform="translateY(0)";curY.current=0;};
-  return createPortal(
+  return(
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
       <div ref={ref} onClick={e=>e.stopPropagation()} onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
         style={{background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,minHeight:"50vh",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"}}>
@@ -401,7 +447,7 @@ function Sheet({children,onClose}){
         {children}
       </div>
     </div>
-  , document.body);
+  );
 }
 
 /* ─── SUGGESTION SHEET ───────────────────────────────────────────────────────── */
@@ -1215,26 +1261,33 @@ export default function App(){
                 </Glass>
               )}
 
-              {/* Score rings */}
-              <Glass style={{padding:"28px 16px 24px"}}>
-                <div style={{display:"flex",justifyContent:"space-around",alignItems:"flex-start"}}>
-                  <ScoreArc value={scores.geo} label="Géographique"/>
-                  <div style={{width:"0.5px",background:"rgba(255,255,255,0.06)",alignSelf:"stretch",margin:"10px 0"}}/>
-                  <ScoreArc value={scores.sector} label="Sectorielle"/>
+              {/* Score cards grid */}
+              {holdings.length>0&&(
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                  <ScoreCard value={scores.geo} label="Géographie" weight="25%"/>
+                  <ScoreCard value={scores.sector} label="Secteurs" weight="25%"/>
+                  <ScoreCard value={scores.overlap} label="Chevauchement" weight="20%"/>
+                  <ScoreCard value={scores.assetClass} label="Classes d'actifs" weight="15%"/>
+                  <ScoreCard value={scores.currency} label="Devises" weight="15%"/>
+                  <div style={{background:"rgba(255,255,255,0.02)",border:"0.5px solid rgba(255,255,255,0.05)",borderRadius:16,padding:"14px 16px",display:"flex",flexDirection:"column",gap:10}}>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,0.25)",fontWeight:500}}>Score</div>
+                    <div style={{display:"flex",alignItems:"baseline",gap:3}}>
+                      <span style={{fontSize:28,fontWeight:800,color:sc(scores.total).text,lineHeight:1,letterSpacing:-1}}>{scores.total.toFixed(1)}</span>
+                      <span style={{fontSize:11,color:"rgba(255,255,255,0.2)"}}>/ 20</span>
+                    </div>
+                    <div style={{height:3,background:"rgba(255,255,255,0.06)",borderRadius:2,overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${(scores.total/20)*100}%`,background:`linear-gradient(90deg,${sc(scores.total).stroke}88,${sc(scores.total).stroke})`,borderRadius:2,transition:"width 1s cubic-bezier(.16,1,.3,1)"}}/>
+                    </div>
+                    <div style={{fontSize:10,color:sc(scores.total).text,fontWeight:600}}>{sc(scores.total).label}</div>
+                  </div>
                 </div>
-              </Glass>
+              )}
 
-              {/* Sub-scores */}
+              {/* Classes d'actifs */}
               {holdings.length>0&&(
                 <Glass style={{padding:"18px 18px"}}>
-                  <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>Détail des critères</div>
+                  <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>placeholder</div>
                   <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                    <MiniBar label="Géographie" value={scores.geo} weight="25%"/>
-                    <MiniBar label="Secteurs" value={scores.sector} weight="25%"/>
-                    <MiniBar label="Chevauchement" value={scores.overlap} weight="20%"/>
-                    <MiniBar label="Classes d'actifs" value={scores.assetClass} weight="15%"/>
-                    <MiniBar label="Devises" value={scores.currency} weight="15%"/>
-                  </div>
                   {Object.keys(scores.classes).length>0&&(
                     <div style={{marginTop:18,paddingTop:16,borderTop:"0.5px solid rgba(255,255,255,0.06)"}}>
                       <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Classes d'actifs</div>
