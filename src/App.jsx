@@ -942,7 +942,13 @@ function planStats(plan){
   const projection10y=Math.round(plan.amount*versementsParAn*10);
 
   // Next payment date
-  const nextDate=new Date(start.getTime()+(periodsElapsed+1)*msPerPeriod);
+  let nextDate;
+  if(rawPeriods===0&&start>now){
+    // First payment not yet reached — next is simply the start date
+    nextDate=start;
+  } else {
+    nextDate=new Date(start.getTime()+(periodsElapsed+1)*msPerPeriod);
+  }
   const daysUntilNext=Math.max(1,Math.ceil((nextDate-now)/(1000*60*60*24)));
 
   return{totalInvested,perYear,daysUntilNext,periodsElapsed,freq,projection10y,versementsParAn};
