@@ -298,8 +298,8 @@ function Glass({children,style={},onClick}){
 /* ─── SCORE ARC ──────────────────────────────────────────────────────────────── */
 function ScoreArc({value,label,size=160}){
   const r=size/2-14,circ=2*Math.PI*r,g=sc(value);
-  const id={`arc-${label.replace(/\W/g,"")}`};
-  const glowId={`glow-${label.replace(/\W/g,"")}`};
+  const id=`arc-${label.replace(/\W/g,"")}`;
+  const glowId=`glow-${label.replace(/\W/g,"")}`;
   // Multi-stop gradient: dim start → vivid end
   const colorStart=g.stroke+"55";
   const colorMid=g.stroke+"cc";
@@ -379,7 +379,7 @@ function Donut({data,palette,size=200}){
     const xi1=cx+inner*Math.cos(start),yi1=cy+inner*Math.sin(start);
     const xi2=cx+inner*Math.cos(end),yi2=cy+inner*Math.sin(end);
     const large=pct>0.5?1:0;
-    const path={`M${xi1} ${yi1} L${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} L${xi2} ${yi2} A${inner} ${inner} 0 ${large} 0 ${xi1} ${yi1} Z`};
+    const path=`M${xi1} ${yi1} L${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} L${xi2} ${yi2} A${inner} ${inner} 0 ${large} 0 ${xi1} ${yi1} Z`;
     return{k,v,pct,path,color:palette[i%palette.length],mid:(start+end)/2};
   });
   const top=slices[0];
