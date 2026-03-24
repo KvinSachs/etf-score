@@ -982,6 +982,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
         {/* Start date */}
         <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Depuis le</div>
         <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
+          min={new Date().toISOString().split("T")[0]}
           style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:"rgba(255,255,255,0.7)",fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:"dark"}}/>
 
         {/* Preview */}
