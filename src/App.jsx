@@ -935,7 +935,8 @@ function planStats(plan){
   const periodsSinceStart=Math.floor((now-start)/msPerPeriod);
   const nextDate=new Date(start.getTime()+(periodsSinceStart+1)*msPerPeriod);
   const daysUntilNext=Math.ceil((nextDate-now)/(1000*60*60*24));
-  return{totalInvested,perYear,daysUntilNext,periodsElapsed,freq};
+  const projection10y=plan.amount*(52/freq.weeks)*10;
+  return{totalInvested,perYear,daysUntilNext,periodsElapsed,freq,projection10y};
 }
 
 function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
@@ -1404,16 +1405,23 @@ export default function App(){
                               onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.15)"}>×</button>
                           </div>
                           {/* Plan summary if configured */}
-                          {plans[h.ticker]&&(()=>{const s=planStats(plans[h.ticker]);return s&&s.totalInvested>0?(
+                          {plans[h.ticker]&&(()=>{const s=planStats(plans[h.ticker]);return s?(
                             <div style={{marginTop:10,paddingTop:10,borderTop:"0.5px solid rgba(255,255,255,0.06)",display:"flex",gap:16,alignItems:"center"}}>
                               <div style={{display:"flex",alignItems:"center",gap:5}}>
                                 <svg width="10" height="10" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#0ecb81" strokeWidth="1"/><line x1="4" y1="1" x2="4" y2="3.5" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="6" x2="10" y2="6" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/></svg>
                                 <span style={{fontSize:10,color:"rgba(255,255,255,0.3)"}}>{FREQS.find(f=>f.id===plans[h.ticker].freq)?.label} · {plans[h.ticker].amount}€</span>
                               </div>
-                              <div style={{display:"flex",alignItems:"baseline",gap:3}}>
-                                <span style={{fontSize:12,fontWeight:700,color:"#0ecb81"}}>{s.totalInvested.toLocaleString("fr-FR")} €</span>
-                                <span style={{fontSize:9,color:"rgba(255,255,255,0.25)"}}>investis</span>
-                              </div>
+                              {s.totalInvested>0?(
+                                <div style={{display:"flex",alignItems:"baseline",gap:3}}>
+                                  <span style={{fontSize:12,fontWeight:700,color:"#0ecb81"}}>{s.totalInvested.toLocaleString("fr-FR")} €</span>
+                                  <span style={{fontSize:9,color:"rgba(255,255,255,0.25)"}}>investis</span>
+                                </div>
+                              ):(
+                                <div style={{display:"flex",alignItems:"baseline",gap:3}}>
+                                  <span style={{fontSize:12,fontWeight:700,color:"rgba(14,203,129,0.7)"}}>{s.projection10y.toLocaleString("fr-FR")} €</span>
+                                  <span style={{fontSize:9,color:"rgba(255,255,255,0.25)"}}>proj. 10 ans</span>
+                                </div>
+                              )}
                               <div style={{marginLeft:"auto",fontSize:10,color:"rgba(255,255,255,0.25)"}}>prochain dans <span style={{color:"rgba(255,255,255,0.5)",fontWeight:500}}>{s.daysUntilNext}j</span></div>
                             </div>
                           ):null;})()}
