@@ -1112,7 +1112,7 @@ export default function App(){
 
       <div style={{position:"relative",zIndex:1}}>
         {/* ── HEADER ── */}
-        <header style={{padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",background:"rgba(5,5,6,0.8)",position:"sticky",top:0,zIndex:50,borderBottom:"0.5px solid rgba(255,255,255,0.06)"}}>
+        <header style={{padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",background:"rgba(5,5,6,0.8)",position:"sticky",top:0,zIndex:50}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <img src="/icon-180.png" alt="" style={{width:30,height:30,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.target.style.display="none";}}/>
             <div>
