@@ -241,27 +241,58 @@ function Glass({children,style={},onClick}){
 }
 
 /* ─── SCORE ARC ──────────────────────────────────────────────────────────────── */
-function ScoreArc({value,label,size=150}){
-  const r=size/2-12,circ=2*Math.PI*r,g=sc(value),id=`a${label.replace(/\W/g,"")}`;
+function ScoreArc({value,label,size=160}){
+  const r=size/2-14,circ=2*Math.PI*r,g=sc(value);
+  const id=`arc-${label.replace(/\W/g,"")}`;
+  const glowId=`glow-${label.replace(/\W/g,"")}`;
+  // Multi-stop gradient: dim start → vivid end
+  const colorStart=g.stroke+"55";
+  const colorMid=g.stroke+"cc";
+  const colorEnd=g.stroke;
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,flex:1}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,flex:1}}>
       <div style={{position:"relative",width:size,height:size}}>
-        <div style={{position:"absolute",inset:0,borderRadius:"50%",background:`radial-gradient(circle at center,${g.glow} 0%,transparent 65%)`,pointerEvents:"none"}}/>
-        <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"relative"}}>
-          <defs><linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor={g.stroke} stopOpacity="0.4"/><stop offset="100%" stopColor={g.stroke}/></linearGradient></defs>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6"/>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`url(#${id})`} strokeWidth="6"
-            strokeDasharray={`${(value/20)*circ} ${(1-value/20)*circ}`} strokeLinecap="round"
-            style={{transition:"stroke-dasharray 1s cubic-bezier(.16,1,.3,1)",filter:`drop-shadow(0 0 6px ${g.stroke})`}}/>
+        {/* Layered ambient glow */}
+        <div style={{position:"absolute",inset:-8,borderRadius:"50%",background:`radial-gradient(circle,${g.stroke}18 0%,transparent 60%)`,pointerEvents:"none"}}/>
+        <div style={{position:"absolute",inset:16,borderRadius:"50%",background:`radial-gradient(circle,${g.stroke}10 0%,transparent 70%)`,pointerEvents:"none"}}/>
+        <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"relative",zIndex:1}}>
+          <defs>
+            <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor={colorStart}/>
+              <stop offset="50%" stopColor={colorMid}/>
+              <stop offset="100%" stopColor={colorEnd}/>
+            </linearGradient>
+            <filter id={glowId}>
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          {/* Track */}
+          <circle cx={size/2} cy={size/2} r={r} fill="none"
+            stroke="rgba(255,255,255,0.05)" strokeWidth="8"/>
+          {/* Filled arc */}
+          <circle cx={size/2} cy={size/2} r={r} fill="none"
+            stroke={`url(#${id})`} strokeWidth="8"
+            strokeDasharray={`${(value/20)*circ} ${(1-value/20)*circ}`}
+            strokeLinecap="round"
+            filter={`url(#${glowId})`}
+            style={{transition:"stroke-dasharray 1.2s cubic-bezier(.16,1,.3,1)"}}/>
+          {/* Bright tip dot at end of arc */}
+          {value>0&&(()=>{
+            const angle=(-Math.PI/2)+(value/20)*Math.PI*2;
+            const tx=size/2+r*Math.cos(angle);
+            const ty=size/2+r*Math.sin(angle);
+            return <circle cx={tx} cy={ty} r={4} fill={g.stroke} style={{filter:`drop-shadow(0 0 4px ${g.stroke})`}}/>;
+          })()}
         </svg>
-        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:0}}>
-          <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:34,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-1}}>{value.toFixed(1)}</span>
-          <span style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,marginTop:2}}>/20</span>
+        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+          <span style={{fontSize:36,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-1.5}}>{value.toFixed(1)}</span>
+          <span style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,marginTop:3}}>/20</span>
         </div>
       </div>
       <div style={{textAlign:"center"}}>
-        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.6)",letterSpacing:.5}}>{label}</div>
-        {value>0&&<div style={{fontSize:10,color:g.text,marginTop:2}}>{g.label}</div>}
+        <div style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.55)",letterSpacing:.4}}>{label}</div>
+        {value>0&&<div style={{fontSize:10,color:g.text,fontWeight:500,marginTop:3,letterSpacing:.3}}>{g.label}</div>}
       </div>
     </div>
   );
@@ -1121,7 +1152,6 @@ export default function App(){
             <div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:15,fontWeight:800,color:"#fff",letterSpacing:-.3}}>ETF Score</span>
-                <span style={{fontSize:8,fontWeight:800,color:"#0ecb81",letterSpacing:2,background:"rgba(14,203,129,0.1)",border:"0.5px solid rgba(14,203,129,0.25)",padding:"2px 6px",borderRadius:3,fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif"}}>EXPERT</span>
               </div>
               <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",marginTop:0,letterSpacing:.3}}>Analyse multicritères</div>
             </div>
