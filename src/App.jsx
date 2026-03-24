@@ -277,13 +277,7 @@ function ScoreArc({value,label,size=160}){
             strokeLinecap="round"
             filter={`url(#${glowId})`}
             style={{transition:"stroke-dasharray 1.2s cubic-bezier(.16,1,.3,1)"}}/>
-          {/* Bright tip dot at end of arc */}
-          {value>0&&(()=>{
-            const angle=(-Math.PI/2)+(value/20)*Math.PI*2;
-            const tx=size/2+r*Math.cos(angle);
-            const ty=size/2+r*Math.sin(angle);
-            return <circle cx={tx} cy={ty} r={4} fill={g.stroke} style={{filter:`drop-shadow(0 0 4px ${g.stroke})`}}/>;
-          })()}
+
         </svg>
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
           <span style={{fontSize:36,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-1.5}}>{value.toFixed(1)}</span>
