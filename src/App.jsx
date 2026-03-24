@@ -647,7 +647,7 @@ function Disclaimer({onAccept}){
         <div style={{marginBottom:20}}>
           <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
             <rect width="48" height="48" rx="12" fill="rgba(255,255,255,0.06)"/>
-            <defs><linearGradient id="dl" x1="0" y1="0" x2="48" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor=T.accent/><stop offset="100%" stopColor="#3b82f6"/></linearGradient></defs>
+            <defs><linearGradient id="dl" x1="0" y1="0" x2="48" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={T.accent}/><stop offset="100%" stopColor="#3b82f6"/></linearGradient></defs>
             <line x1="14" y1="18" x2="34" y2="18" stroke="white" strokeWidth="2" strokeLinecap="round" opacity=".5"/>
             <line x1="24" y1="18" x2="24" y2="34" stroke="white" strokeWidth="2" strokeLinecap="round" opacity=".5"/>
             <line x1="18" y1="34" x2="30" y2="34" stroke="white" strokeWidth="2" strokeLinecap="round" opacity=".5"/>
