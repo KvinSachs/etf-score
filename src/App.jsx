@@ -281,7 +281,7 @@ function ScoreArc({value,label,size=160}){
         </svg>
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
           <span style={{fontSize:36,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-1.5}}>{value.toFixed(1)}</span>
-          <span style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,marginTop:3}}>/20</span>
+          <span style={{fontSize:9,color:"rgba(255,255,255,0.38)",letterSpacing:2.5,marginTop:3}}>/20</span>
         </div>
       </div>
       <div style={{textAlign:"center"}}>
@@ -302,7 +302,7 @@ function MiniBar({label,value,weight}){
         <div style={{height:"100%",width:`${(value/20)*100}%`,background:g.stroke,borderRadius:1,transition:"width .8s cubic-bezier(.16,1,.3,1)",boxShadow:`0 0 6px ${g.stroke}`}}/>
       </div>
       <span style={{fontSize:12,color:g.text,fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontWeight:700,width:30,textAlign:"right"}}>{value.toFixed(1)}</span>
-      <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",width:28,textAlign:"right"}}>{weight}</span>
+      <span style={{fontSize:10,color:"rgba(255,255,255,0.38)",width:28,textAlign:"right"}}>{weight}</span>
     </div>
   );
 }
@@ -387,7 +387,7 @@ function ColorBars({data,title,infoMap={}}){
   return(
     <Glass>
       <div style={{padding:"20px 18px"}}>
-        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.25)",letterSpacing:3,textTransform:"uppercase",marginBottom:18}}>{title}</div>
+        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.42)",letterSpacing:3,textTransform:"uppercase",marginBottom:18}}>{title}</div>
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           {sorted.map(([k,v],i)=>(
             <div key={k}>
@@ -452,7 +452,7 @@ function SuggestionSheet({catalog,onSelect,onClose}){
                 <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:13,fontWeight:700,color:"#fff"}}>{DB[opt.ticker]?.name||opt.label.split(" · ")[0]}</span>
                 <div style={{display:"flex",gap:5,alignItems:"center"}}>
                   {opt.ter&&<span style={{fontSize:10,color:"#0ecb81",fontWeight:700,background:"rgba(14,203,129,0.1)",padding:"2px 6px",borderRadius:4}}>TER {opt.ter}</span>}
-                  <span style={{fontSize:9,color:"rgba(255,255,255,0.2)",fontFamily:"monospace"}}>{opt.ticker}</span>
+                  <span style={{fontSize:9,color:"rgba(255,255,255,0.38)",fontFamily:"monospace"}}>{opt.ticker}</span>
                 </div>
               </div>
               <div style={{display:"flex",gap:5,flexWrap:"wrap",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"}}>
@@ -461,7 +461,7 @@ function SuggestionSheet({catalog,onSelect,onClose}){
             </button>
           ))}
         </div>
-        <p style={{margin:"12px 0 0",fontSize:9,color:"rgba(255,255,255,0.15)",textAlign:"center",letterSpacing:.3}}>Suggestions indicatives — d'autres ETF couvrent la même catégorie.</p>
+        <p style={{margin:"12px 0 0",fontSize:9,color:"rgba(255,255,255,0.32)",textAlign:"center",letterSpacing:.3}}>Suggestions indicatives — d'autres ETF couvrent la même catégorie.</p>
       </div>
     </Sheet>
   );
@@ -509,9 +509,9 @@ function Search({onAdd,suggestions=[]}){
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:500,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginBottom:3}}>{e.name}</div>
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",fontFamily:"monospace"}}>{e.isin}</span>
+                    <span style={{fontSize:10,color:"rgba(255,255,255,0.38)",fontFamily:"monospace"}}>{e.isin}</span>
                     <span style={{fontSize:10,color:ASSET_COLORS[e.assetClass]||"rgba(255,255,255,0.3)",fontWeight:500}}>· {ASSET_LABELS[e.assetClass]||e.assetClass}</span>
-                    <span style={{fontSize:9,color:"rgba(255,255,255,0.15)",fontFamily:"monospace",marginLeft:"auto",flexShrink:0}}>{t}</span>
+                    <span style={{fontSize:9,color:"rgba(255,255,255,0.32)",fontFamily:"monospace",marginLeft:"auto",flexShrink:0}}>{t}</span>
                   </div>
                 </div>
               </div>
@@ -520,7 +520,7 @@ function Search({onAdd,suggestions=[]}){
         )}
         {open&&q.length>=2&&!selectedTicker&&results.length===0&&(
           <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"18px",textAlign:"center"}}>
-            <div style={{fontSize:13,color:"rgba(255,255,255,0.3)"}}>Aucun résultat pour « {q} »</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,0.48)"}}>Aucun résultat pour « {q} »</div>
           </div>
         )}
       </div>
@@ -529,7 +529,7 @@ function Search({onAdd,suggestions=[]}){
           <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doAdd()}
             onFocus={e=>e.target.style.borderColor="rgba(255,255,255,0.25)"} onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
             placeholder="Montant" style={{...inp,width:"100%",paddingRight:36}}/>
-          <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.3)",fontWeight:500,pointerEvents:"none"}}>€</span>
+          <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.48)",fontWeight:500,pointerEvents:"none"}}>€</span>
         </div>
         <button onClick={doAdd} style={{background:"#0ecb81",border:"none",borderRadius:14,padding:"14px 22px",color:"#000",fontSize:18,fontWeight:800,cursor:"pointer",flexShrink:0,fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",transition:"opacity .15s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".85"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>+</button>
@@ -537,7 +537,7 @@ function Search({onAdd,suggestions=[]}){
       {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
       {suggestions.length>0&&(
         <div style={{display:"flex",flexDirection:"column",gap:8,paddingTop:2}}>
-          <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700}}>Suggestions</div>
+          <div style={{fontSize:9,color:"rgba(255,255,255,0.38)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700}}>Suggestions</div>
           <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
             {suggestions.map(s=>(
               <button key={s.key} onClick={()=>setActiveSug(s.key)}
@@ -661,7 +661,7 @@ function Splash({visible}){
         animation:visible?"splashText .5s cubic-bezier(.16,1,.3,1) .5s both":"none",
       }}>
         <div style={{fontSize:22,fontWeight:700,color:"#fff",letterSpacing:-.5,textAlign:"center"}}>ETF Score</div>
-        <div style={{fontSize:11,color:"rgba(255,255,255,0.25)",textAlign:"center",marginTop:4,letterSpacing:2,textTransform:"uppercase"}}>Analyse multicritères</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,0.42)",textAlign:"center",marginTop:4,letterSpacing:2,textTransform:"uppercase"}}>Analyse multicritères</div>
       </div>
 
       {/* Bottom indicator */}
@@ -855,14 +855,14 @@ function Onboarding({onAdd,onDone}){
                     <div key={i} style={{display:"flex",alignItems:"center",gap:10,background:lastAdded===i?"rgba(14,203,129,0.12)":"rgba(14,203,129,0.06)",border:`0.5px solid ${lastAdded===i?"rgba(14,203,129,0.4)":"rgba(14,203,129,0.15)"}`,borderRadius:12,padding:"10px 14px",animation:lastAdded===i?"popIn .4s cubic-bezier(.16,1,.3,1)":"none",boxShadow:lastAdded===i?"0 0 16px rgba(14,203,129,0.2)":"none",transition:"background .4s,border .4s,box-shadow .4s"}}>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:12,fontWeight:500,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{h.name}</div>
-                        <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginTop:2}}>{h.ticker}</div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,0.48)",marginTop:2}}>{h.ticker}</div>
                       </div>
                       <input type="number" defaultValue={h.amount}
                         onBlur={e=>{const v=parseFloat(e.target.value);if(!isNaN(v)&&v>0)setAdded(prev=>prev.map((x,j)=>j===i?{...x,amount:v}:x));else e.target.value=h.amount;}}
                         onKeyDown={e=>e.key==="Enter"&&e.target.blur()}
                         style={{width:72,background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"4px 8px",color:"#0ecb81",fontSize:12,fontWeight:600,textAlign:"right",outline:"none",fontFamily:"monospace",WebkitAppearance:"none"}}/>
-                      <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",flexShrink:0}}>€</span>
-                      <button onClick={()=>setAdded(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:16,cursor:"pointer",padding:"0 2px",flexShrink:0,lineHeight:1,transition:"color .15s"}} onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.2)"}>×</button>
+                      <span style={{fontSize:10,color:"rgba(255,255,255,0.38)",flexShrink:0}}>€</span>
+                      <button onClick={()=>setAdded(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",color:"rgba(255,255,255,0.38)",fontSize:16,cursor:"pointer",padding:"0 2px",flexShrink:0,lineHeight:1,transition:"color .15s"}} onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.2)"}>×</button>
                     </div>
                   ))}
                 </div>
@@ -882,7 +882,7 @@ function Onboarding({onAdd,onDone}){
                       {results.map(([t,e])=>(
                         <div key={t} onMouseDown={()=>selectItem(t,e.name)} style={{padding:"13px 16px",cursor:"pointer",borderBottom:"0.5px solid rgba(255,255,255,0.05)",transition:"background .1s"}} onMouseEnter={ev=>ev.currentTarget.style.background="rgba(255,255,255,0.05)"} onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
                           <div style={{fontSize:13,fontWeight:500,color:"#fff",marginBottom:3}}>{e.name}</div>
-                          <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",fontFamily:"monospace"}}>{e.isin} · {ASSET_LABELS[e.assetClass]||e.assetClass}</div>
+                          <div style={{fontSize:10,color:"rgba(255,255,255,0.42)",fontFamily:"monospace"}}>{e.isin} · {ASSET_LABELS[e.assetClass]||e.assetClass}</div>
                         </div>
                       ))}
                     </div>
@@ -895,11 +895,11 @@ function Onboarding({onAdd,onDone}){
                     onFocus={e=>{e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
                     inputMode="decimal" placeholder="Montant investi"
                     style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 36px 15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
-                  <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.3)",fontWeight:500,pointerEvents:"none"}}>€</span>
+                  <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.48)",fontWeight:500,pointerEvents:"none"}}>€</span>
                 </div>
                 {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
                 <div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Populaires</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,0.38)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Populaires</div>
                   <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                     {[{t:"IWDA",l:"iShares Monde"},{t:"VWCE",l:"Vanguard All-World"},{t:"MWRD",l:"Amundi Monde PEA"},{t:"PAEEM",l:"Émergents PEA"}].map(({t,l})=>(
                       <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)} style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,padding:"6px 14px",color:"rgba(255,255,255,0.5)",fontSize:12,cursor:"pointer",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}>
@@ -967,13 +967,13 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <div>
             <div style={{fontSize:15,fontWeight:700,color:"#fff"}}>Plan d'investissement</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,0.3)",marginTop:2}}>{etf?.name||ticker}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.48)",marginTop:2}}>{etf?.name||ticker}</div>
           </div>
           <button onClick={onClose} style={{background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:28,height:28,color:"rgba(255,255,255,0.5)",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         </div>
 
         {/* Frequency selector */}
-        <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Fréquence</div>
+        <div style={{fontSize:9,color:"rgba(255,255,255,0.42)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Fréquence</div>
         <div style={{display:"flex",gap:8,marginBottom:20}}>
           {FREQS.map(f=>(
             <button key={f.id} onClick={()=>setFreq(f.id)}
@@ -984,7 +984,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
         </div>
 
         {/* Amount */}
-        <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Montant par versement</div>
+        <div style={{fontSize:9,color:"rgba(255,255,255,0.42)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Montant par versement</div>
         <div style={{position:"relative",marginBottom:20}}>
           <input type="number" value={amount} onChange={e=>setAmount(e.target.value)}
             placeholder="0"
@@ -992,11 +992,11 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
             style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 36px 14px 16px",color:"#fff",fontSize:20,fontWeight:700,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s"}}
             onFocus={e=>e.target.style.borderColor="rgba(14,203,129,0.4)"}
             onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
-          <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:16,color:"rgba(255,255,255,0.25)",fontWeight:500,pointerEvents:"none"}}>€</span>
+          <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:16,color:"rgba(255,255,255,0.42)",fontWeight:500,pointerEvents:"none"}}>€</span>
         </div>
 
         {/* Start date */}
-        <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Prochaine exécution</div>
+        <div style={{fontSize:9,color:"rgba(255,255,255,0.42)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Prochaine exécution</div>
         <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
           min={new Date().toISOString().split("T")[0]}
           style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:"rgba(255,255,255,0.7)",fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:"dark"}}/>
@@ -1006,22 +1006,22 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
           <div style={{background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.15)",borderRadius:14,padding:"14px 16px",marginBottom:20}}>
             {preview.periodsElapsed===0?(
               <div style={{textAlign:"center",padding:"6px 0"}}>
-                <div style={{fontSize:9,color:"rgba(255,255,255,0.3)",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Projection sur 10 ans</div>
+                <div style={{fontSize:9,color:"rgba(255,255,255,0.48)",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Projection sur 10 ans</div>
                 <div style={{fontSize:28,fontWeight:800,color:"#0ecb81",letterSpacing:-1}}>{preview.projection10y.toLocaleString("fr-FR")} €</div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,0.3)",marginTop:4}}>à ce rythme, sans intérêts</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,0.48)",marginTop:4}}>à ce rythme, sans intérêts</div>
               </div>
             ):(
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-                <div><div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Total investi</div><div style={{fontSize:18,fontWeight:700,color:"#0ecb81"}}>{preview.totalInvested.toLocaleString("fr-FR")} €</div></div>
-                <div><div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Par an</div><div style={{fontSize:18,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{preview.perYear.toLocaleString("fr-FR")} €</div></div>
-                <div><div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Versements</div><div style={{fontSize:18,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{preview.periodsElapsed}</div></div>
-                <div><div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Prochain dans</div><div style={{fontSize:18,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{preview.daysUntilNext}j</div></div>
+                <div><div style={{fontSize:9,color:"rgba(255,255,255,0.42)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Total investi</div><div style={{fontSize:18,fontWeight:700,color:"#0ecb81"}}>{preview.totalInvested.toLocaleString("fr-FR")} €</div></div>
+                <div><div style={{fontSize:9,color:"rgba(255,255,255,0.42)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Par an</div><div style={{fontSize:18,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{preview.perYear.toLocaleString("fr-FR")} €</div></div>
+                <div><div style={{fontSize:9,color:"rgba(255,255,255,0.42)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Versements</div><div style={{fontSize:18,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{preview.periodsElapsed}</div></div>
+                <div><div style={{fontSize:9,color:"rgba(255,255,255,0.42)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Prochain dans</div><div style={{fontSize:18,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{preview.daysUntilNext}j</div></div>
               </div>
             )}
           </div>
         )}
 
-        <p style={{margin:"0 0 14px",fontSize:11,color:"rgba(255,255,255,0.25)",lineHeight:1.6,textAlign:"center",fontStyle:"italic"}}>
+        <p style={{margin:"0 0 14px",fontSize:11,color:"rgba(255,255,255,0.42)",lineHeight:1.6,textAlign:"center",fontStyle:"italic"}}>
           Ce calcul suppose un versement constant depuis la date de départ. Les changements de montant ne sont pas pris en compte.
         </p>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -1147,19 +1147,19 @@ export default function App(){
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:15,fontWeight:800,color:"#fff",letterSpacing:-.3}}>ETF Score</span>
               </div>
-              <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",marginTop:0,letterSpacing:.3}}>Analyse multicritères</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,0.42)",marginTop:0,letterSpacing:.3}}>Analyse multicritères</div>
             </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             {holdings.length>0&&(
               <div style={{padding:"5px 10px",background:`${g.glow.replace("0.25","0.08")}`,border:`0.5px solid ${g.stroke}44`,borderRadius:20,display:"flex",alignItems:"baseline",gap:3}}>
                 <span style={{fontSize:13,fontWeight:700,color:g.text,letterSpacing:-.3}}>{scores.total.toFixed(1)}</span>
-                <span style={{fontSize:9,color:"rgba(255,255,255,0.25)"}}>/20</span>
+                <span style={{fontSize:9,color:"rgba(255,255,255,0.42)"}}>/20</span>
               </div>
             )}
             <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",background:"rgba(255,255,255,0.04)",borderRadius:20,border:"0.5px solid rgba(255,255,255,0.08)"}}>
               <div style={{width:5,height:5,borderRadius:"50%",background:saved?"#0ecb81":"#f0b90b",boxShadow:saved?"0 0 6px #0ecb8166":"0 0 6px #f0b90b66",transition:"all .4s",flexShrink:0}}/>
-              <span style={{fontSize:11,color:"rgba(255,255,255,0.3)",letterSpacing:.3,lineHeight:1}}>
+              <span style={{fontSize:11,color:"rgba(255,255,255,0.48)",letterSpacing:.3,lineHeight:1}}>
                 {saved?"Sync"+(savedAt?" · "+savedAt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):""):"..."}
               </span>
             </div>
@@ -1178,20 +1178,20 @@ export default function App(){
                 <Glass style={{padding:"22px 20px"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                     <div>
-                      <div style={{fontSize:10,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:8,fontWeight:600}}>Score global</div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,0.38)",letterSpacing:3,textTransform:"uppercase",marginBottom:8,fontWeight:600}}>Score global</div>
                       <div style={{display:"flex",alignItems:"baseline",gap:4}}>
                         <span style={{fontSize:52,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-2}}>{scores.total.toFixed(1)}</span>
-                        <span style={{fontSize:18,color:"rgba(255,255,255,0.2)",fontWeight:300}}>/20</span>
+                        <span style={{fontSize:18,color:"rgba(255,255,255,0.38)",fontWeight:300}}>/20</span>
                       </div>
                       <div style={{fontSize:11,color:g.text,marginTop:4,fontWeight:500}}>{g.label}</div>
                     </div>
                     <div style={{textAlign:"right"}}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4,marginBottom:8}}>
-                        <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",fontWeight:600}}>Apports</span>
+                        <span style={{fontSize:10,color:"rgba(255,255,255,0.38)",letterSpacing:3,textTransform:"uppercase",fontWeight:600}}>Apports</span>
                         <IBtn label="Montant investi" text="Somme totale versée — ne tient pas compte des variations de marché."/>
                       </div>
                       <div style={{fontSize:24,fontWeight:800,color:"rgba(255,255,255,0.8)",letterSpacing:-.5}}>{total.toLocaleString("fr-FR")} €</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,0.25)",marginTop:4}}>{holdings.length} position{holdings.length>1?"s":""}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,0.42)",marginTop:4}}>{holdings.length} position{holdings.length>1?"s":""}</div>
                     </div>
                   </div>
                 </Glass>
@@ -1209,7 +1209,7 @@ export default function App(){
               {/* Sub-scores */}
               {holdings.length>0&&(
                 <Glass style={{padding:"18px 18px"}}>
-                  <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>Détail des critères</div>
+                  <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.38)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>Détail des critères</div>
                   <div style={{display:"flex",flexDirection:"column",gap:12}}>
                     <MiniBar label="Géographie" value={scores.geo} weight="25%"/>
                     <MiniBar label="Secteurs" value={scores.sector} weight="25%"/>
@@ -1219,7 +1219,7 @@ export default function App(){
                   </div>
                   {Object.keys(scores.classes).length>0&&(
                     <div style={{marginTop:18,paddingTop:16,borderTop:"0.5px solid rgba(255,255,255,0.06)"}}>
-                      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Classes d'actifs</div>
+                      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.38)",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Classes d'actifs</div>
                       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                         {Object.entries(scores.classes).sort((a,b)=>b[1]-a[1]).map(([cls,pct])=>(
                           <div key={cls} style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:20,padding:"5px 12px",display:"flex",alignItems:"center",gap:6}}>
@@ -1240,7 +1240,7 @@ export default function App(){
                   {[{v:Object.keys(scores.geoMap).length,l:"Zones"},{v:Object.keys(scores.secMap).length,l:"Secteurs"},{v:holdings.length,l:"ETF"}].map(({v,l})=>(
                     <Glass key={l} style={{padding:"14px 12px",textAlign:"center"}}>
                       <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:26,fontWeight:800,color:"#fff",lineHeight:1,letterSpacing:-1}}>{v}</div>
-                      <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",marginTop:5,letterSpacing:2,textTransform:"uppercase"}}>{l}</div>
+                      <div style={{fontSize:9,color:"rgba(255,255,255,0.42)",marginTop:5,letterSpacing:2,textTransform:"uppercase"}}>{l}</div>
                     </Glass>
                   ))}
                 </div>
@@ -1294,7 +1294,7 @@ export default function App(){
                       <span style={{fontSize:12,color:"rgba(255,255,255,0.35)"}}>
                         {recMode==="essential"?`Analyse avancée · ${recs.filter(r=>r.level==="advanced").length} points`:"Masquer l'analyse avancée"}
                       </span>
-                      <span style={{fontSize:16,color:"rgba(255,255,255,0.2)",transform:recMode==="advanced"?"rotate(90deg)":"rotate(0deg)",transition:"transform .2s",display:"inline-block"}}>›</span>
+                      <span style={{fontSize:16,color:"rgba(255,255,255,0.38)",transform:recMode==="advanced"?"rotate(90deg)":"rotate(0deg)",transition:"transform .2s",display:"inline-block"}}>›</span>
                     </button>
                   )}
                   {recMode==="advanced"&&recs.filter(r=>r.level==="advanced").map((r,i)=>(
@@ -1314,9 +1314,9 @@ export default function App(){
                 <Glass style={{padding:"52px 24px",textAlign:"center"}}>
                   <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:44,marginBottom:16,opacity:.3}}>◎</div>
                   <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:16,fontWeight:800,color:"#fff",marginBottom:10}}>Aucun ETF renseigné</div>
-                  <div style={{fontSize:13,color:"rgba(255,255,255,0.3)",lineHeight:1.7,marginBottom:20}}>Allez dans l'onglet <strong style={{color:"rgba(255,255,255,0.6)"}}>Mes ETF</strong> pour ajouter vos positions.</div>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,0.48)",lineHeight:1.7,marginBottom:20}}>Allez dans l'onglet <strong style={{color:"rgba(255,255,255,0.6)"}}>Mes ETF</strong> pour ajouter vos positions.</div>
                   <button onClick={()=>setOnboarding(true)}
-                    style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:12,cursor:"pointer",padding:0,textDecoration:"underline",textUnderlineOffset:3}}>
+                    style={{background:"none",border:"none",color:"rgba(255,255,255,0.38)",fontSize:12,cursor:"pointer",padding:0,textDecoration:"underline",textUnderlineOffset:3}}>
                     Revoir l'introduction
                   </button>
                 </Glass>
@@ -1338,8 +1338,8 @@ export default function App(){
                         {label:"Marchés ém.",value:(["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie","Afrique du Sud","Émirats Arabes","Autres EMEA"].reduce((s,k)=>s+(scores.geoMap[k]||0),0)).toFixed(0),unit:"%"},
                       ].map(({label,value,unit,color})=>(
                         <div key={label} style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"12px 14px"}}>
-                          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
-                          <div style={{fontSize:22,fontWeight:700,color:color||"#fff",letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:"rgba(255,255,255,0.3)",fontWeight:400}}>{unit}</span></div>
+                          <div style={{fontSize:9,color:"rgba(255,255,255,0.42)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
+                          <div style={{fontSize:22,fontWeight:700,color:color||"#fff",letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:"rgba(255,255,255,0.48)",fontWeight:400}}>{unit}</span></div>
                         </div>
                       ))}
                     </div>
@@ -1347,7 +1347,7 @@ export default function App(){
                   {/* Detail bars */}
                   <ColorBars data={scores.geoMap} title="Détail par zone" infoMap={GEO_INFO}/>
                 </>
-              ):<div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.2)",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}
+              ):<div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.38)",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}
             </div>
           )}
           {tab==="sec"&&(
@@ -1364,8 +1364,8 @@ export default function App(){
                         {label:"Technologie",value:(scores.secMap["Technologie"]||0).toFixed(0),unit:"%",color:(scores.secMap["Technologie"]||0)>35?"#ff4d4d":undefined},
                       ].map(({label,value,unit,color})=>(
                         <div key={label} style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"12px 14px"}}>
-                          <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
-                          <div style={{fontSize:22,fontWeight:700,color:color||"#fff",letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:"rgba(255,255,255,0.3)",fontWeight:400}}>{unit}</span></div>
+                          <div style={{fontSize:9,color:"rgba(255,255,255,0.42)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
+                          <div style={{fontSize:22,fontWeight:700,color:color||"#fff",letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:"rgba(255,255,255,0.48)",fontWeight:400}}>{unit}</span></div>
                         </div>
                       ))}
                     </div>
@@ -1373,7 +1373,7 @@ export default function App(){
                   {/* Detail bars */}
                   <ColorBars data={scores.secMap} title="Détail par secteur" infoMap={SECTOR_INFO}/>
                 </>
-              ):<div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.2)",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}
+              ):<div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.38)",fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}
             </div>
           )}
 
@@ -1381,14 +1381,14 @@ export default function App(){
           {tab==="ptf"&&(
             <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn .3s ease"}}>
               <Glass style={{padding:"18px 16px"}}>
-                <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Ajouter un ETF</div>
+                <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.38)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Ajouter un ETF</div>
                 <Search onAdd={addHolding} suggestions={suggestions}/>
               </Glass>
 
               {holdings.length>0&&(
                 <div>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,padding:"0 4px"}}>
-                    <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase"}}>Positions</span>
+                    <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.38)",letterSpacing:3,textTransform:"uppercase"}}>Positions</span>
                     <button onClick={()=>setConfirmReset(true)} style={{background:"none",border:"none",color:"rgba(255,77,77,0.5)",fontSize:11,cursor:"pointer"}}>Tout effacer</button>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -1414,14 +1414,14 @@ export default function App(){
                               onChange={e=>setEditAmt(p=>({...p,[h.ticker]:e.target.value}))}
                               onBlur={()=>{updateAmount(h.ticker,editAmt[h.ticker]);setEditAmt(p=>{const n={...p};delete n[h.ticker];return n;});}}
                               style={{width:72,background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"5px 8px",color:"#fff",fontSize:12,textAlign:"right",fontFamily:"monospace"}}/>
-                            <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",flexShrink:0}}>€</span>
+                            <span style={{fontSize:10,color:"rgba(255,255,255,0.38)",flexShrink:0}}>€</span>
                             {/* Plan button */}
                             <button onClick={()=>setEditPlan(h.ticker)}
                               style={{background:plans[h.ticker]?"rgba(14,203,129,0.1)":"rgba(255,255,255,0.05)",border:`0.5px solid ${plans[h.ticker]?"rgba(14,203,129,0.3)":"rgba(255,255,255,0.08)"}`,borderRadius:8,padding:"5px 7px",cursor:"pointer",flexShrink:0,lineHeight:1,transition:"all .15s"}}
                               title="Plan d'investissement">
                               <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke={plans[h.ticker]?"#0ecb81":"rgba(255,255,255,0.3)"} strokeWidth="1"/><line x1="4" y1="1" x2="4" y2="3.5" stroke={plans[h.ticker]?"#0ecb81":"rgba(255,255,255,0.3)"} strokeWidth="1" strokeLinecap="round"/><line x1="9" y1="1" x2="9" y2="3.5" stroke={plans[h.ticker]?"#0ecb81":"rgba(255,255,255,0.3)"} strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="6" x2="10" y2="6" stroke={plans[h.ticker]?"#0ecb81":"rgba(255,255,255,0.3)"} strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="8.5" x2="7" y2="8.5" stroke={plans[h.ticker]?"#0ecb81":"rgba(255,255,255,0.3)"} strokeWidth="1" strokeLinecap="round"/></svg>
                             </button>
-                            <button onClick={()=>removeHolding(h.ticker)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.15)",cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 2px",flexShrink:0,transition:"color .15s"}}
+                            <button onClick={()=>removeHolding(h.ticker)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.32)",cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 2px",flexShrink:0,transition:"color .15s"}}
                               onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.15)"}>×</button>
                           </div>
                           {/* Plan summary if configured */}
@@ -1429,13 +1429,13 @@ export default function App(){
                             <div style={{marginTop:10,paddingTop:10,borderTop:"0.5px solid rgba(255,255,255,0.06)",display:"flex",gap:16,alignItems:"center"}}>
                               <div style={{display:"flex",alignItems:"center",gap:5}}>
                                 <svg width="10" height="10" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#0ecb81" strokeWidth="1"/><line x1="4" y1="1" x2="4" y2="3.5" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="6" x2="10" y2="6" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/></svg>
-                                <span style={{fontSize:10,color:"rgba(255,255,255,0.3)"}}>{FREQS.find(f=>f.id===plans[h.ticker].freq)?.label} · {plans[h.ticker].amount}€</span>
+                                <span style={{fontSize:10,color:"rgba(255,255,255,0.48)"}}>{FREQS.find(f=>f.id===plans[h.ticker].freq)?.label} · {plans[h.ticker].amount}€</span>
                               </div>
                               <div style={{display:"flex",alignItems:"baseline",gap:3}}>
                                 <span style={{fontSize:12,fontWeight:700,color:"#0ecb81"}}>{s.totalInvested.toLocaleString("fr-FR")} €</span>
-                                <span style={{fontSize:9,color:"rgba(255,255,255,0.25)"}}>investis</span>
+                                <span style={{fontSize:9,color:"rgba(255,255,255,0.42)"}}>investis</span>
                               </div>
-                              <div style={{marginLeft:"auto",fontSize:10,color:"rgba(255,255,255,0.25)"}}>prochain dans <span style={{color:"rgba(255,255,255,0.5)",fontWeight:500}}>{s.daysUntilNext}j</span></div>
+                              <div style={{marginLeft:"auto",fontSize:10,color:"rgba(255,255,255,0.42)"}}>prochain dans <span style={{color:"rgba(255,255,255,0.5)",fontWeight:500}}>{s.daysUntilNext}j</span></div>
                             </div>
                           ):null;})()}
                         </Glass>
@@ -1455,7 +1455,7 @@ export default function App(){
                   <img src="/icon-180.png" alt="" style={{width:52,height:52,borderRadius:14,objectFit:"cover"}} onError={e=>e.target.style.display="none"}/>
                   <div>
                     <div style={{fontSize:18,fontWeight:700,color:"#fff",letterSpacing:-.3}}>ETF Score</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,0.3)",marginTop:2}}>Analyse multicritères · v3</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,0.48)",marginTop:2}}>Analyse multicritères · v3</div>
                   </div>
                 </div>
                 <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7}}>
@@ -1482,7 +1482,7 @@ export default function App(){
 
               {/* Legal */}
               <Glass style={{padding:"20px"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Mentions légales</div>
+                <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.38)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Mentions légales</div>
                 <p style={{margin:"0 0 14px",fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7}}>
                   ETF Score est un outil d'analyse personnel. Les scores, indicateurs et suggestions affichés <strong style={{color:"rgba(255,255,255,0.6)"}}>ne constituent pas un conseil en investissement</strong> au sens de la réglementation AMF.
                 </p>
@@ -1493,7 +1493,7 @@ export default function App(){
 
               {/* Data disclaimer */}
               <Glass style={{padding:"20px"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Données</div>
+                <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.38)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Données</div>
                 <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7}}>
                   Les compositions d'ETF sont approximatives et basées sur les données disponibles à la date de mise à jour. Elles peuvent différer des compositions réelles actuelles.
                   Les apports renseignés ne tiennent pas compte des variations de marché.
@@ -1502,7 +1502,7 @@ export default function App(){
 
               {/* Reset onboarding */}
               <button onClick={()=>{localStorage.removeItem("etf-onboarding-seen");window.location.reload();}}
-                style={{background:"rgba(255,255,255,0.03)",border:"0.5px solid rgba(255,255,255,0.07)",borderRadius:16,padding:"15px 20px",color:"rgba(255,255,255,0.3)",fontSize:13,cursor:"pointer",textAlign:"left",width:"100%"}}>
+                style={{background:"rgba(255,255,255,0.03)",border:"0.5px solid rgba(255,255,255,0.07)",borderRadius:16,padding:"15px 20px",color:"rgba(255,255,255,0.48)",fontSize:13,cursor:"pointer",textAlign:"left",width:"100%"}}>
                 Revoir l'onboarding
               </button>
             </div>
@@ -1534,7 +1534,7 @@ export default function App(){
         <Sheet onClose={()=>setConfirmReset(false)}>
           <div style={{padding:"8px 20px 40px",textAlign:"center"}}>
             <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:15,fontWeight:800,color:"#fff",marginBottom:8}}>Effacer le portefeuille ?</div>
-            <div style={{fontSize:13,color:"rgba(255,255,255,0.3)",marginBottom:24,lineHeight:1.65}}>Toutes vos positions seront supprimées. Irréversible.</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,0.48)",marginBottom:24,lineHeight:1.65}}>Toutes vos positions seront supprimées. Irréversible.</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <button onClick={()=>{setHoldings([]);setConfirmReset(false);}} style={{background:"rgba(255,77,77,0.1)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:14,padding:"15px",color:"#ff4d4d",fontSize:15,fontWeight:600,cursor:"pointer",width:"100%",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif"}}>Effacer tout</button>
               <button onClick={()=>setConfirmReset(false)} style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"15px",color:"rgba(255,255,255,0.5)",fontSize:15,cursor:"pointer",width:"100%"}}>Annuler</button>
