@@ -1072,7 +1072,12 @@ export default function App(){
   const recs=useMemo(()=>buildRecs(scores,holdings,holdings.reduce((s,h)=>s+h.amount,0)),[scores,holdings]);
   const positives=useMemo(()=>buildPositive(scores,holdings),[scores,holdings]);
   const suggestions=useMemo(()=>buildSuggestions(scores,holdings),[scores,holdings]);
-  const total=holdings.reduce((s,h)=>s+h.amount,0);
+  const planTotal=useMemo(()=>holdings.reduce((s,h)=>{
+    const plan=plans[h.ticker];
+    const stats=plan?planStats(plan):null;
+    return s+(stats?.totalInvested||0);
+  },0),[holdings,plans]);
+  const total=holdings.reduce((s,h)=>s+h.amount,0)+planTotal;
   const g=sc(scores.total);
 
   if(!ready)return(<div style={{minHeight:"100vh",background:"#050506",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.1)",borderTopColor:"#0ecb81",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
