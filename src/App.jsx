@@ -924,19 +924,26 @@ function planStats(plan){
   const start=new Date(plan.startDate);
   const now=new Date();
   const freq=FREQS.find(f=>f.id===plan.freq)||FREQS[1];
-  const weeksElapsed=Math.max(0,(now-start)/(1000*60*60*24*7));
-  const periods=Math.floor(weeksElapsed/freq.weeks*freq.weeks/freq.weeks);
-  // simpler: weeks elapsed / weeks per period
-  const periodsElapsed=Math.floor(weeksElapsed/(52/freq.weeks));
+
+  // Periods per year per frequency
+  const periodsPerYear={weekly:52,monthly:12,quarterly:4}[freq.id]||12;
+  const versementsParAn=periodsPerYear;
+
+  // Days per period (calendar-accurate)
+  const daysPerPeriod={weekly:7,monthly:30.4375,quarterly:91.3125}[freq.id]||30.4375;
+  const msPerPeriod=daysPerPeriod*24*60*60*1000;
+
+  const elapsed=Math.max(0,now-start);
+  const periodsElapsed=Math.floor(elapsed/msPerPeriod);
   const totalInvested=periodsElapsed*plan.amount;
-  const perYear=plan.amount*freq.weeks;
-  // next date
-  const msPerPeriod=(52/freq.weeks)*7*24*60*60*1000;
-  const periodsSinceStart=Math.floor((now-start)/msPerPeriod);
-  const nextDate=new Date(start.getTime()+(periodsSinceStart+1)*msPerPeriod);
-  const daysUntilNext=Math.ceil((nextDate-now)/(1000*60*60*24));
-  const projection10y=plan.amount*(52/freq.weeks)*10;
-  return{totalInvested,perYear,daysUntilNext,periodsElapsed,freq,projection10y};
+  const perYear=plan.amount*versementsParAn;
+  const projection10y=Math.round(plan.amount*versementsParAn*10);
+
+  // Next payment date
+  const nextDate=new Date(start.getTime()+(periodsElapsed+1)*msPerPeriod);
+  const daysUntilNext=Math.max(1,Math.ceil((nextDate-now)/(1000*60*60*24)));
+
+  return{totalInvested,perYear,daysUntilNext,periodsElapsed,freq,projection10y,versementsParAn};
 }
 
 function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
@@ -987,7 +994,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
           style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:"rgba(255,255,255,0.7)",fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:"dark"}}/>
 
         {/* Preview */}
-        {preview&&preview.totalInvested>0&&(
+        {preview&&startDate&&(
           <div style={{background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.15)",borderRadius:14,padding:"14px 16px",marginBottom:20,display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <div>
               <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Total investi</div>
@@ -1047,7 +1054,7 @@ export default function App(){
   const toastTimer=useRef(null);
 
   useEffect(()=>{
-    try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const p=JSON.parse(raw);if(p.holdings)setHoldings(p.holdings);if(p.disclaimerSeen)setDisclaimerSeen(true);if(p.savedAt)setSavedAt(new Date(p.savedAt));if(p.plans)setPlans(p.plans);}}catch(_){}
+    try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const p=JSON.parse(raw);if(p.holdings)setHoldings(p.holdings.map(h=>({...h,baseAmount:h.baseAmount??h.amount})));if(p.disclaimerSeen)setDisclaimerSeen(true);if(p.savedAt)setSavedAt(new Date(p.savedAt));if(p.plans)setPlans(p.plans);}}catch(_){}
     setReady(true);
     const onboardingSeen=localStorage.getItem("etf-onboarding-seen");
     if(!onboardingSeen) setOnboarding(true);
@@ -1062,24 +1069,35 @@ export default function App(){
   },[holdings,disclaimerSeen,plans,ready]);
 
   const addHolding=useCallback((ticker,amount)=>{
-    setHoldings(prev=>{const ex=prev.find(h=>h.ticker===ticker);if(ex)return prev.map(h=>h.ticker===ticker?{...h,amount:h.amount+amount}:h);return[...prev,{ticker,name:DB[ticker].name,amount}];});
+    setHoldings(prev=>{const ex=prev.find(h=>h.ticker===ticker);if(ex)return prev.map(h=>h.ticker===ticker?{...h,amount:h.amount+amount,baseAmount:(h.baseAmount??h.amount)+amount}:h);return[...prev,{ticker,name:DB[ticker].name,amount,baseAmount:amount}];});
     if(toastTimer.current)clearTimeout(toastTimer.current);
     setToast({msg:`${DB[ticker]?.name||ticker} ajouté`,visible:true});
     toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);
   },[]);
   const removeHolding=useCallback(ticker=>setHoldings(p=>p.filter(h=>h.ticker!==ticker)),[]);
-  const updateAmount=(ticker,val)=>{const a=parseFloat(val);if(!isNaN(a)&&a>0)setHoldings(p=>p.map(h=>h.ticker===ticker?{...h,amount:a}:h));};
+  const updateAmount=(ticker,val)=>{
+    const a=parseFloat(val);
+    if(!isNaN(a)&&a>=0){
+      const plan=plans[ticker];
+      const stats=plan?planStats(plan):null;
+      const invested=stats?.totalInvested||0;
+      setHoldings(p=>p.map(h=>h.ticker===ticker?{...h,amount:a,baseAmount:Math.max(0,a-invested)}:h));
+    }
+  };
 
-  const scores=useMemo(()=>computeScores(holdings),[holdings]);
-  const recs=useMemo(()=>buildRecs(scores,holdings,holdings.reduce((s,h)=>s+h.amount,0)),[scores,holdings]);
-  const positives=useMemo(()=>buildPositive(scores,holdings),[scores,holdings]);
-  const suggestions=useMemo(()=>buildSuggestions(scores,holdings),[scores,holdings]);
-  const planTotal=useMemo(()=>holdings.reduce((s,h)=>{
+  // Sync holding amounts with plan contributions
+  const holdingsWithPlan=useMemo(()=>holdings.map(h=>{
     const plan=plans[h.ticker];
     const stats=plan?planStats(plan):null;
-    return s+(stats?.totalInvested||0);
-  },0),[holdings,plans]);
-  const total=holdings.reduce((s,h)=>s+h.amount,0)+planTotal;
+    const base=h.baseAmount??h.amount;
+    const invested=stats?.totalInvested||0;
+    return{...h,amount:base+invested};
+  }),[holdings,plans]);
+  const scores=useMemo(()=>computeScores(holdingsWithPlan),[holdingsWithPlan]);
+  const recs=useMemo(()=>buildRecs(scores,holdingsWithPlan,holdingsWithPlan.reduce((s,h)=>s+h.amount,0)),[scores,holdingsWithPlan]);
+  const positives=useMemo(()=>buildPositive(scores,holdingsWithPlan),[scores,holdingsWithPlan]);
+  const suggestions=useMemo(()=>buildSuggestions(scores,holdingsWithPlan),[scores,holdingsWithPlan]);
+  const total=holdingsWithPlan.reduce((s,h)=>s+h.amount,0);
   const g=sc(scores.total);
 
   if(!ready)return(<div style={{minHeight:"100vh",background:"#050506",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.1)",borderTopColor:"#0ecb81",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
@@ -1389,8 +1407,8 @@ export default function App(){
                                 {etf&&<span style={{fontSize:9,color:ASSET_COLORS[etf.assetClass]||"rgba(255,255,255,0.4)",fontWeight:600,background:`${ASSET_COLORS[etf.assetClass]||"rgba(255,255,255,0.1)"}18`,padding:"1px 6px",borderRadius:4,letterSpacing:.3,flexShrink:0}}>{ASSET_LABELS[etf.assetClass]||etf.assetClass}</span>}
                               </div>
                             </div>
-                            <input type="number" value={isEditing?editAmt[h.ticker]:h.amount}
-                              onFocus={()=>setEditAmt(p=>({...p,[h.ticker]:String(h.amount)}))}
+                            <input type="number" value={isEditing?editAmt[h.ticker]:(holdingsWithPlan.find(x=>x.ticker===h.ticker)?.amount||h.amount)}
+                              onFocus={()=>setEditAmt(p=>({...p,[h.ticker]:String(holdingsWithPlan.find(x=>x.ticker===h.ticker)?.amount||h.amount)}))}
                               onChange={e=>setEditAmt(p=>({...p,[h.ticker]:e.target.value}))}
                               onBlur={()=>{updateAmount(h.ticker,editAmt[h.ticker]);setEditAmt(p=>{const n={...p};delete n[h.ticker];return n;});}}
                               style={{width:72,background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"5px 8px",color:"#fff",fontSize:12,textAlign:"right",fontFamily:"monospace"}}/>
@@ -1406,23 +1424,22 @@ export default function App(){
                           </div>
                           {/* Plan summary if configured */}
                           {plans[h.ticker]&&(()=>{const s=planStats(plans[h.ticker]);return s?(
-                            <div style={{marginTop:10,paddingTop:10,borderTop:"0.5px solid rgba(255,255,255,0.06)",display:"flex",gap:16,alignItems:"center"}}>
-                              <div style={{display:"flex",alignItems:"center",gap:5}}>
-                                <svg width="10" height="10" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#0ecb81" strokeWidth="1"/><line x1="4" y1="1" x2="4" y2="3.5" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="6" x2="10" y2="6" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/></svg>
-                                <span style={{fontSize:10,color:"rgba(255,255,255,0.3)"}}>{FREQS.find(f=>f.id===plans[h.ticker].freq)?.label} · {plans[h.ticker].amount}€</span>
-                              </div>
-                              {s.totalInvested>0?(
-                                <div style={{display:"flex",alignItems:"baseline",gap:3}}>
-                                  <span style={{fontSize:12,fontWeight:700,color:"#0ecb81"}}>{s.totalInvested.toLocaleString("fr-FR")} €</span>
-                                  <span style={{fontSize:9,color:"rgba(255,255,255,0.25)"}}>investis</span>
+                            <div style={{marginTop:10,paddingTop:10,borderTop:"0.5px solid rgba(255,255,255,0.06)"}}>
+                              {/* Ligne 1 — fréquence + prochain versement */}
+                              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                                <div style={{display:"flex",alignItems:"center",gap:5}}>
+                                  <svg width="10" height="10" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#0ecb81" strokeWidth="1"/><line x1="4" y1="1" x2="4" y2="3.5" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="6" x2="10" y2="6" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/></svg>
+                                  <span style={{fontSize:10,color:"rgba(255,255,255,0.35)"}}>{FREQS.find(f=>f.id===plans[h.ticker].freq)?.label} · {plans[h.ticker].amount} €</span>
                                 </div>
-                              ):(
-                                <div style={{display:"flex",alignItems:"baseline",gap:3}}>
-                                  <span style={{fontSize:12,fontWeight:700,color:"rgba(14,203,129,0.7)"}}>{s.projection10y.toLocaleString("fr-FR")} €</span>
-                                  <span style={{fontSize:9,color:"rgba(255,255,255,0.25)"}}>proj. 10 ans</span>
+                                <span style={{fontSize:10,color:"rgba(255,255,255,0.25)"}}>prochain dans <span style={{color:"rgba(255,255,255,0.5)",fontWeight:600}}>{s.daysUntilNext}j</span></span>
+                              </div>
+                              {/* Ligne 2 — montant investi si versements passés */}
+                              {s.totalInvested>0&&(
+                                <div style={{display:"flex",alignItems:"baseline",gap:4}}>
+                                  <span style={{fontSize:15,fontWeight:700,color:"#0ecb81"}}>{s.totalInvested.toLocaleString("fr-FR")} €</span>
+                                  <span style={{fontSize:10,color:"rgba(255,255,255,0.3)"}}>versés à ce jour</span>
                                 </div>
                               )}
-                              <div style={{marginLeft:"auto",fontSize:10,color:"rgba(255,255,255,0.25)"}}>prochain dans <span style={{color:"rgba(255,255,255,0.5)",fontWeight:500}}>{s.daysUntilNext}j</span></div>
                             </div>
                           ):null;})()}
                         </Glass>
