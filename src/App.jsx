@@ -934,7 +934,9 @@ function planStats(plan){
   const msPerPeriod=daysPerPeriod*24*60*60*1000;
 
   const elapsed=Math.max(0,now-start);
-  const periodsElapsed=Math.floor(elapsed/msPerPeriod);
+  const rawPeriods=Math.floor(elapsed/msPerPeriod);
+  // If start date is today or past, count at least 1 period (first payment done)
+  const periodsElapsed=rawPeriods===0&&start<=now?1:rawPeriods;
   const totalInvested=periodsElapsed*plan.amount;
   const perYear=plan.amount*versementsParAn;
   const projection10y=Math.round(plan.amount*versementsParAn*10);
