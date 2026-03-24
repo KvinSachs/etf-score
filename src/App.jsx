@@ -820,8 +820,8 @@ function Onboarding({onAdd,onDone}){
         <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
           <circle cx="36" cy="36" r="32" stroke="rgba(14,203,129,0.12)" strokeWidth="1"/>
           <circle cx="36" cy="36" r="22" stroke="rgba(14,203,129,0.08)" strokeWidth="1"/>
-          <path d="M18 46C23 46 25 32 30 32C35 32 35 40 41 37C46 34 49 22 55 18" stroke={T.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter=`drop-shadow(0 0 8px ${T.accent})`/>
-          <circle cx="55" cy="18" r="4" fill={T.accent} filter=`drop-shadow(0 0 8px ${T.accent})`/>
+          <path d="M18 46C23 46 25 32 30 32C35 32 35 40 41 37C46 34 49 22 55 18" stroke={T.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter={`drop-shadow(0 0 8px ${T.accent})`}/>
+          <circle cx="55" cy="18" r="4" fill={T.accent} filter={`drop-shadow(0 0 8px ${T.accent})`}/>
         </svg>
       ),
       title:"Analysez votre portefeuille ETF",
@@ -833,7 +833,7 @@ function Onboarding({onAdd,onDone}){
           <rect x="8" y="42" width="14" height="22" rx="2" fill="rgba(14,203,129,0.1)" stroke="rgba(14,203,129,0.3)" strokeWidth="1"/>
           <rect x="29" y="28" width="14" height="36" rx="2" fill="rgba(14,203,129,0.2)" stroke="rgba(14,203,129,0.4)" strokeWidth="1"/>
           <rect x="50" y="12" width="14" height="52" rx="2" fill="rgba(14,203,129,0.35)" stroke={T.accent} strokeWidth="1"/>
-          <circle cx="57" cy="7" r="5" fill={T.accent} filter=`drop-shadow(0 0 8px ${T.accent})`/>
+          <circle cx="57" cy="7" r="5" fill={T.accent} filter={`drop-shadow(0 0 8px ${T.accent})`}/>
         </svg>
       ),
       title:"Un score clair sur 20",
