@@ -120,6 +120,25 @@ const T = {
   fontMono:     "'SF Mono',ui-monospace,monospace",
 };
 
+const T_LIGHT = {
+  ...T,
+  bg:           "#f2f2f7",
+  bgElevated:   "#ffffff",
+  bgOverlay:    "rgba(0,0,0,0.4)",
+  surface:      "rgba(0,0,0,0.05)",
+  surfaceHover: "rgba(0,0,0,0.08)",
+  surfaceFaint: "rgba(0,0,0,0.03)",
+  border:       "rgba(0,0,0,0.1)",
+  borderFaint:  "rgba(0,0,0,0.06)",
+  borderSubtle: "rgba(0,0,0,0.08)",
+  text:         "#000000",
+  textSub:      "rgba(0,0,0,0.6)",
+  textMuted:    "rgba(0,0,0,0.48)",
+  textFaint:    "rgba(0,0,0,0.42)",
+  textGhost:    "rgba(0,0,0,0.38)",
+  textDisabled: "rgba(0,0,0,0.32)",
+};
+
 
 
 /* ─── SCORING (identical logic) ─────────────────────────────────────────────── */
@@ -1104,6 +1123,7 @@ export default function App(){
   const[savedAt,setSavedAt]=useState(null);
   const[toast,setToast]=useState({msg:"",visible:false});
   const[onboarding,setOnboarding]=useState(false);
+  const[darkMode,setDarkMode]=useState(()=>localStorage.getItem('etf-theme')!=='light');
   const[onboardStep,setOnboardStep]=useState(0);
   const[splash,setSplash]=useState(true);
   const[activeRec,setActiveRec]=useState(null);
@@ -1118,6 +1138,7 @@ export default function App(){
     const onboardingSeen=localStorage.getItem("etf-onboarding-seen");
     if(!onboardingSeen) setOnboarding(true);
     setTimeout(()=>setSplash(false), 2800);
+    if(localStorage.getItem('etf-theme')==='light')setDarkMode(false);
 
   },[]);
 
@@ -1145,6 +1166,9 @@ export default function App(){
   };
 
   // Sync holding amounts with plan contributions
+  const theme=darkMode?T:T_LIGHT;
+  // Update global theme ref for subcomponents
+  Object.assign(T, theme);
   const holdingsWithPlan=useMemo(()=>holdings.map(h=>{
     const plan=plans[h.ticker];
     const stats=plan?planStats(plan):null;
@@ -1561,6 +1585,39 @@ export default function App(){
                   Les compositions d'ETF sont approximatives et basées sur les données disponibles à la date de mise à jour. Elles peuvent différer des compositions réelles actuelles.
                   Les apports renseignés ne tiennent pas compte des variations de marché.
                 </p>
+              </Glass>
+
+              {/* Theme toggle */}
+              <Glass style={{padding:"16px 20px"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <span style={{fontSize:18}}>{darkMode?"🌙":"☀️"}</span>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:600,color:T.text}}>{darkMode?"Thème sombre":"Thème clair"}</div>
+                      <div style={{fontSize:11,color:T.textGhost,marginTop:2}}>Apparence de l'interface</div>
+                    </div>
+                  </div>
+                  {/* Toggle switch */}
+                  <div onClick={()=>{
+                    const next=!darkMode;
+                    setDarkMode(next);
+                    localStorage.setItem('etf-theme', next?'dark':'light');
+                  }} style={{
+                    width:48,height:28,borderRadius:14,
+                    background:darkMode?T.accent:"rgba(0,0,0,0.15)",
+                    position:"relative",cursor:"pointer",
+                    transition:"background .25s",flexShrink:0,
+                  }}>
+                    <div style={{
+                      position:"absolute",top:3,
+                      left:darkMode?22:3,
+                      width:22,height:22,borderRadius:"50%",
+                      background:"#fff",
+                      transition:"left .25s cubic-bezier(.16,1,.3,1)",
+                      boxShadow:"0 1px 4px rgba(0,0,0,0.3)",
+                    }}/>
+                  </div>
+                </div>
               </Glass>
 
               {/* Reset onboarding */}
