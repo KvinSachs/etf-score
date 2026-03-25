@@ -83,6 +83,45 @@ const DB = {
 
 const STORAGE_KEY = "etf-portfolio-v2";
 
+/* ─── DESIGN TOKENS ─────────────────────────────────────────────────────────── */
+const T = {
+  bg:           "#050506",
+  bgElevated:   "rgba(14,14,14,0.97)",
+  bgOverlay:    "rgba(0,0,0,0.65)",
+  surface:      "rgba(255,255,255,0.05)",
+  surfaceHover: "rgba(255,255,255,0.08)",
+  surfaceFaint: "rgba(255,255,255,0.03)",
+  border:       "rgba(255,255,255,0.1)",
+  borderFaint:  "rgba(255,255,255,0.06)",
+  borderSubtle: "rgba(255,255,255,0.08)",
+  accent:       "#0ecb81",
+  accentBg:     "rgba(14,203,129,0.1)",
+  accentBorder: "rgba(14,203,129,0.25)",
+  accentGlow:   "rgba(14,203,129,0.4)",
+  danger:       "#ff4d4d",
+  dangerBg:     "rgba(255,77,77,0.08)",
+  dangerBorder: "rgba(255,77,77,0.2)",
+  warning:      "#ff9500",
+  warningBg:    "rgba(255,149,0,0.06)",
+  warningBorder:"rgba(255,149,0,0.15)",
+  text:         "#ffffff",
+  textSub:      "rgba(255,255,255,0.6)",
+  textMuted:    "rgba(255,255,255,0.48)",
+  textFaint:    "rgba(255,255,255,0.42)",
+  textGhost:    "rgba(255,255,255,0.38)",
+  textDisabled: "rgba(255,255,255,0.32)",
+  radiusXl:     24,
+  radiusLg:     20,
+  radiusMd:     16,
+  radiusSm:     14,
+  radiusXs:     8,
+  fontDisplay:  "-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",
+  fontText:     "-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif",
+  fontMono:     "'SF Mono',ui-monospace,monospace",
+};
+
+
+
 /* ─── SCORING (identical logic) ─────────────────────────────────────────────── */
 function hhi(obj){const t=Object.values(obj).reduce((a,b)=>a+b,0);if(!t)return 1;return Object.values(obj).reduce((s,v)=>s+Math.pow(v/t,2),0);}
 function hhiToScore(h,n){const mn=1/n,norm=(h-mn)/(1-mn);return Math.max(0,1-Math.pow(Math.max(0,norm),0.75));}
@@ -141,20 +180,20 @@ function buildRecs(scores,holdings,total){
   if(scores.currency<8&&holdings.length>0)recs.push({priority:"medium",level:"advanced",color:"rgba(255,255,255,0.4)",bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.06)",cat:"eurobonds",title:"Dépendance monétaire",text:`Score devises : ${scores.currency.toFixed(1)}/20. Forte concentration sur une devise.`});
   if(scores.assetClass<8&&holdings.length>1)recs.push({priority:"medium",level:"advanced",color:"rgba(255,255,255,0.4)",bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.06)",cat:"bonds",title:"Classes d'actifs déséquilibrées",text:`Score : ${scores.assetClass.toFixed(1)}/20. Combinez actions, obligations, immobilier et or.`});
   if(equityPctR>95&&holdings.length===1)recs.push({priority:"low",level:"advanced",color:"rgba(255,255,255,0.4)",bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.06)",cat:"bonds",title:"Portefeuille mono-ETF",text:"Bonne base. Ajouter obligations et or renforcerait la résilience."});
-  if(scores.total>=16)recs.push({priority:"success",level:"essential",color:"#0ecb81",bg:"rgba(14,203,129,0.06)",border:"rgba(14,203,129,0.15)",title:"Excellent portefeuille",text:"Diversification optimale. Maintenez et rééquilibrez périodiquement."});
+  if(scores.total>=16)recs.push({priority:"success",level:"essential",color:T.accent,bg:"rgba(14,203,129,0.06)",border:"rgba(14,203,129,0.15)",title:"Excellent portefeuille",text:"Diversification optimale. Maintenez et rééquilibrez périodiquement."});
   const order={high:0,medium:1,low:2,success:3};
   return recs.sort((a,b)=>order[a.priority]-order[b.priority]).slice(0,8);
 }
 
 /* ─── SUGGESTION CATALOG ─────────────────────────────────────────────────────── */
 const CAT={
-  world:{title:"ETF Monde",emoji:"🌍",color:"#0ecb81",why:"Un ETF Monde est la brique de base idéale — exposition à des milliers d'entreprises mondiales en un seul produit.",options:[
+  world:{title:"ETF Monde",emoji:"🌍",color:T.accent,why:"Un ETF Monde est la brique de base idéale — exposition à des milliers d'entreprises mondiales en un seul produit.",options:[
     {ticker:"MWRD",label:"Monde développé · Amundi",desc:"Équivalent IWDA, frais très compétitifs. Domicilié Luxembourg.",ter:"0.12%",tags:["✅ Éligible PEA","💰 Le moins cher"]},
     {ticker:"VWCE",label:"All World · Vanguard",desc:"Monde développé + émergents. ~3 600 entreprises. Le favori européen.",ter:"0.22%",tags:["⭐ Le plus populaire EU","🌐 Monde + EM"]},
     {ticker:"IWDA",label:"Monde développé · iShares",desc:"La référence mondiale. 1 600 entreprises, 23 pays développés.",ter:"0.20%",tags:["💧 Très liquide","🏦 Référence mondiale"]},
     {ticker:"EWLD",label:"Monde entier · Amundi",desc:"Pays développés + marchés émergents. Éligible PEA.",ter:"0.38%",tags:["✅ Éligible PEA","🌐 Monde complet"]},
   ]},
-  bonds:{title:"Obligations",emoji:"🔒",color:"#0ecb81",why:"Les obligations amortissent la volatilité et protègent lors des krachs actions.",options:[
+  bonds:{title:"Obligations",emoji:"🔒",color:T.accent,why:"Les obligations amortissent la volatilité et protègent lors des krachs actions.",options:[
     {ticker:"IEAG",label:"Obligations euro · iShares",desc:"Souveraines et corporate en euros. Zéro risque de change.",ter:"0.09%",tags:["💰 Le moins cher","🇪🇺 Zéro risque €"]},
     {ticker:"VAGF",label:"Global Aggregate couvert · Vanguard",desc:"Obligations mondiales couvertes en euros — très diversifié.",ter:"0.10%",tags:["🌍 Le plus diversifié","💧 Liquide"]},
     {ticker:"AGGH",label:"Global Aggregate · iShares",desc:"Obligations du monde entier, couvertes en euros.",ter:"0.10%",tags:["🌍 Diversifié","🏦 iShares"]},
@@ -180,7 +219,7 @@ const CAT={
   smallcaps:{title:"Petites capitalisations",emoji:"🔬",color:"#a78bfa",why:"Prime de rendement historique — complément idéal à un ETF large caps.",options:[
     {ticker:"IUSN",label:"Small caps mondiales · iShares",desc:"Diversifie sur les petites entreprises mondiales.",ter:"0.35%",tags:["🌍 Le plus diversifié"]},
   ]},
-  eurobonds:{title:"Obligations euro",emoji:"💶",color:"#0ecb81",why:"Forte exposition USD détectée — les obligations en euros éliminent le risque de change.",options:[
+  eurobonds:{title:"Obligations euro",emoji:"💶",color:T.accent,why:"Forte exposition USD détectée — les obligations en euros éliminent le risque de change.",options:[
     {ticker:"IEAG",label:"Obligations euro · iShares",desc:"Souveraines et corporate en euros. Risque de change nul.",ter:"0.09%",tags:["💰 Le moins cher","🇪🇺 Zéro risque €"]},
   ]},
 };
@@ -227,9 +266,9 @@ function sc(s){
 function Glass({children,style={},onClick}){
   return(
     <div onClick={onClick} style={{
-      background:"rgba(255,255,255,0.05)",
-      border:"0.5px solid rgba(255,255,255,0.1)",
-      borderRadius:20,
+      background:T.surface,
+      border:`0.5px solid ${T.border}`,
+      borderRadius:T.radiusLg,
       position:"relative",
       ...style
     }}>
@@ -255,12 +294,12 @@ function ScoreArc({value,label,size=150}){
             style={{transition:"stroke-dasharray 1s cubic-bezier(.16,1,.3,1)",filter:`drop-shadow(0 0 6px ${g.stroke})`}}/>
         </svg>
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:0}}>
-          <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:34,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-1}}>{value.toFixed(1)}</span>
+          <span style={{fontFamily:T.fontDisplay,fontSize:34,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-1}}>{value.toFixed(1)}</span>
           <span style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,marginTop:2}}>/20</span>
         </div>
       </div>
       <div style={{textAlign:"center"}}>
-        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.6)",letterSpacing:.5}}>{label}</div>
+        <div style={{fontFamily:T.fontDisplay,fontSize:12,fontWeight:600,color:T.textSub,letterSpacing:.5}}>{label}</div>
         {value>0&&<div style={{fontSize:10,color:g.text,marginTop:2}}>{g.label}</div>}
       </div>
     </div>
@@ -276,7 +315,7 @@ function MiniBar({label,value,weight}){
       <div style={{flex:1,height:2,background:"rgba(255,255,255,0.06)",borderRadius:1,overflow:"hidden"}}>
         <div style={{height:"100%",width:`${(value/20)*100}%`,background:g.stroke,borderRadius:1,transition:"width .8s cubic-bezier(.16,1,.3,1)",boxShadow:`0 0 6px ${g.stroke}`}}/>
       </div>
-      <span style={{fontSize:12,color:g.text,fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontWeight:700,width:30,textAlign:"right"}}>{value.toFixed(1)}</span>
+      <span style={{fontSize:12,color:g.text,fontFamily:T.fontDisplay,fontWeight:700,width:30,textAlign:"right"}}>{value.toFixed(1)}</span>
       <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",width:28,textAlign:"right"}}>{weight}</span>
     </div>
   );
@@ -345,10 +384,10 @@ const GEO_INFO={"Amér. du Nord":"États-Unis et Canada — marchés les plus pr
 function InfoModal({label,text,onClose}){
   useEffect(()=>{const f=e=>{if(e.key==="Escape")onClose();};document.addEventListener("keydown",f);return()=>document.removeEventListener("keydown",f);},[onClose]);
   return createPortal(
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999,padding:"0 16px 32px"}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:"rgba(18,18,18,0.95)",backdropFilter:"blur(40px)",border:"0.5px solid rgba(255,255,255,0.12)",borderRadius:"24px 24px 0 0",padding:"12px 20px 24px",width:"100%",maxWidth:430,minHeight:"50vh",animation:"up .28s cubic-bezier(.16,1,.3,1)",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"}}>
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999,padding:"0 16px 32px"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",padding:"12px 20px 24px",width:"100%",maxWidth:430,minHeight:"50vh",animation:"up .28s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
         <div style={{display:"flex",justifyContent:"center",marginBottom:16}}><div style={{width:36,height:4,borderRadius:2,background:"rgba(255,255,255,0.15)"}}/></div>
-        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:15,fontWeight:700,color:"#fff",marginBottom:10}}>{label}</div>
+        <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:"#fff",marginBottom:10}}>{label}</div>
         <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.5)",lineHeight:1.7}}>{text}</p>
       </div>
     </div>
@@ -362,7 +401,7 @@ function ColorBars({data,title,infoMap={}}){
   return(
     <Glass>
       <div style={{padding:"20px 18px"}}>
-        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.25)",letterSpacing:3,textTransform:"uppercase",marginBottom:18}}>{title}</div>
+        <div style={{fontFamily:T.fontDisplay,fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.25)",letterSpacing:3,textTransform:"uppercase",marginBottom:18}}>{title}</div>
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           {sorted.map(([k,v],i)=>(
             <div key={k}>
@@ -371,7 +410,7 @@ function ColorBars({data,title,infoMap={}}){
                   <span style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>{k}</span>
                   {infoMap[k]&&<IBtn label={k} text={infoMap[k]}/>}
                 </div>
-                <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:13,color:BARS[i%BARS.length],fontWeight:700}}>{v.toFixed(1)}%</span>
+                <span style={{fontFamily:T.fontDisplay,fontSize:13,color:BARS[i%BARS.length],fontWeight:700}}>{v.toFixed(1)}%</span>
               </div>
               <div style={{height:2,background:"rgba(255,255,255,0.05)",borderRadius:1,overflow:"hidden"}}>
                 <div style={{height:"100%",width:`${(v/max)*100}%`,background:BARS[i%BARS.length],borderRadius:1,transition:"width .8s cubic-bezier(.16,1,.3,1)",boxShadow:`0 0 8px ${BARS[i%BARS.length]}55`}}/>
@@ -392,9 +431,9 @@ function Sheet({children,onClose}){
   const onTM=e=>{const dy=e.touches[0].clientY-startY.current;if(dy>0&&ref.current){curY.current=dy;ref.current.style.transform=`translateY(${dy}px)`;}};
   const onTE=()=>{if(curY.current>80)onClose();else if(ref.current)ref.current.style.transform="translateY(0)";curY.current=0;};
   return createPortal(
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
       <div ref={ref} onClick={e=>e.stopPropagation()} onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
-        style={{background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,minHeight:"50vh",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"}}>
+        style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,minHeight:"50vh",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
         <div style={{display:"flex",justifyContent:"center",padding:"12px 0 4px",cursor:"grab"}}>
           <div style={{width:36,height:4,borderRadius:2,background:"rgba(255,255,255,0.12)"}}/>
         </div>
@@ -412,11 +451,11 @@ function SuggestionSheet({catalog,onSelect,onClose}){
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:20}}>{catalog.emoji}</span>
-            <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:15,fontWeight:700,color:"#fff"}}>{catalog.title}</span>
+            <span style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:"#fff"}}>{catalog.title}</span>
           </div>
           <button onClick={onClose} style={{background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:28,height:28,color:"rgba(255,255,255,0.5)",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         </div>
-        <p style={{margin:"0 0 16px",fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.65,fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"}}>{catalog.why}</p>
+        <p style={{margin:"0 0 16px",fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.65,fontFamily:T.fontText}}>{catalog.why}</p>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           {catalog.options.map(opt=>(
             <button key={opt.ticker} onClick={()=>onSelect(opt.ticker)}
@@ -424,13 +463,13 @@ function SuggestionSheet({catalog,onSelect,onClose}){
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.07)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:13,fontWeight:700,color:"#fff"}}>{DB[opt.ticker]?.name||opt.label.split(" · ")[0]}</span>
+                <span style={{fontFamily:T.fontDisplay,fontSize:13,fontWeight:700,color:"#fff"}}>{DB[opt.ticker]?.name||opt.label.split(" · ")[0]}</span>
                 <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                  {opt.ter&&<span style={{fontSize:10,color:"#0ecb81",fontWeight:700,background:"rgba(14,203,129,0.1)",padding:"2px 6px",borderRadius:4}}>TER {opt.ter}</span>}
+                  {opt.ter&&<span style={{fontSize:10,color:T.accent,fontWeight:700,background:"rgba(14,203,129,0.1)",padding:"2px 6px",borderRadius:4}}>TER {opt.ter}</span>}
                   <span style={{fontSize:9,color:"rgba(255,255,255,0.2)",fontFamily:"monospace"}}>{opt.ticker}</span>
                 </div>
               </div>
-              <div style={{display:"flex",gap:5,flexWrap:"wrap",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"}}>
+              <div style={{display:"flex",gap:5,flexWrap:"wrap",fontFamily:T.fontText}}>
                 {opt.tags?.map((t,i)=><span key={i} style={{fontSize:10,color:"rgba(255,255,255,0.4)",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:20,padding:"2px 8px"}}>{t}</span>)}
               </div>
             </button>
@@ -467,7 +506,7 @@ function Search({onAdd,suggestions=[]}){
   };
   const doAdd=()=>{const t=resolved,a=parseFloat(amt);if(!t){setErr("Saisissez un ETF");return;}if(!DB[t]){setErr("ETF introuvable — sélectionnez dans la liste");return;}if(isNaN(a)||a<=0){setErr("Montant invalide");return;}onAdd(t,a);setQ("");setAmt("");setErr("");setOpen(false);setSelectedTicker(null);};
   const onKey=e=>{if(!open||!results.length){if(e.key==="Enter")doAdd();return;}if(e.key==="ArrowDown"){e.preventDefault();setHi(h=>Math.min(h+1,results.length-1));}else if(e.key==="ArrowUp"){e.preventDefault();setHi(h=>Math.max(h-1,0));}else if(e.key==="Enter"){e.preventDefault();const[t,e2]=results[hi];selectItem(t,e2.name);}else if(e.key==="Escape")setOpen(false);};
-  const inp={width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"};
+  const inp={width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s",fontFamily:T.fontText};
   return(
     <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10}}>
       <div style={{position:"relative"}}>
@@ -506,17 +545,17 @@ function Search({onAdd,suggestions=[]}){
             placeholder="Montant" style={{...inp,width:"100%",paddingRight:36}}/>
           <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.3)",fontWeight:500,pointerEvents:"none"}}>€</span>
         </div>
-        <button onClick={doAdd} style={{background:"#0ecb81",border:"none",borderRadius:14,padding:"14px 22px",color:"#000",fontSize:18,fontWeight:800,cursor:"pointer",flexShrink:0,fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",transition:"opacity .15s"}}
+        <button onClick={doAdd} style={{background:T.accent,border:"none",borderRadius:14,padding:"14px 22px",color:"#000",fontSize:18,fontWeight:800,cursor:"pointer",flexShrink:0,fontFamily:T.fontDisplay,transition:"opacity .15s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".85"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>+</button>
       </div>
-      {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
+      {err&&<div style={{fontSize:13,color:T.danger,padding:"10px 14px",background:T.dangerBg,border:`0.5px solid ${T.dangerBorder}`,borderRadius:10}}>{err}</div>}
       {suggestions.length>0&&(
         <div style={{display:"flex",flexDirection:"column",gap:8,paddingTop:2}}>
           <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700}}>Suggestions</div>
           <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
             {suggestions.map(s=>(
               <button key={s.key} onClick={()=>setActiveSug(s.key)}
-                style={{background:"rgba(255,255,255,0.04)",border:`0.5px solid rgba(255,255,255,0.1)`,borderRadius:20,padding:"7px 14px",color:"rgba(255,255,255,0.6)",fontSize:12,cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6,transition:"all .15s",WebkitTapHighlightColor:"transparent"}}
+                style={{background:"rgba(255,255,255,0.04)",border:`0.5px solid rgba(255,255,255,0.1)`,borderRadius:20,padding:"7px 14px",color:T.textSub,fontSize:12,cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6,transition:"all .15s",WebkitTapHighlightColor:"transparent"}}
                 onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}}
                 onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="rgba(255,255,255,0.6)";}}>
                 <span>{s.emoji}</span><span>{s.title}</span>
@@ -547,10 +586,10 @@ function Tabs({active,onChange,highlight=[]}){
           return(
             <button key={t.id} onClick={()=>onChange(t.id)}
               style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",color:isActive?"#fff":"rgba(255,255,255,0.3)",WebkitTapHighlightColor:"transparent",transition:"color .15s",position:"relative",fontFamily:"-apple-system,BlinkMacSystemFont,system-ui,sans-serif"}}>
-              {isActive&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:16,height:2,borderRadius:1,background:"#0ecb81"}}/>}
+              {isActive&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:16,height:2,borderRadius:1,background:T.accent}}/>}
               {t.icon}
               <span style={{fontSize:9,fontWeight:isActive?600:400,letterSpacing:.3,lineHeight:1}}>{t.label}</span>
-              {highlight.includes(t.id)&&!isActive&&<div style={{position:"absolute",top:6,right:"20%",width:5,height:5,borderRadius:"50%",background:"#0ecb81",boxShadow:"0 0 6px #0ecb81",animation:"pulse 2s infinite"}}/>}
+              {highlight.includes(t.id)&&!isActive&&<div style={{position:"absolute",top:6,right:"20%",width:5,height:5,borderRadius:"50%",background:T.accent,boxShadow:"0 0 6px #0ecb81",animation:"pulse 2s infinite"}}/>}
             </button>
           );
         })}
@@ -576,10 +615,10 @@ function Disclaimer({onAccept}){
             <line x1="14" y1="18" x2="34" y2="18" stroke="url(#dl)" strokeWidth="2.5" strokeLinecap="round"/>
           </svg>
         </div>
-        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:18,fontWeight:800,color:"#fff",marginBottom:14,letterSpacing:-.3}}>À titre informatif uniquement</div>
+        <div style={{fontFamily:T.fontDisplay,fontSize:18,fontWeight:800,color:"#fff",marginBottom:14,letterSpacing:-.3}}>À titre informatif uniquement</div>
         <p style={{fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7,margin:"0 0 14px"}}>ETF Score est un outil d'analyse personnel. Les scores et suggestions <strong style={{color:"rgba(255,255,255,0.7)"}}>ne constituent pas un conseil en investissement</strong> au sens de la réglementation AMF.</p>
         <p style={{fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7,margin:"0 0 28px"}}>Tout investissement comporte un risque de perte en capital.</p>
-        <button onClick={onAccept} style={{width:"100%",background:"#0ecb81",border:"none",borderRadius:14,padding:"16px",color:"#000",fontSize:15,fontWeight:800,cursor:"pointer",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",letterSpacing:.3,transition:"opacity .15s"}}
+        <button onClick={onAccept} style={{width:"100%",background:T.accent,border:"none",borderRadius:14,padding:"16px",color:"#000",fontSize:15,fontWeight:800,cursor:"pointer",fontFamily:T.fontDisplay,letterSpacing:.3,transition:"opacity .15s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".85"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
           J'ai compris, accéder à l'app
         </button>
@@ -592,8 +631,8 @@ function Disclaimer({onAccept}){
 function Toast({msg,visible}){
   return(
     <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${visible?0:12}px)`,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,padding:"11px 18px",zIndex:9000,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:"none",whiteSpace:"nowrap"}}>
-      <div style={{width:6,height:6,borderRadius:"50%",background:"#0ecb81",boxShadow:"0 0 8px #0ecb81",flexShrink:0}}/>
-      <span style={{fontSize:13,color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif"}}>{msg}</span>
+      <div style={{width:6,height:6,borderRadius:"50%",background:T.accent,boxShadow:"0 0 8px #0ecb81",flexShrink:0}}/>
+      <span style={{fontSize:13,color:"#fff",fontFamily:T.fontText}}>{msg}</span>
     </div>
   );
 }
@@ -645,7 +684,7 @@ function Splash({visible}){
         animation:visible?"splashText .5s ease .8s both":"none",
       }}>
         <div style={{width:32,height:3,borderRadius:2,background:"rgba(255,255,255,0.1)",overflow:"hidden"}}>
-          <div style={{height:"100%",background:"#0ecb81",borderRadius:2,animation:visible?"splashBar 1.2s ease .3s both":"none"}}/>
+          <div style={{height:"100%",background:T.accent,borderRadius:2,animation:visible?"splashBar 1.2s ease .3s both":"none"}}/>
         </div>
       </div>
     </div>
@@ -782,14 +821,14 @@ function Onboarding({onAdd,onDone}){
 
       {/* ETF added toast */}
       <div style={{position:"fixed",top:`calc(env(safe-area-inset-top,16px) + 60px)`,left:"50%",transform:`translateX(-50%) translateY(${showCheck?0:-16}px)`,opacity:showCheck?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:"rgba(14,203,129,0.15)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(14,203,129,0.4)",borderRadius:20,padding:"10px 18px",zIndex:200,display:"flex",alignItems:"center",gap:8,pointerEvents:"none",whiteSpace:"nowrap"}}>
-        <div style={{width:16,height:16,borderRadius:"50%",background:"#0ecb81",display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
-        <span style={{fontSize:13,color:"#0ecb81",fontWeight:600}}>ETF ajouté au portefeuille</span>
+        <div style={{width:16,height:16,borderRadius:"50%",background:T.accent,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
+        <span style={{fontSize:13,color:T.accent,fontWeight:600}}>ETF ajouté au portefeuille</span>
       </div>
 
       {/* Top nav */}
       <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,display:"flex",justifyContent:"space-between",alignItems:"center",padding:"calc(env(safe-area-inset-top,16px) + 8px) 20px 8px",zIndex:100,pointerEvents:"none"}}>
         <div style={{pointerEvents:"auto"}}>
-          {step>0&&<button onClick={()=>setStep(s=>s-1)} style={{background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:"rgba(255,255,255,0.6)",fontSize:20,cursor:"pointer",padding:"6px 14px",lineHeight:1}}>‹</button>}
+          {step>0&&<button onClick={()=>setStep(s=>s-1)} style={{background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:T.textSub,fontSize:20,cursor:"pointer",padding:"6px 14px",lineHeight:1}}>‹</button>}
         </div>
         <button onClick={done} style={{pointerEvents:"auto",background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:"rgba(255,255,255,0.35)",fontSize:12,cursor:"pointer",padding:"6px 14px"}}>Passer</button>
       </div>
@@ -829,7 +868,7 @@ function Onboarding({onAdd,onDone}){
                       <input type="number" defaultValue={h.amount}
                         onBlur={e=>{const v=parseFloat(e.target.value);if(!isNaN(v)&&v>0)setAdded(prev=>prev.map((x,j)=>j===i?{...x,amount:v}:x));else e.target.value=h.amount;}}
                         onKeyDown={e=>e.key==="Enter"&&e.target.blur()}
-                        style={{width:72,background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"4px 8px",color:"#0ecb81",fontSize:12,fontWeight:600,textAlign:"right",outline:"none",fontFamily:"monospace",WebkitAppearance:"none"}}/>
+                        style={{width:72,background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"4px 8px",color:T.accent,fontSize:12,fontWeight:600,textAlign:"right",outline:"none",fontFamily:"monospace",WebkitAppearance:"none"}}/>
                       <span style={{fontSize:10,color:"rgba(255,255,255,0.2)",flexShrink:0}}>€</span>
                       <button onClick={()=>setAdded(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:16,cursor:"pointer",padding:"0 2px",flexShrink:0,lineHeight:1,transition:"color .15s"}} onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.2)"}>×</button>
                     </div>
@@ -866,7 +905,7 @@ function Onboarding({onAdd,onDone}){
                     style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 36px 15px 16px",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
                   <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"rgba(255,255,255,0.3)",fontWeight:500,pointerEvents:"none"}}>€</span>
                 </div>
-                {err&&<div style={{fontSize:13,color:"#ff4d4d",padding:"10px 14px",background:"rgba(255,77,77,0.08)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:10}}>{err}</div>}
+                {err&&<div style={{fontSize:13,color:T.danger,padding:"10px 14px",background:T.dangerBg,border:`0.5px solid ${T.dangerBorder}`,borderRadius:10}}>{err}</div>}
                 <div>
                   <div style={{fontSize:9,color:"rgba(255,255,255,0.2)",letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Populaires</div>
                   <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
@@ -1008,7 +1047,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
               /* Avant premier versement — projection marketing */
               <div style={{textAlign:"center",padding:"6px 0"}}>
                 <div style={{fontSize:9,color:"rgba(255,255,255,0.3)",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Projection sur 10 ans</div>
-                <div style={{fontSize:28,fontWeight:800,color:"#0ecb81",letterSpacing:-1}}>{preview.projection10y.toLocaleString("fr-FR")} €</div>
+                <div style={{fontSize:28,fontWeight:800,color:T.accent,letterSpacing:-1}}>{preview.projection10y.toLocaleString("fr-FR")} €</div>
                 <div style={{fontSize:11,color:"rgba(255,255,255,0.3)",marginTop:4}}>à ce rythme, sans intérêts</div>
               </div>
             ):(
@@ -1016,7 +1055,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 <div>
                   <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Total investi</div>
-                  <div style={{fontSize:18,fontWeight:700,color:"#0ecb81"}}>{preview.totalInvested.toLocaleString("fr-FR")} €</div>
+                  <div style={{fontSize:18,fontWeight:700,color:T.accent}}>{preview.totalInvested.toLocaleString("fr-FR")} €</div>
                 </div>
                 <div>
                   <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Par an</div>
@@ -1123,7 +1162,7 @@ export default function App(){
   if(!ready)return(<div style={{minHeight:"100vh",background:"#050506",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.1)",borderTopColor:"#0ecb81",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
 
   return(
-    <div style={{minHeight:"100vh",background:"#050506",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif",maxWidth:430,margin:"0 auto"}}>
+    <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:T.fontText,maxWidth:430,margin:"0 auto"}}>
       <style>{`
         ${FONTS}
         *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
@@ -1162,8 +1201,8 @@ export default function App(){
             <img src="/icon-180.png" alt="" style={{width:30,height:30,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.target.style.display="none";}}/>
             <div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
-                <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:15,fontWeight:800,color:"#fff",letterSpacing:-.3}}>ETF Score</span>
-                <span style={{fontSize:8,fontWeight:800,color:"#0ecb81",letterSpacing:2,background:"rgba(14,203,129,0.1)",border:"0.5px solid rgba(14,203,129,0.25)",padding:"2px 6px",borderRadius:3,fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif"}}>EXPERT</span>
+                <span style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:800,color:"#fff",letterSpacing:-.3}}>ETF Score</span>
+                <span style={{fontSize:8,fontWeight:800,color:T.accent,letterSpacing:2,background:"rgba(14,203,129,0.1)",border:"0.5px solid rgba(14,203,129,0.25)",padding:"2px 6px",borderRadius:3,fontFamily:T.fontDisplay}}>EXPERT</span>
               </div>
               <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",marginTop:0,letterSpacing:.3}}>Analyse multicritères</div>
             </div>
@@ -1227,7 +1266,7 @@ export default function App(){
               {/* Sub-scores */}
               {holdings.length>0&&(
                 <Glass style={{padding:"18px 18px"}}>
-                  <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>Détail des critères</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>Détail des critères</div>
                   <div style={{display:"flex",flexDirection:"column",gap:12}}>
                     <MiniBar label="Géographie" value={scores.geo} weight="25%"/>
                     <MiniBar label="Secteurs" value={scores.sector} weight="25%"/>
@@ -1237,13 +1276,13 @@ export default function App(){
                   </div>
                   {Object.keys(scores.classes).length>0&&(
                     <div style={{marginTop:18,paddingTop:16,borderTop:"0.5px solid rgba(255,255,255,0.06)"}}>
-                      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Classes d'actifs</div>
+                      <div style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Classes d'actifs</div>
                       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                         {Object.entries(scores.classes).sort((a,b)=>b[1]-a[1]).map(([cls,pct])=>(
                           <div key={cls} style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:20,padding:"5px 12px",display:"flex",alignItems:"center",gap:6}}>
                             <div style={{width:5,height:5,borderRadius:"50%",background:ASSET_COLORS[cls]||"rgba(255,255,255,0.5)"}}/>
-                            <span style={{fontSize:11,color:"rgba(255,255,255,0.6)"}}>{ASSET_LABELS[cls]||cls}</span>
-                            <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:11,color:ASSET_COLORS[cls]||"rgba(255,255,255,0.7)",fontWeight:700}}>{pct.toFixed(0)}%</span>
+                            <span style={{fontSize:11,color:T.textSub}}>{ASSET_LABELS[cls]||cls}</span>
+                            <span style={{fontFamily:T.fontDisplay,fontSize:11,color:ASSET_COLORS[cls]||"rgba(255,255,255,0.7)",fontWeight:700}}>{pct.toFixed(0)}%</span>
                           </div>
                         ))}
                       </div>
@@ -1257,7 +1296,7 @@ export default function App(){
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
                   {[{v:Object.keys(scores.geoMap).length,l:"Zones"},{v:Object.keys(scores.secMap).length,l:"Secteurs"},{v:holdings.length,l:"ETF"}].map(({v,l})=>(
                     <Glass key={l} style={{padding:"14px 12px",textAlign:"center"}}>
-                      <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:26,fontWeight:800,color:"#fff",lineHeight:1,letterSpacing:-1}}>{v}</div>
+                      <div style={{fontFamily:T.fontDisplay,fontSize:26,fontWeight:800,color:"#fff",lineHeight:1,letterSpacing:-1}}>{v}</div>
                       <div style={{fontSize:9,color:"rgba(255,255,255,0.25)",marginTop:5,letterSpacing:2,textTransform:"uppercase"}}>{l}</div>
                     </Glass>
                   ))}
@@ -1269,7 +1308,7 @@ export default function App(){
                 <div style={{display:"flex",flexDirection:"column",gap:10}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,padding:"4px 2px"}}>
                     <div style={{flex:1,height:"0.5px",background:"linear-gradient(90deg,rgba(14,203,129,0.4),transparent)"}}/>
-                    <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:10,fontWeight:800,color:"rgba(255,255,255,0.5)",letterSpacing:2.5,textTransform:"uppercase"}}>Analyse & Recommandations</span>
+                    <span style={{fontFamily:T.fontDisplay,fontSize:10,fontWeight:800,color:"rgba(255,255,255,0.5)",letterSpacing:2.5,textTransform:"uppercase"}}>Analyse & Recommandations</span>
                     <div style={{flex:1,height:"0.5px",background:"linear-gradient(270deg,rgba(14,203,129,0.4),transparent)"}}/>
                   </div>
 
@@ -1278,9 +1317,9 @@ export default function App(){
                     <div key={i} style={{background:r.bg,border:`0.5px solid ${r.border}`,borderRadius:16,padding:"14px 16px"}}>
                       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
                         <div style={{color:r.color,flexShrink:0}}>{REC_ICONS[r.icon]||REC_ICONS.geo}</div>
-                        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:13,fontWeight:700,color:r.color}}>{r.title}</div>
+                        <div style={{fontFamily:T.fontDisplay,fontSize:13,fontWeight:700,color:r.color}}>{r.title}</div>
                       </div>
-                      <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.65}}>{r.text}</p>
+                      <p style={{margin:0,fontSize:13,color:T.textSub,lineHeight:1.65}}>{r.text}</p>
                       {r.cat&&CAT[r.cat]&&<button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:r.color,fontSize:12,fontWeight:600,WebkitTapHighlightColor:"transparent"}}><span>→</span><span style={{borderBottom:`1px solid ${r.color}66`}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span></button>}
                     </div>
                   ))}
@@ -1288,8 +1327,8 @@ export default function App(){
                   {/* Feedback positif */}
                   {positives.map((p,i)=>(
                     <div key={i} style={{background:"rgba(14,203,129,0.04)",border:"0.5px solid rgba(14,203,129,0.12)",borderRadius:16,padding:"13px 16px",display:"flex",gap:10,alignItems:"flex-start"}}>
-                      <div style={{color:"#0ecb81",flexShrink:0,marginTop:1}}>{REC_ICONS.trophy}</div>
-                      <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.65}}>{p}</p>
+                      <div style={{color:T.accent,flexShrink:0,marginTop:1}}>{REC_ICONS.trophy}</div>
+                      <p style={{margin:0,fontSize:13,color:T.textSub,lineHeight:1.65}}>{p}</p>
                     </div>
                   ))}
 
@@ -1298,9 +1337,9 @@ export default function App(){
                     <div key={i} style={{background:r.bg,border:`0.5px solid ${r.border}`,borderRadius:16,padding:"14px 16px"}}>
                       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
                         <div style={{color:r.color,flexShrink:0}}>{REC_ICONS[r.icon]||REC_ICONS.geo}</div>
-                        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:13,fontWeight:700,color:r.color}}>{r.title}</div>
+                        <div style={{fontFamily:T.fontDisplay,fontSize:13,fontWeight:700,color:r.color}}>{r.title}</div>
                       </div>
-                      <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.65}}>{r.text}</p>
+                      <p style={{margin:0,fontSize:13,color:T.textSub,lineHeight:1.65}}>{r.text}</p>
                       {r.cat&&CAT[r.cat]&&<button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:r.color,fontSize:12,fontWeight:600,WebkitTapHighlightColor:"transparent"}}><span>→</span><span style={{borderBottom:`1px solid ${r.color}66`}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span></button>}
                     </div>
                   ))}
@@ -1319,10 +1358,10 @@ export default function App(){
                     <div key={i} style={{background:"rgba(255,255,255,0.03)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"14px 16px",animation:"up .3s cubic-bezier(.16,1,.3,1)"}}>
                       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
                         <div style={{color:"rgba(255,255,255,0.35)",flexShrink:0}}>{REC_ICONS[r.icon]||REC_ICONS.geo}</div>
-                        <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:13,fontWeight:600,color:"rgba(255,255,255,0.7)"}}>{r.title}</div>
+                        <div style={{fontFamily:T.fontDisplay,fontSize:13,fontWeight:600,color:"rgba(255,255,255,0.7)"}}>{r.title}</div>
                       </div>
                       <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.45)",lineHeight:1.65}}>{r.text}</p>
-                      {r.cat&&CAT[r.cat]&&<button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:"#0ecb81",fontSize:12,fontWeight:600,WebkitTapHighlightColor:"transparent"}}><span>→</span><span style={{borderBottom:"1px solid rgba(14,203,129,0.4)"}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span></button>}
+                      {r.cat&&CAT[r.cat]&&<button onClick={()=>setActiveRec(r.cat)} style={{marginTop:10,background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",alignItems:"center",gap:5,color:T.accent,fontSize:12,fontWeight:600,WebkitTapHighlightColor:"transparent"}}><span>→</span><span style={{borderBottom:"1px solid rgba(14,203,129,0.4)"}}>{CAT[r.cat].emoji} Voir les ETF — {CAT[r.cat].title}</span></button>}
                     </div>
                   ))}
                 </div>
@@ -1330,9 +1369,9 @@ export default function App(){
 
               {!holdings.length&&(
                 <Glass style={{padding:"52px 24px",textAlign:"center"}}>
-                  <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:44,marginBottom:16,opacity:.3}}>◎</div>
-                  <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:16,fontWeight:800,color:"#fff",marginBottom:10}}>Aucun ETF renseigné</div>
-                  <div style={{fontSize:13,color:"rgba(255,255,255,0.3)",lineHeight:1.7,marginBottom:20}}>Allez dans l'onglet <strong style={{color:"rgba(255,255,255,0.6)"}}>Mes ETF</strong> pour ajouter vos positions.</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:44,marginBottom:16,opacity:.3}}>◎</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:16,fontWeight:800,color:"#fff",marginBottom:10}}>Aucun ETF renseigné</div>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,0.3)",lineHeight:1.7,marginBottom:20}}>Allez dans l'onglet <strong style={{color:T.textSub}}>Mes ETF</strong> pour ajouter vos positions.</div>
                   <button onClick={()=>setOnboarding(true)}
                     style={{background:"none",border:"none",color:"rgba(255,255,255,0.2)",fontSize:12,cursor:"pointer",padding:0,textDecoration:"underline",textUnderlineOffset:3}}>
                     Revoir l'introduction
@@ -1399,14 +1438,14 @@ export default function App(){
           {tab==="ptf"&&(
             <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn .3s ease"}}>
               <Glass style={{padding:"18px 16px"}}>
-                <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Ajouter un ETF</div>
+                <div style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Ajouter un ETF</div>
                 <Search onAdd={addHolding} suggestions={suggestions}/>
               </Glass>
 
               {holdings.length>0&&(
                 <div>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,padding:"0 4px"}}>
-                    <span style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase"}}>Positions</span>
+                    <span style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase"}}>Positions</span>
                     <button onClick={()=>setConfirmReset(true)} style={{background:"none",border:"none",color:"rgba(255,77,77,0.5)",fontSize:11,cursor:"pointer"}}>Tout effacer</button>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -1423,7 +1462,7 @@ export default function App(){
                                 <span style={{fontSize:11,color:"rgba(255,255,255,0.35)",fontWeight:600,flexShrink:0}}>{pct.toFixed(1)}%</span>
                               </div>
                               <div style={{display:"flex",alignItems:"center",gap:6}}>
-                                {etf?.isin&&<span style={{fontSize:9,fontFamily:"'SF Mono',ui-monospace,monospace",color:"rgba(255,255,255,0.38)",letterSpacing:.5}}>{etf.isin}</span>}
+                                {etf?.isin&&<span style={{fontSize:9,fontFamily:T.fontMono,color:T.textGhost,letterSpacing:.5}}>{etf.isin}</span>}
                                 {etf&&<span style={{fontSize:9,color:ASSET_COLORS[etf.assetClass]||"rgba(255,255,255,0.4)",fontWeight:600,background:`${ASSET_COLORS[etf.assetClass]||"rgba(255,255,255,0.1)"}18`,padding:"1px 6px",borderRadius:4,letterSpacing:.3,flexShrink:0}}>{ASSET_LABELS[etf.assetClass]||etf.assetClass}</span>}
                               </div>
                             </div>
@@ -1456,7 +1495,7 @@ export default function App(){
                               {/* Ligne 2 — montant investi si versements passés */}
                               {s.totalInvested>0&&(
                                 <div style={{display:"flex",alignItems:"baseline",gap:4}}>
-                                  <span style={{fontSize:15,fontWeight:700,color:"#0ecb81"}}>{s.totalInvested.toLocaleString("fr-FR")} €</span>
+                                  <span style={{fontSize:15,fontWeight:700,color:T.accent}}>{s.totalInvested.toLocaleString("fr-FR")} €</span>
                                   <span style={{fontSize:10,color:"rgba(255,255,255,0.3)"}}>versés à ce jour</span>
                                 </div>
                               )}
@@ -1508,7 +1547,7 @@ export default function App(){
               <Glass style={{padding:"20px"}}>
                 <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.2)",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Mentions légales</div>
                 <p style={{margin:"0 0 14px",fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7}}>
-                  ETF Score est un outil d'analyse personnel. Les scores, indicateurs et suggestions affichés <strong style={{color:"rgba(255,255,255,0.6)"}}>ne constituent pas un conseil en investissement</strong> au sens de la réglementation AMF.
+                  ETF Score est un outil d'analyse personnel. Les scores, indicateurs et suggestions affichés <strong style={{color:T.textSub}}>ne constituent pas un conseil en investissement</strong> au sens de la réglementation AMF.
                 </p>
                 <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.4)",lineHeight:1.7}}>
                   Tout investissement comporte un risque de perte en capital. Consultez un conseiller financier agréé avant toute décision d'investissement.
@@ -1557,10 +1596,10 @@ export default function App(){
       {confirmReset&&(
         <Sheet onClose={()=>setConfirmReset(false)}>
           <div style={{padding:"8px 20px 40px",textAlign:"center"}}>
-            <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif",fontSize:15,fontWeight:800,color:"#fff",marginBottom:8}}>Effacer le portefeuille ?</div>
+            <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:800,color:"#fff",marginBottom:8}}>Effacer le portefeuille ?</div>
             <div style={{fontSize:13,color:"rgba(255,255,255,0.3)",marginBottom:24,lineHeight:1.65}}>Toutes vos positions seront supprimées. Irréversible.</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              <button onClick={()=>{setHoldings([]);setConfirmReset(false);}} style={{background:"rgba(255,77,77,0.1)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:14,padding:"15px",color:"#ff4d4d",fontSize:15,fontWeight:600,cursor:"pointer",width:"100%",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif"}}>Effacer tout</button>
+              <button onClick={()=>{setHoldings([]);setConfirmReset(false);}} style={{background:"rgba(255,77,77,0.1)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:14,padding:"15px",color:"#ff4d4d",fontSize:15,fontWeight:600,cursor:"pointer",width:"100%",fontFamily:T.fontDisplay}}>Effacer tout</button>
               <button onClick={()=>setConfirmReset(false)} style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"15px",color:"rgba(255,255,255,0.5)",fontSize:15,cursor:"pointer",width:"100%"}}>Annuler</button>
             </div>
           </div>
