@@ -134,11 +134,11 @@ const T_LIGHT = {
   borderFaint:  "rgba(0,0,0,0.06)",
   borderSubtle: "rgba(0,0,0,0.08)",
   text:         "#000000",
-  textSub:      "rgba(0,0,0,0.6)",
-  textMuted:    "rgba(0,0,0,0.48)",
-  textFaint:    "rgba(0,0,0,0.42)",
-  textGhost:    "rgba(0,0,0,0.38)",
-  textDisabled: "rgba(0,0,0,0.32)",
+  textSub:      "rgba(0,0,0,0.75)",   // AA ✓ — texte secondaire lisible
+  textMuted:    "rgba(0,0,0,0.62)",   // AA ✓ — texte tertiaire
+  textFaint:    "rgba(0,0,0,0.55)",   // AA ✓ — labels, metadata
+  textGhost:    "rgba(0,0,0,0.50)",   // AA ✓ borderline — placeholders
+  textDisabled: "rgba(0,0,0,0.38)",   // AA large text ✓ — hints, uppercase labels
 };
 
 
