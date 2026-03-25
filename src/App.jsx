@@ -1587,36 +1587,23 @@ export default function App(){
                 </p>
               </Glass>
 
-              {/* Theme toggle */}
-              <Glass style={{padding:"16px 20px"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:12}}>
-                    <span style={{fontSize:18}}>{darkMode?"🌙":"☀️"}</span>
-                    <div>
-                      <div style={{fontSize:13,fontWeight:600,color:T.text}}>{darkMode?"Thème sombre":"Thème clair"}</div>
-                      <div style={{fontSize:11,color:T.textGhost,marginTop:2}}>Apparence de l'interface</div>
-                    </div>
-                  </div>
-                  {/* Toggle switch */}
-                  <div onClick={()=>{
-                    const next=!darkMode;
-                    setDarkMode(next);
-                    localStorage.setItem('etf-theme', next?'dark':'light');
-                  }} style={{
-                    width:48,height:28,borderRadius:14,
-                    background:darkMode?T.accent:"rgba(0,0,0,0.15)",
-                    position:"relative",cursor:"pointer",
-                    transition:"background .25s",flexShrink:0,
-                  }}>
-                    <div style={{
-                      position:"absolute",top:3,
-                      left:darkMode?22:3,
-                      width:22,height:22,borderRadius:"50%",
-                      background:"#fff",
-                      transition:"left .25s cubic-bezier(.16,1,.3,1)",
-                      boxShadow:"0 1px 4px rgba(0,0,0,0.3)",
-                    }}/>
-                  </div>
+              {/* Appearance */}
+              <Glass style={{padding:"18px 20px"}}> 
+                <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Apparence</div>
+                <div style={{display:"flex",gap:8}}>
+                  {[{id:true,label:"Sombre",icon:"🌙"},{id:false,label:"Claire",icon:"☀️"}].map(opt=>(
+                    <button key={String(opt.id)} onClick={()=>{setDarkMode(opt.id);localStorage.setItem('etf-theme',opt.id?'dark':'light');}}
+                      style={{
+                        flex:1,padding:"12px 8px",borderRadius:T.radiusSm,cursor:"pointer",
+                        background:darkMode===opt.id?T.accentBg:"rgba(255,255,255,0.03)",
+                        border:`0.5px solid ${darkMode===opt.id?T.accentBorder:T.borderSubtle}`,
+                        display:"flex",flexDirection:"column",alignItems:"center",gap:6,
+                        transition:"all .15s",
+                      }}>
+                      <span style={{fontSize:20}}>{opt.icon}</span>
+                      <span style={{fontSize:12,fontWeight:darkMode===opt.id?600:400,color:darkMode===opt.id?T.accent:T.textGhost}}>{opt.label}</span>
+                    </button>
+                  ))}
                 </div>
               </Glass>
 
