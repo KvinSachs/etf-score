@@ -120,8 +120,10 @@ const T = {
   fontMono:     "'SF Mono',ui-monospace,monospace",
 };
 
+const T_DARK = {...T}; // immutable copy of dark theme
+
 const T_LIGHT = {
-  ...T,
+  ...T_DARK,
   bg:           "#f2f2f7",
   bgElevated:   "#ffffff",
   bgOverlay:    "rgba(0,0,0,0.4)",
@@ -1166,7 +1168,7 @@ export default function App(){
   };
 
   // Sync holding amounts with plan contributions
-  const theme=darkMode?T:T_LIGHT;
+  const theme=darkMode?T_DARK:T_LIGHT;
   // Update global theme ref for subcomponents
   Object.assign(T, theme);
   const holdingsWithPlan=useMemo(()=>holdings.map(h=>{
