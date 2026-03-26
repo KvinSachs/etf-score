@@ -1627,18 +1627,9 @@ export default function App(){
                 </p>
               </Glass>
 
-              {/* Data disclaimer */}
-              <Glass style={{padding:"20px"}}>
-                <div style={{fontSize:10,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Données</div>
-                <p style={{margin:0,fontSize:13,color:T.text4,lineHeight:1.7}}>
-                  Les compositions d'ETF sont approximatives et basées sur les données disponibles à la date de mise à jour. Elles peuvent différer des compositions réelles actuelles.
-                  Les apports renseignés ne tiennent pas compte des variations de marché.
-                </p>
-              </Glass>
-
               {/* Appearance */}
               <Glass style={{padding:"18px 20px"}}> 
-                <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Apparence</div>
+                <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Paramètres</div>
                 <div style={{display:"flex",gap:8}}>
                   {[{id:true,label:"Sombre",icon:"🌙",badge:null},{id:false,label:"Claire",icon:"☀️",badge:"Alpha"}].map(opt=>(
                     <button key={String(opt.id)} onClick={()=>{setDarkMode(opt.id);localStorage.setItem('etf-theme',opt.id?'dark':'light');}}
@@ -1660,11 +1651,33 @@ export default function App(){
                 </div>
               </Glass>
 
+              {/* Data disclaimer */}
+              <Glass style={{padding:"20px"}}>
+                <div style={{fontSize:10,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Données</div>
+                <p style={{margin:0,fontSize:13,color:T.text4,lineHeight:1.7}}>
+                  Les compositions d'ETF sont approximatives et basées sur les données disponibles à la date de mise à jour. Elles peuvent différer des compositions réelles actuelles.
+                  Les apports renseignés ne tiennent pas compte des variations de marché.
+                </p>
+              </Glass>
+
               {/* Reset onboarding */}
-              <button onClick={()=>{localStorage.removeItem("etf-onboarding-seen");window.location.reload();}}
-                style={{background:T.surfaceFaint,border:"0.5px solid rgba(255,255,255,0.07)",borderRadius:16,padding:"15px 20px",color:T.text4,fontSize:13,cursor:"pointer",textAlign:"left",width:"100%"}}>
-                Revoir l'onboarding
-              </button>
+              <Glass style={{padding:"16px 20px"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <div style={{width:36,height:36,borderRadius:10,background:T.surfaceHover,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18}}>👋</div>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:600,color:T.text,marginBottom:2}}>Revoir l'introduction</div>
+                      <div style={{fontSize:11,color:T.text4}}>Relancer l'onboarding depuis le début</div>
+                    </div>
+                  </div>
+                  <button onClick={()=>{localStorage.removeItem("etf-onboarding-seen");window.location.reload();}}
+                    style={{background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"7px 14px",color:T.accent,fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,transition:"opacity .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.opacity=".75"}
+                    onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                    Lancer →
+                  </button>
+                </div>
+              </Glass>
             </div>
           )}
         </div>
