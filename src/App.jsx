@@ -649,7 +649,7 @@ function Tabs({active,onChange,highlight=[]}){
           const isActive=active===t.id;
           return(
             <button key={t.id} onClick={()=>onChange(t.id)}
-              style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",color:isActive?"#fff":"rgba(255,255,255,0.3)",WebkitTapHighlightColor:"transparent",transition:"color .15s",position:"relative",fontFamily:"-apple-system,BlinkMacSystemFont,system-ui,sans-serif"}}>
+              style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",color:isActive?T.text:T.text5,WebkitTapHighlightColor:"transparent",transition:"color .15s",position:"relative",fontFamily:"-apple-system,BlinkMacSystemFont,system-ui,sans-serif"}}>
               {isActive&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:16,height:2,borderRadius:1,background:T.accent}}/>}
               {t.icon}
               <span style={{fontSize:9,fontWeight:isActive?600:400,letterSpacing:.3,lineHeight:1}}>{t.label}</span>
@@ -997,13 +997,13 @@ function Onboarding({onAdd,onDone}){
           {step<2?(
             <button onClick={()=>setStep(s=>s+1)}
               style={{width:"100%",background:T.surfaceMed,border:`0.5px solid ${T.border}`,borderRadius:16,padding:"17px",color:T.text2,fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .15s"}}
-              onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
-              onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}>
+              onMouseEnter={e=>e.currentTarget.style.background=T.surfaceHover}
+              onMouseLeave={e=>e.currentTarget.style.background=T.surfaceMed}>
               Suivant
             </button>
           ):(
             <button onClick={done}
-              style={{width:"100%",background:added.length>0?"#0ecb81":"rgba(255,255,255,0.06)",border:added.length>0?"none":"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:added.length>0?"#000":"rgba(255,255,255,0.4)",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}}
+              style={{width:"100%",background:added.length>0?T.accent:T.surfaceMed,border:added.length>0?"none":`0.5px solid ${T.border}`,borderRadius:16,padding:"17px",color:added.length>0?"#000":T.text4,fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}}
               onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
               {added.length>0?`Analyser mon portefeuille (${added.length} ETF) →`:"Passer cette étape"}
