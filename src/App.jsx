@@ -87,6 +87,8 @@ const STORAGE_KEY = "etf-portfolio-v2";
 const T = {
   bg:           "#050506",
   bgElevated:   "rgba(14,14,14,0.97)",
+  bgDropdown:   "rgba(14,14,14,0.97)",
+  shadowDropdown: "0 24px 60px rgba(0,0,0,0.8)",
   bgBlur:       "rgba(5,5,6,0.6)",
   bgHeader:     "rgba(5,5,6,0.8)",
   bgTabBar:     "rgba(5,5,6,0.92)",
@@ -141,6 +143,8 @@ const T_LIGHT = {
   ...T_DARK,
   bg:           "#f2f2f7",
   bgElevated:   "#ffffff",
+  bgDropdown:   "#ffffff",
+  shadowDropdown: "0 8px 32px rgba(0,0,0,0.12)",
   bgBlur:       "rgba(242,242,247,0.85)",
   bgHeader:     "rgba(242,242,247,0.92)",
   bgTabBar:     "rgba(242,242,247,0.95)",
@@ -580,10 +584,10 @@ function Search({onAdd,suggestions=[]}){
           onKeyDown={onKey} placeholder="Nom, ISIN ou ticker…" style={inp}/>
         {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);setOpen(false);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:T.surfaceHover,border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>}
         {open&&results.length>0&&(
-          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:16,overflow:"hidden",boxShadow:"0 24px 60px rgba(0,0,0,0.8)"}}>
+          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:T.bgDropdown,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:16,overflow:"hidden",boxShadow:T.shadowDropdown}}>
             {results.map(([t,e],i)=>(
               <div key={t} onMouseDown={()=>selectItem(t,e.name)}
-                style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",cursor:"pointer",background:i===hi?"rgba(255,255,255,0.05)":"transparent",borderBottom:`0.5px solid ${T.borderFaint}`,transition:"background .1s"}}>
+                style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",cursor:"pointer",background:i===hi?T.surfaceHover:"transparent",borderBottom:`0.5px solid ${T.borderFaint}`,transition:"background .1s"}}>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:500,color:T.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginBottom:3}}>{e.name}</div>
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -597,7 +601,7 @@ function Search({onAdd,suggestions=[]}){
           </div>
         )}
         {open&&q.length>=2&&!selectedTicker&&results.length===0&&(
-          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:`0.5px solid ${T.borderSubtle}`,borderRadius:16,padding:"18px",textAlign:"center"}}>
+          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:T.bgDropdown,backdropFilter:"blur(20px)",border:`0.5px solid ${T.borderSubtle}`,borderRadius:16,padding:"18px",textAlign:"center"}}>
             <div style={{fontSize:13,color:T.text4}}>Aucun résultat pour « {q} »</div>
           </div>
         )}
@@ -694,7 +698,7 @@ function Disclaimer({onAccept}){
 /* ─── TOAST ──────────────────────────────────────────────────────────────────── */
 function Toast({msg,visible}){
   return(
-    <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${visible?0:12}px)`,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:20,padding:"11px 18px",zIndex:9000,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:"none",whiteSpace:"nowrap"}}>
+    <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${visible?0:12}px)`,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:T.bgDropdown,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,padding:"11px 18px",zIndex:9000,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:"none",whiteSpace:"nowrap"}}>
       <div style={{width:6,height:6,borderRadius:"50%",background:T.accent,boxShadow:"0 0 8px #0ecb81",flexShrink:0}}/>
       <span style={{fontSize:13,color:T.text,fontFamily:T.fontText}}>{msg}</span>
     </div>
@@ -950,9 +954,9 @@ function Onboarding({onAdd,onDone}){
                     style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"15px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s"}}/>
                   {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:T.surfaceHover,border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>}
                   {open&&results.length>0&&(
-                    <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:10,background:"rgba(14,14,14,0.99)",border:`0.5px solid ${T.border}`,borderRadius:14,overflow:"hidden",boxShadow:"0 16px 40px rgba(0,0,0,0.8)"}}>
+                    <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:10,background:T.bgDropdown,border:`0.5px solid ${T.border}`,borderRadius:14,overflow:"hidden",boxShadow:T.shadowDropdown}}>
                       {results.map(([t,e])=>(
-                        <div key={t} onMouseDown={()=>selectItem(t,e.name)} style={{padding:"13px 16px",cursor:"pointer",borderBottom:`0.5px solid ${T.borderFaint}`,transition:"background .1s"}} onMouseEnter={ev=>ev.currentTarget.style.background="rgba(255,255,255,0.05)"} onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
+                        <div key={t} onMouseDown={()=>selectItem(t,e.name)} style={{padding:"13px 16px",cursor:"pointer",borderBottom:`0.5px solid ${T.borderFaint}`,transition:"background .1s"}} onMouseEnter={ev=>ev.currentTarget.style.background=T.surfaceHover} onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
                           <div style={{fontSize:13,fontWeight:500,color:T.text,marginBottom:3}}>{e.name}</div>
                           <div style={{fontSize:10,color:T.text5,fontFamily:"monospace"}}>{e.isin} · {ASSET_LABELS[e.assetClass]||e.assetClass}</div>
                         </div>
@@ -1640,14 +1644,17 @@ export default function App(){
                     <button key={String(opt.id)} onClick={()=>{setDarkMode(opt.id);localStorage.setItem('etf-theme',opt.id?'dark':'light');}}
                       style={{
                         flex:1,padding:"12px 8px",borderRadius:T.radiusSm,cursor:"pointer",
-                        background:darkMode===opt.id?T.accentBg:"rgba(255,255,255,0.03)",
+                        background:darkMode===opt.id?T.accentBg:T.surfaceFaint,
                         border:`0.5px solid ${darkMode===opt.id?T.accentBorder:T.borderSubtle}`,
-                        display:"flex",flexDirection:"column",alignItems:"center",gap:6,
+                        display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,
                         transition:"all .15s",
+                        minHeight:80,
                       }}>
                       <span style={{fontSize:20}}>{opt.icon}</span>
-                      <span style={{fontSize:12,fontWeight:darkMode===opt.id?600:400,color:darkMode===opt.id?T.accent:T.textGhost}}>{opt.label}</span>
-                      {opt.badge&&<span style={{fontSize:9,fontWeight:600,color:T.warning,background:T.warningBg,border:`0.5px solid ${T.warningBorder}`,borderRadius:4,padding:"1px 5px",letterSpacing:.5}}>{opt.badge}</span>}
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                        <span style={{fontSize:12,fontWeight:darkMode===opt.id?600:400,color:darkMode===opt.id?T.accent:T.textGhost}}>{opt.label}</span>
+                        {opt.badge&&<span style={{fontSize:9,fontWeight:600,color:T.warning,background:T.warningBg,border:`0.5px solid ${T.warningBorder}`,borderRadius:4,padding:"1px 5px",letterSpacing:.5}}>{opt.badge}</span>}
+                      </div>
                     </button>
                   ))}
                 </div>
