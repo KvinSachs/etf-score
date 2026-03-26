@@ -91,9 +91,13 @@ const T = {
   surface:      "rgba(255,255,255,0.05)",
   surfaceHover: "rgba(255,255,255,0.08)",
   surfaceFaint: "rgba(255,255,255,0.03)",
+  surfaceMed:   "rgba(255,255,255,0.06)",
+  surfaceStrong:"rgba(255,255,255,0.12)",
+  surfaceActive:"rgba(255,255,255,0.15)",
   border:       "rgba(255,255,255,0.1)",
   borderFaint:  "rgba(255,255,255,0.06)",
   borderSubtle: "rgba(255,255,255,0.08)",
+  surface4:     "rgba(255,255,255,0.04)",
   accent:       "#0ecb81",
   accentBg:     "rgba(14,203,129,0.1)",
   accentBorder: "rgba(14,203,129,0.25)",
@@ -138,9 +142,13 @@ const T_LIGHT = {
   surface:      "rgba(0,0,0,0.05)",
   surfaceHover: "rgba(0,0,0,0.08)",
   surfaceFaint: "rgba(0,0,0,0.03)",
+  surfaceMed:   "rgba(0,0,0,0.06)",
+  surfaceStrong:"rgba(0,0,0,0.08)",
+  surfaceActive:"rgba(0,0,0,0.12)",
   border:       "rgba(0,0,0,0.1)",
-  borderFaint:  "rgba(0,0,0,0.06)",
-  borderSubtle: "rgba(0,0,0,0.08)",
+  borderFaint:  "rgba(0,0,0,0.08)",
+  borderSubtle: "rgba(0,0,0,0.1)",
+  surface4:     "rgba(0,0,0,0.04)",
   text:         "#000000",
   textSub:      "rgba(0,0,0,0.75)",   // AA ✓ — texte secondaire lisible
   textMuted:    "rgba(0,0,0,0.62)",   // AA ✓ — texte tertiaire
@@ -200,7 +208,7 @@ function buildRecs(scores,holdings,total){
   const tW=secMap["Technologie"]||0,usdW=currencies["USD"]||0;
   const commPctR=commPct,rePctR=rePct,bondPctR=bondPct,equityPctR=equityPct;
   for(let i=0;i<holdings.length;i++)for(let j=i+1;j<holdings.length;j++){const a=holdings[i],b=holdings[j],eA=DB[a.ticker],eB=DB[b.ticker];if(!eA||!eB)continue;const ov=eA.overlaps?.[b.ticker]||0;if(ov>=90)recs.push({priority:"high",level:"essential",color:"#ff4d4d",bg:"rgba(255,77,77,0.06)",border:"rgba(255,77,77,0.15)",title:"Chevauchement critique",text:`${a.ticker} et ${b.ticker} se recoupent à ${ov}% — doublon inutile. Conservez un seul des deux.`});else if(ov>=60)recs.push({priority:"medium",level:"advanced",color:"#ff9500",bg:"rgba(255,149,0,0.06)",border:"rgba(255,149,0,0.15)",title:"Chevauchement élevé",text:`${a.ticker} et ${b.ticker} partagent ~${ov}% de leurs sous-jacents.`});}
-  if(bondPct===0&&holdings.length>0)recs.push({priority:"medium",level:"advanced",color:T.text3,bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.08)",cat:"bonds",title:"Portefeuille 100% actions",text:"C'est un choix valide, notamment sur un horizon long terme. Des obligations réduiraient la volatilité si vous souhaitez sécuriser une partie du capital."});
+  if(bondPct===0&&holdings.length>0)recs.push({priority:"medium",level:"advanced",color:T.text3,bg:"rgba(255,255,255,0.03)",border:`1px solid ${T.borderSubtle}`,cat:"bonds",title:"Portefeuille 100% actions",text:"C'est un choix valide, notamment sur un horizon long terme. Des obligations réduiraient la volatilité si vous souhaitez sécuriser une partie du capital."});
   else if(bondPct<15&&holdings.length>0)recs.push({priority:"medium",level:"advanced",color:"#ff9500",bg:"rgba(255,149,0,0.06)",border:"rgba(255,149,0,0.15)",cat:"bonds",title:"Faible exposition obligataire",text:`${bondPct.toFixed(0)}% seulement. Une allocation de 20-25% améliorerait la résilience.`});
   if(devW<20&&holdings.length>0)recs.push({priority:"high",level:"essential",color:"#ff4d4d",bg:"rgba(255,77,77,0.06)",border:"rgba(255,77,77,0.15)",cat:"world",title:"Marchés développés absents",text:`Seulement ${devW.toFixed(0)}% en marchés développés (US, Europe, Japon) qui représentent ~80% de la capitalisation mondiale.`});
   else if(usW>80)recs.push({priority:"high",level:"essential",color:"#ff9500",bg:"rgba(255,149,0,0.06)",border:"rgba(255,149,0,0.15)",cat:"europe",title:"Concentration US excessive",text:`${usW.toFixed(0)}% en Amérique du Nord. Ajoutez de l'Europe ou des émergents.`});
@@ -208,15 +216,15 @@ function buildRecs(scores,holdings,total){
   if(commPctR>25)recs.push({priority:"high",level:"essential",color:"#ff4d4d",bg:"rgba(255,77,77,0.06)",border:"rgba(255,77,77,0.15)",cat:"gold",title:"Surexposition matières premières",text:`${commPctR.toFixed(0)}% en matières premières. Au-delà de 15% la volatilité augmente sans rendement garanti.`});
   else if(commPctR>15)recs.push({priority:"medium",level:"advanced",color:"#ff9500",bg:"rgba(255,149,0,0.06)",border:"rgba(255,149,0,0.15)",cat:"gold",title:"Or/matières premières élevé",text:`${commPctR.toFixed(0)}% — une allocation de 5-10% est recommandée comme couverture.`});
   if(rePctR>30)recs.push({priority:"high",level:"essential",color:"#ff4d4d",bg:"rgba(255,77,77,0.06)",border:"rgba(255,77,77,0.15)",cat:"realestate",title:"Surexposition immobilier",text:`${rePctR.toFixed(0)}% en immobilier coté. Les REITs sont très sensibles aux hausses de taux.`});
-  if(emW<8&&devW>=20&&holdings.length>0)recs.push({priority:"medium",level:"advanced",color:T.text3,bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.08)",cat:"emerging",title:"Émergents sous-représentés",text:`${emW.toFixed(0)}% en marchés émergents qui représentent ~40% du PIB mondial.`});
-  if(commPct===0&&holdings.length>=2)recs.push({priority:"low",level:"advanced",color:T.text4,bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.06)",cat:"gold",title:"Or absent",text:"5-10% d'or protège contre l'inflation et les crises systémiques."});
-  if(rePct===0&&holdings.length>=2)recs.push({priority:"low",level:"advanced",color:T.text4,bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.06)",cat:"realestate",title:"Immobilier absent",text:"Les REITs offrent revenus réguliers et décorrélation partielle."});
-  if(usdW>80)recs.push({priority:"medium",level:"advanced",color:T.text3,bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.08)",cat:"eurobonds",title:"Risque USD élevé",text:`${usdW.toFixed(0)}% USD. Une dépréciation du dollar impacte vos rendements en euros.`});
+  if(emW<8&&devW>=20&&holdings.length>0)recs.push({priority:"medium",level:"advanced",color:T.text3,bg:"rgba(255,255,255,0.03)",border:`1px solid ${T.borderSubtle}`,cat:"emerging",title:"Émergents sous-représentés",text:`${emW.toFixed(0)}% en marchés émergents qui représentent ~40% du PIB mondial.`});
+  if(commPct===0&&holdings.length>=2)recs.push({priority:"low",level:"advanced",color:T.text4,bg:"rgba(255,255,255,0.03)",border:`1px solid ${T.borderFaint}`,cat:"gold",title:"Or absent",text:"5-10% d'or protège contre l'inflation et les crises systémiques."});
+  if(rePct===0&&holdings.length>=2)recs.push({priority:"low",level:"advanced",color:T.text4,bg:"rgba(255,255,255,0.03)",border:`1px solid ${T.borderFaint}`,cat:"realestate",title:"Immobilier absent",text:"Les REITs offrent revenus réguliers et décorrélation partielle."});
+  if(usdW>80)recs.push({priority:"medium",level:"advanced",color:T.text3,bg:"rgba(255,255,255,0.03)",border:`1px solid ${T.borderSubtle}`,cat:"eurobonds",title:"Risque USD élevé",text:`${usdW.toFixed(0)}% USD. Une dépréciation du dollar impacte vos rendements en euros.`});
   if(scores.overlap<10&&holdings.length>1)recs.push({priority:"high",level:"essential",color:"#ff4d4d",bg:"rgba(255,77,77,0.06)",border:"rgba(255,77,77,0.15)",title:"Chevauchements massifs",text:`Score chevauchement : ${scores.overlap.toFixed(1)}/20. Vous payez des frais en doublon sans gain de diversification.`});
-  if(bondPctR>60)recs.push({priority:"medium",level:"advanced",color:T.text3,bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.08)",cat:"emerging",title:"Portefeuille très obligataire",text:`${bondPctR.toFixed(0)}% en obligations. Rendement long terme limité — rééquilibrez vers les actions.`});
-  if(scores.currency<8&&holdings.length>0)recs.push({priority:"medium",level:"advanced",color:T.text4,bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.06)",cat:"eurobonds",title:"Dépendance monétaire",text:`Score devises : ${scores.currency.toFixed(1)}/20. Forte concentration sur une devise.`});
-  if(scores.assetClass<8&&holdings.length>1)recs.push({priority:"medium",level:"advanced",color:T.text4,bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.06)",cat:"bonds",title:"Classes d'actifs déséquilibrées",text:`Score : ${scores.assetClass.toFixed(1)}/20. Combinez actions, obligations, immobilier et or.`});
-  if(equityPctR>95&&holdings.length===1)recs.push({priority:"low",level:"advanced",color:T.text4,bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.06)",cat:"bonds",title:"Portefeuille mono-ETF",text:"Bonne base. Ajouter obligations et or renforcerait la résilience."});
+  if(bondPctR>60)recs.push({priority:"medium",level:"advanced",color:T.text3,bg:"rgba(255,255,255,0.03)",border:`1px solid ${T.borderSubtle}`,cat:"emerging",title:"Portefeuille très obligataire",text:`${bondPctR.toFixed(0)}% en obligations. Rendement long terme limité — rééquilibrez vers les actions.`});
+  if(scores.currency<8&&holdings.length>0)recs.push({priority:"medium",level:"advanced",color:T.text4,bg:"rgba(255,255,255,0.03)",border:`1px solid ${T.borderFaint}`,cat:"eurobonds",title:"Dépendance monétaire",text:`Score devises : ${scores.currency.toFixed(1)}/20. Forte concentration sur une devise.`});
+  if(scores.assetClass<8&&holdings.length>1)recs.push({priority:"medium",level:"advanced",color:T.text4,bg:"rgba(255,255,255,0.03)",border:`1px solid ${T.borderFaint}`,cat:"bonds",title:"Classes d'actifs déséquilibrées",text:`Score : ${scores.assetClass.toFixed(1)}/20. Combinez actions, obligations, immobilier et or.`});
+  if(equityPctR>95&&holdings.length===1)recs.push({priority:"low",level:"advanced",color:T.text4,bg:"rgba(255,255,255,0.03)",border:`1px solid ${T.borderFaint}`,cat:"bonds",title:"Portefeuille mono-ETF",text:"Bonne base. Ajouter obligations et or renforcerait la résilience."});
   if(scores.total>=16)recs.push({priority:"success",level:"essential",color:T.accent,bg:"rgba(14,203,129,0.06)",border:"rgba(14,203,129,0.15)",title:"Excellent portefeuille",text:"Diversification optimale. Maintenez et rééquilibrez périodiquement."});
   const order={high:0,medium:1,low:2,success:3};
   return recs.sort((a,b)=>order[a.priority]-order[b.priority]).slice(0,8);
@@ -423,7 +431,7 @@ function InfoModal({label,text,onClose}){
   return createPortal(
     <div onClick={onClose} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999,padding:"0 16px 32px"}}>
       <div onClick={e=>e.stopPropagation()} style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",padding:"12px 20px 24px",width:"100%",maxWidth:430,minHeight:"50vh",animation:"up .28s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
-        <div style={{display:"flex",justifyContent:"center",marginBottom:16}}><div style={{width:36,height:4,borderRadius:2,background:"rgba(255,255,255,0.15)"}}/></div>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:16}}><div style={{width:36,height:4,borderRadius:2,background:T.surfaceActive}}/></div>
         <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text,marginBottom:10}}>{label}</div>
         <p style={{margin:0,fontSize:13,color:T.text3,lineHeight:1.7}}>{text}</p>
       </div>
@@ -472,7 +480,7 @@ function Sheet({children,onClose}){
       <div ref={ref} onClick={e=>e.stopPropagation()} onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
         style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,minHeight:"50vh",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
         <div style={{display:"flex",justifyContent:"center",padding:"12px 0 4px",cursor:"grab"}}>
-          <div style={{width:36,height:4,borderRadius:2,background:"rgba(255,255,255,0.12)"}}/>
+          <div style={{width:36,height:4,borderRadius:2,background:T.surfaceStrong}}/>
         </div>
         {children}
       </div>
@@ -490,13 +498,13 @@ function SuggestionSheet({catalog,onSelect,onClose}){
             <span style={{fontSize:20}}>{catalog.emoji}</span>
             <span style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>{catalog.title}</span>
           </div>
-          <button onClick={onClose} style={{background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+          <button onClick={onClose} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         </div>
         <p style={{margin:"0 0 16px",fontSize:13,color:T.text4,lineHeight:1.65,fontFamily:T.fontText}}>{catalog.why}</p>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           {catalog.options.map(opt=>(
             <button key={opt.ticker} onClick={()=>onSelect(opt.ticker)}
-              style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"13px 14px",cursor:"pointer",textAlign:"left",width:"100%",transition:"all .15s",WebkitTapHighlightColor:"transparent"}}
+              style={{background:T.surface4,border:`0.5px solid ${T.borderSubtle}`,borderRadius:14,padding:"13px 14px",cursor:"pointer",textAlign:"left",width:"100%",transition:"all .15s",WebkitTapHighlightColor:"transparent"}}
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.07)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
@@ -507,7 +515,7 @@ function SuggestionSheet({catalog,onSelect,onClose}){
                 </div>
               </div>
               <div style={{display:"flex",gap:5,flexWrap:"wrap",fontFamily:T.fontText}}>
-                {opt.tags?.map((t,i)=><span key={i} style={{fontSize:10,color:T.text4,background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:20,padding:"2px 8px"}}>{t}</span>)}
+                {opt.tags?.map((t,i)=><span key={i} style={{fontSize:10,color:T.text4,background:T.surface,border:`0.5px solid ${T.borderSubtle}`,borderRadius:20,padding:"2px 8px"}}>{t}</span>)}
               </div>
             </button>
           ))}
@@ -543,7 +551,7 @@ function Search({onAdd,suggestions=[]}){
   };
   const doAdd=()=>{const t=resolved,a=parseFloat(amt);if(!t){setErr("Saisissez un ETF");return;}if(!DB[t]){setErr("ETF introuvable — sélectionnez dans la liste");return;}if(isNaN(a)||a<=0){setErr("Montant invalide");return;}onAdd(t,a);setQ("");setAmt("");setErr("");setOpen(false);setSelectedTicker(null);};
   const onKey=e=>{if(!open||!results.length){if(e.key==="Enter")doAdd();return;}if(e.key==="ArrowDown"){e.preventDefault();setHi(h=>Math.min(h+1,results.length-1));}else if(e.key==="ArrowUp"){e.preventDefault();setHi(h=>Math.max(h-1,0));}else if(e.key==="Enter"){e.preventDefault();const[t,e2]=results[hi];selectItem(t,e2.name);}else if(e.key==="Escape")setOpen(false);};
-  const inp={width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s",fontFamily:T.fontText};
+  const inp={width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"14px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s",fontFamily:T.fontText};
   return(
     <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10}}>
       <div style={{position:"relative"}}>
@@ -551,12 +559,12 @@ function Search({onAdd,suggestions=[]}){
           onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor="rgba(255,255,255,0.25)";}}
           onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
           onKeyDown={onKey} placeholder="Nom, ISIN ou ticker…" style={inp}/>
-        {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);setOpen(false);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>}
+        {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);setOpen(false);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:T.surfaceHover,border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>}
         {open&&results.length>0&&(
-          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,overflow:"hidden",boxShadow:"0 24px 60px rgba(0,0,0,0.8)"}}>
+          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:16,overflow:"hidden",boxShadow:"0 24px 60px rgba(0,0,0,0.8)"}}>
             {results.map(([t,e],i)=>(
               <div key={t} onMouseDown={()=>selectItem(t,e.name)}
-                style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",cursor:"pointer",background:i===hi?"rgba(255,255,255,0.05)":"transparent",borderBottom:"0.5px solid rgba(255,255,255,0.05)",transition:"background .1s"}}>
+                style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",cursor:"pointer",background:i===hi?"rgba(255,255,255,0.05)":"transparent",borderBottom:`0.5px solid ${T.borderFaint}`,transition:"background .1s"}}>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:500,color:T.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginBottom:3}}>{e.name}</div>
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -570,7 +578,7 @@ function Search({onAdd,suggestions=[]}){
           </div>
         )}
         {open&&q.length>=2&&!selectedTicker&&results.length===0&&(
-          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"18px",textAlign:"center"}}>
+          <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:`0.5px solid ${T.borderSubtle}`,borderRadius:16,padding:"18px",textAlign:"center"}}>
             <div style={{fontSize:13,color:T.text4}}>Aucun résultat pour « {q} »</div>
           </div>
         )}
@@ -592,7 +600,7 @@ function Search({onAdd,suggestions=[]}){
           <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
             {suggestions.map(s=>(
               <button key={s.key} onClick={()=>setActiveSug(s.key)}
-                style={{background:"rgba(255,255,255,0.04)",border:`0.5px solid rgba(255,255,255,0.1)`,borderRadius:20,padding:"7px 14px",color:T.textSub,fontSize:12,cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6,transition:"all .15s",WebkitTapHighlightColor:"transparent"}}
+                style={{background:T.surface4,border:`0.5px solid rgba(255,255,255,0.1)`,borderRadius:20,padding:"7px 14px",color:T.textSub,fontSize:12,cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6,transition:"all .15s",WebkitTapHighlightColor:"transparent"}}
                 onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}}
                 onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="rgba(255,255,255,0.6)";}}>
                 <span>{s.emoji}</span><span>{s.title}</span>
@@ -616,7 +624,7 @@ function Tabs({active,onChange,highlight=[]}){
     {id:"about",label:"À propos",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.4"/><line x1="11" y1="10" x2="11" y2="16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="11" cy="7" r="1" fill="currentColor"/></svg>},
   ];
   return(
-    <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:"rgba(5,5,6,0.92)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:"0.5px solid rgba(255,255,255,0.07)",paddingBottom:"env(safe-area-inset-bottom,0px)",zIndex:50}}>
+    <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:"rgba(5,5,6,0.92)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:`0.5px solid ${T.borderFaint}`,paddingBottom:"env(safe-area-inset-bottom,0px)",zIndex:50}}>
       <div style={{display:"flex",padding:"6px 0 2px"}}>
         {tabs.map(t=>{
           const isActive=active===t.id;
@@ -667,7 +675,7 @@ function Disclaimer({onAccept}){
 /* ─── TOAST ──────────────────────────────────────────────────────────────────── */
 function Toast({msg,visible}){
   return(
-    <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${visible?0:12}px)`,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,padding:"11px 18px",zIndex:9000,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:"none",whiteSpace:"nowrap"}}>
+    <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${visible?0:12}px)`,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:"rgba(14,14,14,0.97)",backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:20,padding:"11px 18px",zIndex:9000,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:"none",whiteSpace:"nowrap"}}>
       <div style={{width:6,height:6,borderRadius:"50%",background:T.accent,boxShadow:"0 0 8px #0ecb81",flexShrink:0}}/>
       <span style={{fontSize:13,color:T.text,fontFamily:T.fontText}}>{msg}</span>
     </div>
@@ -720,7 +728,7 @@ function Splash({visible}){
         position:"absolute",bottom:48,
         animation:visible?"splashText .5s ease .8s both":"none",
       }}>
-        <div style={{width:32,height:3,borderRadius:2,background:"rgba(255,255,255,0.1)",overflow:"hidden"}}>
+        <div style={{width:32,height:3,borderRadius:2,background:T.surfaceHover,overflow:"hidden"}}>
           <div style={{height:"100%",background:T.accent,borderRadius:2,animation:visible?"splashBar 1.2s ease .3s both":"none"}}/>
         </div>
       </div>
@@ -865,9 +873,9 @@ function Onboarding({onAdd,onDone}){
       {/* Top nav */}
       <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,display:"flex",justifyContent:"space-between",alignItems:"center",padding:"calc(env(safe-area-inset-top,16px) + 8px) 20px 8px",zIndex:100,pointerEvents:"none"}}>
         <div style={{pointerEvents:"auto"}}>
-          {step>0&&<button onClick={()=>setStep(s=>s-1)} style={{background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:T.textSub,fontSize:20,cursor:"pointer",padding:"6px 14px",lineHeight:1}}>‹</button>}
+          {step>0&&<button onClick={()=>setStep(s=>s-1)} style={{background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,color:T.textSub,fontSize:20,cursor:"pointer",padding:"6px 14px",lineHeight:1}}>‹</button>}
         </div>
-        <button onClick={done} style={{pointerEvents:"auto",background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,color:T.text4,fontSize:12,cursor:"pointer",padding:"6px 14px"}}>Passer</button>
+        <button onClick={done} style={{pointerEvents:"auto",background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,color:T.text4,fontSize:12,cursor:"pointer",padding:"6px 14px"}}>Passer</button>
       </div>
 
       {/* ── UNIFIED TRACK — all 3 slides ── */}
@@ -905,7 +913,7 @@ function Onboarding({onAdd,onDone}){
                       <input type="number" defaultValue={h.amount}
                         onBlur={e=>{const v=parseFloat(e.target.value);if(!isNaN(v)&&v>0)setAdded(prev=>prev.map((x,j)=>j===i?{...x,amount:v}:x));else e.target.value=h.amount;}}
                         onKeyDown={e=>e.key==="Enter"&&e.target.blur()}
-                        style={{width:72,background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"4px 8px",color:T.accent,fontSize:12,fontWeight:600,textAlign:"right",outline:"none",fontFamily:"monospace",WebkitAppearance:"none"}}/>
+                        style={{width:72,background:T.surfaceMed,border:`0.5px solid ${T.border}`,borderRadius:8,padding:"4px 8px",color:T.accent,fontSize:12,fontWeight:600,textAlign:"right",outline:"none",fontFamily:"monospace",WebkitAppearance:"none"}}/>
                       <span style={{fontSize:10,color:T.text5,flexShrink:0}}>€</span>
                       <button onClick={()=>setAdded(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",color:T.text5,fontSize:16,cursor:"pointer",padding:"0 2px",flexShrink:0,lineHeight:1,transition:"color .15s"}} onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.2)"}>×</button>
                     </div>
@@ -920,12 +928,12 @@ function Onboarding({onAdd,onDone}){
                     onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
                     onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);}}
                     placeholder="Nom, ISIN ou ticker…"
-                    style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s"}}/>
-                  {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>}
+                    style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"15px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s"}}/>
+                  {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:T.surfaceHover,border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>}
                   {open&&results.length>0&&(
-                    <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:10,background:"rgba(14,14,14,0.99)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,overflow:"hidden",boxShadow:"0 16px 40px rgba(0,0,0,0.8)"}}>
+                    <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:10,background:"rgba(14,14,14,0.99)",border:`0.5px solid ${T.border}`,borderRadius:14,overflow:"hidden",boxShadow:"0 16px 40px rgba(0,0,0,0.8)"}}>
                       {results.map(([t,e])=>(
-                        <div key={t} onMouseDown={()=>selectItem(t,e.name)} style={{padding:"13px 16px",cursor:"pointer",borderBottom:"0.5px solid rgba(255,255,255,0.05)",transition:"background .1s"}} onMouseEnter={ev=>ev.currentTarget.style.background="rgba(255,255,255,0.05)"} onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
+                        <div key={t} onMouseDown={()=>selectItem(t,e.name)} style={{padding:"13px 16px",cursor:"pointer",borderBottom:`0.5px solid ${T.borderFaint}`,transition:"background .1s"}} onMouseEnter={ev=>ev.currentTarget.style.background="rgba(255,255,255,0.05)"} onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
                           <div style={{fontSize:13,fontWeight:500,color:T.text,marginBottom:3}}>{e.name}</div>
                           <div style={{fontSize:10,color:T.text5,fontFamily:"monospace"}}>{e.isin} · {ASSET_LABELS[e.assetClass]||e.assetClass}</div>
                         </div>
@@ -939,7 +947,7 @@ function Onboarding({onAdd,onDone}){
                     onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);if(selectedTicker&&parseFloat(amt)>0)addOne();}}
                     onFocus={e=>{e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
                     inputMode="decimal" placeholder="Montant investi"
-                    style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"15px 36px 15px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
+                    style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"15px 36px 15px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
                   <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:T.text4,fontWeight:500,pointerEvents:"none"}}>€</span>
                 </div>
                 {err&&<div style={{fontSize:13,color:T.danger,padding:"10px 14px",background:T.dangerBg,border:`0.5px solid ${T.dangerBorder}`,borderRadius:10}}>{err}</div>}
@@ -947,7 +955,7 @@ function Onboarding({onAdd,onDone}){
                   <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Populaires</div>
                   <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                     {[{t:"IWDA",l:"iShares Monde"},{t:"VWCE",l:"Vanguard All-World"},{t:"MWRD",l:"Amundi Monde PEA"},{t:"PAEEM",l:"Émergents PEA"}].map(({t,l})=>(
-                      <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)} style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:20,padding:"6px 14px",color:T.text3,fontSize:12,cursor:"pointer",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}>
+                      <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)} style={{background:T.surface4,border:`0.5px solid ${T.border}`,borderRadius:20,padding:"6px 14px",color:T.text3,fontSize:12,cursor:"pointer",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}>
                         {l}
                       </button>
                     ))}
@@ -969,7 +977,7 @@ function Onboarding({onAdd,onDone}){
           <Dots/>
           {step<2?(
             <button onClick={()=>setStep(s=>s+1)}
-              style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"17px",color:T.text2,fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .15s"}}
+              style={{width:"100%",background:T.surfaceMed,border:`0.5px solid ${T.border}`,borderRadius:16,padding:"17px",color:T.text2,fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .15s"}}
               onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
               onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}>
               Suivant
@@ -1045,7 +1053,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
             <div style={{fontSize:15,fontWeight:700,color:T.text}}>Plan d'investissement</div>
             <div style={{fontSize:12,color:T.text4,marginTop:2}}>{etf?.name||ticker}</div>
           </div>
-          <button onClick={onClose} style={{background:"rgba(255,255,255,0.08)",border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+          <button onClick={onClose} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         </div>
 
         {/* Frequency selector */}
@@ -1065,7 +1073,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
           <input type="number" value={amount} onChange={e=>setAmount(e.target.value)}
             placeholder="0"
             inputMode="decimal"
-            style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 36px 14px 16px",color:T.text,fontSize:20,fontWeight:700,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s"}}
+            style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"14px 36px 14px 16px",color:T.text,fontSize:20,fontWeight:700,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s"}}
             onFocus={e=>e.target.style.borderColor="rgba(14,203,129,0.4)"}
             onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
           <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:16,color:T.text5,fontWeight:500,pointerEvents:"none"}}>€</span>
@@ -1075,7 +1083,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
         <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Prochaine exécution</div>
         <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
           min={new Date().toISOString().split("T")[0]}
-          style={{width:"100%",background:"rgba(255,255,255,0.05)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:14,padding:"14px 16px",color:T.text2,fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:"dark"}}/>
+          style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"14px 16px",color:T.text2,fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:"dark"}}/>
 
         {/* Preview */}
         {preview&&startDate&&(
@@ -1256,7 +1264,7 @@ export default function App(){
                 <span style={{fontSize:9,color:T.text5}}>/20</span>
               </div>
             )}
-            <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",background:"rgba(255,255,255,0.04)",borderRadius:20,border:"0.5px solid rgba(255,255,255,0.08)"}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",background:T.surface4,borderRadius:20,border:`0.5px solid ${T.borderSubtle}`}}>
               <div style={{width:5,height:5,borderRadius:"50%",background:saved?"#0ecb81":"#f0b90b",boxShadow:saved?"0 0 6px #0ecb8166":"0 0 6px #f0b90b66",transition:"all .4s",flexShrink:0}}/>
               <span style={{fontSize:11,color:T.text4,letterSpacing:.3,lineHeight:1}}>
                 {saved?"Sync"+(savedAt?" · "+savedAt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):""):"..."}
@@ -1300,7 +1308,7 @@ export default function App(){
               <Glass style={{padding:"28px 16px 24px"}}>
                 <div style={{display:"flex",justifyContent:"space-around",alignItems:"flex-start"}}>
                   <ScoreArc value={scores.geo} label="Géographique"/>
-                  <div style={{width:"0.5px",background:"rgba(255,255,255,0.06)",alignSelf:"stretch",margin:"10px 0"}}/>
+                  <div style={{width:"0.5px",background:T.surfaceMed,alignSelf:"stretch",margin:"10px 0"}}/>
                   <ScoreArc value={scores.sector} label="Sectorielle"/>
                 </div>
               </Glass>
@@ -1317,11 +1325,11 @@ export default function App(){
                     <MiniBar label="Devises" value={scores.currency} weight="15%"/>
                   </div>
                   {Object.keys(scores.classes).length>0&&(
-                    <div style={{marginTop:18,paddingTop:16,borderTop:"0.5px solid rgba(255,255,255,0.06)"}}>
+                    <div style={{marginTop:18,paddingTop:16,borderTop:`0.5px solid ${T.borderFaint}`}}>
                       <div style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Classes d'actifs</div>
                       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                         {Object.entries(scores.classes).sort((a,b)=>b[1]-a[1]).map(([cls,pct])=>(
-                          <div key={cls} style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:20,padding:"5px 12px",display:"flex",alignItems:"center",gap:6}}>
+                          <div key={cls} style={{background:T.surface4,border:`0.5px solid ${T.borderSubtle}`,borderRadius:20,padding:"5px 12px",display:"flex",alignItems:"center",gap:6}}>
                             <div style={{width:5,height:5,borderRadius:"50%",background:ASSET_COLORS[cls]||"rgba(255,255,255,0.5)"}}/>
                             <span style={{fontSize:11,color:T.textSub}}>{ASSET_LABELS[cls]||cls}</span>
                             <span style={{fontFamily:T.fontDisplay,fontSize:11,color:ASSET_COLORS[cls]||"rgba(255,255,255,0.7)",fontWeight:700}}>{pct.toFixed(0)}%</span>
@@ -1389,7 +1397,7 @@ export default function App(){
                   {/* Toggle avancé */}
                   {recs.filter(r=>r.level==="advanced").length>0&&(
                     <button onClick={()=>setRecMode(m=>m==="essential"?"advanced":"essential")}
-                      style={{background:"rgba(255,255,255,0.03)",border:"0.5px solid rgba(255,255,255,0.07)",borderRadius:12,padding:"11px 16px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",WebkitTapHighlightColor:"transparent"}}>
+                      style={{background:T.surfaceFaint,border:"0.5px solid rgba(255,255,255,0.07)",borderRadius:12,padding:"11px 16px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",WebkitTapHighlightColor:"transparent"}}>
                       <span style={{fontSize:12,color:T.text4}}>
                         {recMode==="essential"?`Analyse avancée · ${recs.filter(r=>r.level==="advanced").length} points`:"Masquer l'analyse avancée"}
                       </span>
@@ -1397,7 +1405,7 @@ export default function App(){
                     </button>
                   )}
                   {recMode==="advanced"&&recs.filter(r=>r.level==="advanced").map((r,i)=>(
-                    <div key={i} style={{background:"rgba(255,255,255,0.03)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"14px 16px",animation:"up .3s cubic-bezier(.16,1,.3,1)"}}>
+                    <div key={i} style={{background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:16,padding:"14px 16px",animation:"up .3s cubic-bezier(.16,1,.3,1)"}}>
                       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
                         <div style={{color:T.text4,flexShrink:0}}>{REC_ICONS[r.icon]||REC_ICONS.geo}</div>
                         <div style={{fontFamily:T.fontDisplay,fontSize:13,fontWeight:600,color:T.text2}}>{r.title}</div>
@@ -1436,7 +1444,7 @@ export default function App(){
                         {label:"Marchés dév.",value:((scores.geoMap["Amér. du Nord"]||0)+(["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(scores.geoMap[k]||0),0))+(scores.geoMap["Japon"]||0)).toFixed(0),unit:"%"},
                         {label:"Marchés ém.",value:(["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie","Afrique du Sud","Émirats Arabes","Autres EMEA"].reduce((s,k)=>s+(scores.geoMap[k]||0),0)).toFixed(0),unit:"%"},
                       ].map(({label,value,unit,color})=>(
-                        <div key={label} style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"12px 14px"}}>
+                        <div key={label} style={{background:T.surfaceFaint,borderRadius:12,padding:"12px 14px"}}>
                           <div style={{fontSize:9,color:T.text5,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
                           <div style={{fontSize:22,fontWeight:700,color:color||"#fff",letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:T.text4,fontWeight:400}}>{unit}</span></div>
                         </div>
@@ -1462,7 +1470,7 @@ export default function App(){
                         {label:"Secteur dominant",value:Object.entries(scores.secMap).sort((a,b)=>b[1]-a[1])[0]?.[1].toFixed(0)||0,unit:"%"},
                         {label:"Technologie",value:(scores.secMap["Technologie"]||0).toFixed(0),unit:"%",color:(scores.secMap["Technologie"]||0)>35?"#ff4d4d":undefined},
                       ].map(({label,value,unit,color})=>(
-                        <div key={label} style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"12px 14px"}}>
+                        <div key={label} style={{background:T.surfaceFaint,borderRadius:12,padding:"12px 14px"}}>
                           <div style={{fontSize:9,color:T.text5,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
                           <div style={{fontSize:22,fontWeight:700,color:color||"#fff",letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:T.text4,fontWeight:400}}>{unit}</span></div>
                         </div>
@@ -1512,7 +1520,7 @@ export default function App(){
                               onFocus={()=>setEditAmt(p=>({...p,[h.ticker]:String(holdingsWithPlan.find(x=>x.ticker===h.ticker)?.amount||h.amount)}))}
                               onChange={e=>setEditAmt(p=>({...p,[h.ticker]:e.target.value}))}
                               onBlur={()=>{updateAmount(h.ticker,editAmt[h.ticker]);setEditAmt(p=>{const n={...p};delete n[h.ticker];return n;});}}
-                              style={{width:72,background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"5px 8px",color:T.text,fontSize:12,textAlign:"right",fontFamily:"monospace"}}/>
+                              style={{width:72,background:T.surface4,border:`0.5px solid ${T.borderSubtle}`,borderRadius:8,padding:"5px 8px",color:T.text,fontSize:12,textAlign:"right",fontFamily:"monospace"}}/>
                             <span style={{fontSize:10,color:T.text5,flexShrink:0}}>€</span>
                             {/* Plan button */}
                             <button onClick={()=>setEditPlan(h.ticker)}
@@ -1525,7 +1533,7 @@ export default function App(){
                           </div>
                           {/* Plan summary if configured */}
                           {plans[h.ticker]&&(()=>{const s=planStats(plans[h.ticker]);return s?(
-                            <div style={{marginTop:10,paddingTop:10,borderTop:"0.5px solid rgba(255,255,255,0.06)"}}>
+                            <div style={{marginTop:10,paddingTop:10,borderTop:`0.5px solid ${T.borderFaint}`}}>
                               {/* Ligne 1 — fréquence + prochain versement */}
                               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
                                 <div style={{display:"flex",alignItems:"center",gap:5}}>
@@ -1627,7 +1635,7 @@ export default function App(){
 
               {/* Reset onboarding */}
               <button onClick={()=>{localStorage.removeItem("etf-onboarding-seen");window.location.reload();}}
-                style={{background:"rgba(255,255,255,0.03)",border:"0.5px solid rgba(255,255,255,0.07)",borderRadius:16,padding:"15px 20px",color:T.text4,fontSize:13,cursor:"pointer",textAlign:"left",width:"100%"}}>
+                style={{background:T.surfaceFaint,border:"0.5px solid rgba(255,255,255,0.07)",borderRadius:16,padding:"15px 20px",color:T.text4,fontSize:13,cursor:"pointer",textAlign:"left",width:"100%"}}>
                 Revoir l'onboarding
               </button>
             </div>
@@ -1662,7 +1670,7 @@ export default function App(){
             <div style={{fontSize:13,color:T.text4,marginBottom:24,lineHeight:1.65}}>Toutes vos positions seront supprimées. Irréversible.</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <button onClick={()=>{setHoldings([]);setConfirmReset(false);}} style={{background:"rgba(255,77,77,0.1)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:14,padding:"15px",color:"#ff4d4d",fontSize:15,fontWeight:600,cursor:"pointer",width:"100%",fontFamily:T.fontDisplay}}>Effacer tout</button>
-              <button onClick={()=>setConfirmReset(false)} style={{background:"rgba(255,255,255,0.04)",border:"0.5px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"15px",color:T.text3,fontSize:15,cursor:"pointer",width:"100%"}}>Annuler</button>
+              <button onClick={()=>setConfirmReset(false)} style={{background:T.surface4,border:`0.5px solid ${T.borderSubtle}`,borderRadius:14,padding:"15px",color:T.text3,fontSize:15,cursor:"pointer",width:"100%"}}>Annuler</button>
             </div>
           </div>
         </Sheet>
