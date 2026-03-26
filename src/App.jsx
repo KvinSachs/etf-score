@@ -1469,7 +1469,7 @@ export default function App(){
                       ].map(({label,value,unit,color})=>(
                         <div key={label} style={{background:T.surfaceFaint,borderRadius:12,padding:"12px 14px"}}>
                           <div style={{fontSize:9,color:T.text5,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
-                          <div style={{fontSize:22,fontWeight:700,color:color||"#fff",letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:T.text4,fontWeight:400}}>{unit}</span></div>
+                          <div style={{fontSize:22,fontWeight:700,color:color||T.text,letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:T.text4,fontWeight:400}}>{unit}</span></div>
                         </div>
                       ))}
                     </div>
@@ -1495,7 +1495,7 @@ export default function App(){
                       ].map(({label,value,unit,color})=>(
                         <div key={label} style={{background:T.surfaceFaint,borderRadius:12,padding:"12px 14px"}}>
                           <div style={{fontSize:9,color:T.text5,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
-                          <div style={{fontSize:22,fontWeight:700,color:color||"#fff",letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:T.text4,fontWeight:400}}>{unit}</span></div>
+                          <div style={{fontSize:22,fontWeight:700,color:color||T.text,letterSpacing:-.5}}>{value}<span style={{fontSize:12,color:T.text4,fontWeight:400}}>{unit}</span></div>
                         </div>
                       ))}
                     </div>
