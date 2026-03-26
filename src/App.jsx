@@ -150,17 +150,17 @@ const T_LIGHT = {
   borderSubtle: "rgba(0,0,0,0.1)",
   surface4:     "rgba(0,0,0,0.04)",
   text:         "#000000",
-  textSub:      "rgba(0,0,0,0.75)",   // AA ✓ — texte secondaire lisible
-  textMuted:    "rgba(0,0,0,0.62)",   // AA ✓ — texte tertiaire
-  textFaint:    "rgba(0,0,0,0.55)",   // AA ✓ — labels, metadata
-  textGhost:    "rgba(0,0,0,0.50)",   // AA ✓ borderline — placeholders
-  textDisabled: "rgba(0,0,0,0.38)",   // AA large text ✓ — hints, uppercase labels
-  text0:        "rgba(0,0,0,0.75)",
-  text1:        "rgba(0,0,0,0.85)",
-  text2:        "rgba(0,0,0,0.65)",
-  text3:        "rgba(0,0,0,0.50)",
-  text4:        "rgba(0,0,0,0.42)",
-  text5:        "rgba(0,0,0,0.32)",
+  textSub:      "rgba(0,0,0,0.82)",
+  textMuted:    "rgba(0,0,0,0.70)",
+  textFaint:    "rgba(0,0,0,0.62)",
+  textGhost:    "rgba(0,0,0,0.56)",
+  textDisabled: "rgba(0,0,0,0.45)",
+  text0:        "rgba(0,0,0,0.80)",
+  text1:        "rgba(0,0,0,0.90)",
+  text2:        "rgba(0,0,0,0.72)",
+  text3:        "rgba(0,0,0,0.58)",
+  text4:        "rgba(0,0,0,0.50)",
+  text5:        "rgba(0,0,0,0.40)",
   indicatorTrack: "rgba(0,0,0,0.08)",
   arcTrack:       "rgba(0,0,0,0.12)",
 };
@@ -515,7 +515,20 @@ function SuggestionSheet({catalog,onSelect,onClose}){
                 </div>
               </div>
               <div style={{display:"flex",gap:5,flexWrap:"wrap",fontFamily:T.fontText}}>
-                {opt.tags?.map((t,i)=><span key={i} style={{fontSize:10,color:T.text4,background:T.surface,border:`0.5px solid ${T.borderSubtle}`,borderRadius:20,padding:"2px 8px"}}>{t}</span>)}
+                {opt.tags?.map((t,i)=>{
+                  const isStar=t.includes("⭐");
+                  return(
+                    <span key={i} style={{
+                      fontSize:10,
+                      color:isStar?T.accent:T.text4,
+                      background:isStar?T.accentBg:T.surface,
+                      border:`0.5px solid ${isStar?T.accentBorder:T.borderSubtle}`,
+                      borderRadius:20,
+                      padding:"2px 8px",
+                      fontWeight:isStar?600:400,
+                    }}>{t}</span>
+                  );
+                })}
               </div>
             </button>
           ))}
@@ -1217,7 +1230,7 @@ export default function App(){
         ${FONTS}
         *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
         input{outline:none;-webkit-appearance:none}
-        input::placeholder{color:rgba(255,255,255,0.2)}
+        input::placeholder{color:${T.text5}}
         input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         button{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
         @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
