@@ -125,6 +125,7 @@ const T = {
   text4:        "rgba(255,255,255,0.4)",
   text5:        "rgba(255,255,255,0.25)",
   indicatorTrack: "rgba(255,255,255,0.06)",
+  arcTrack:       "rgba(255,255,255,0.06)",
 };
 
 const T_DARK = {...T}; // immutable copy of dark theme
@@ -153,6 +154,7 @@ const T_LIGHT = {
   text4:        "rgba(0,0,0,0.42)",
   text5:        "rgba(0,0,0,0.32)",
   indicatorTrack: "rgba(0,0,0,0.08)",
+  arcTrack:       "rgba(0,0,0,0.12)",
 };
 
 
@@ -323,7 +325,7 @@ function ScoreArc({value,label,size=150}){
         <div style={{position:"absolute",inset:0,borderRadius:"50%",background:`radial-gradient(circle at center,${g.glow} 0%,transparent 65%)`,pointerEvents:"none"}}/>
         <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"relative"}}>
           <defs><linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor={g.stroke} stopOpacity="0.4"/><stop offset="100%" stopColor={g.stroke}/></linearGradient></defs>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6"/>
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={T.arcTrack} strokeWidth="6"/>
           <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`url(#${id})`} strokeWidth="6"
             strokeDasharray={`${(value/20)*circ} ${(1-value/20)*circ}`} strokeLinecap="round"
             style={{transition:"stroke-dasharray 1s cubic-bezier(.16,1,.3,1)",filter:`drop-shadow(0 0 6px ${g.stroke})`}}/>
@@ -428,7 +430,7 @@ function InfoModal({label,text,onClose}){
     </div>
   , document.body);
 }
-function IBtn({label,text}){const[s,ss]=useState(false);return(<><button onClick={()=>ss(true)} style={{background:"none",border:"none",cursor:"pointer",padding:"0 0 0 5px",display:"inline-flex",alignItems:"center",opacity:.5}}><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" stroke="rgba(255,255,255,0.6)" strokeWidth="1"/><text x="6" y="9.5" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="7.5" fontFamily="system-ui" fontWeight="600">i</text></svg></button>{s&&<InfoModal label={label} text={text} onClose={()=>ss(false)}/>}</>);}
+function IBtn({label,text}){const[s,ss]=useState(false);return(<><button onClick={()=>ss(true)} style={{background:"none",border:"none",cursor:"pointer",padding:"0 0 0 5px",display:"inline-flex",alignItems:"center",opacity:.5}}><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" stroke={T.text3} strokeWidth="1"/><text x="6" y="9.5" textAnchor="middle" fill={T.text2} fontSize="7.5" fontFamily="system-ui" fontWeight="600">i</text></svg></button>{s&&<InfoModal label={label} text={text} onClose={()=>ss(false)}/>}</>);}
 
 function ColorBars({data,title,infoMap={}}){
   const sorted=Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,9);
@@ -447,7 +449,7 @@ function ColorBars({data,title,infoMap={}}){
                 </div>
                 <span style={{fontFamily:T.fontDisplay,fontSize:13,color:BARS[i%BARS.length],fontWeight:700}}>{v.toFixed(1)}%</span>
               </div>
-              <div style={{height:2,background:"rgba(255,255,255,0.05)",borderRadius:1,overflow:"hidden"}}>
+              <div style={{height:2,background:T.indicatorTrack,borderRadius:1,overflow:"hidden"}}>
                 <div style={{height:"100%",width:`${(v/max)*100}%`,background:BARS[i%BARS.length],borderRadius:1,transition:"width .8s cubic-bezier(.16,1,.3,1)",boxShadow:`0 0 8px ${BARS[i%BARS.length]}55`}}/>
               </div>
             </div>
