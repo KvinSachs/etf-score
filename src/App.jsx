@@ -87,6 +87,9 @@ const STORAGE_KEY = "etf-portfolio-v2";
 const T = {
   bg:           "#050506",
   bgElevated:   "rgba(14,14,14,0.97)",
+  bgBlur:       "rgba(5,5,6,0.6)",
+  bgHeader:     "rgba(5,5,6,0.8)",
+  bgTabBar:     "rgba(5,5,6,0.92)",
   bgOverlay:    "rgba(0,0,0,0.65)",
   surface:      "rgba(255,255,255,0.05)",
   surfaceHover: "rgba(255,255,255,0.08)",
@@ -138,6 +141,9 @@ const T_LIGHT = {
   ...T_DARK,
   bg:           "#f2f2f7",
   bgElevated:   "#ffffff",
+  bgBlur:       "rgba(242,242,247,0.85)",
+  bgHeader:     "rgba(242,242,247,0.92)",
+  bgTabBar:     "rgba(242,242,247,0.95)",
   bgOverlay:    "rgba(0,0,0,0.4)",
   surface:      "rgba(0,0,0,0.05)",
   surfaceHover: "rgba(0,0,0,0.08)",
@@ -613,9 +619,9 @@ function Search({onAdd,suggestions=[]}){
           <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
             {suggestions.map(s=>(
               <button key={s.key} onClick={()=>setActiveSug(s.key)}
-                style={{background:T.surface4,border:`0.5px solid rgba(255,255,255,0.1)`,borderRadius:20,padding:"7px 14px",color:T.textSub,fontSize:12,cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6,transition:"all .15s",WebkitTapHighlightColor:"transparent"}}
-                onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="rgba(255,255,255,0.6)";}}>
+                style={{background:T.surface4,border:`0.5px solid ${T.borderSubtle}`,borderRadius:20,padding:"7px 14px",color:T.textSub,fontSize:12,cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6,transition:"all .15s",WebkitTapHighlightColor:"transparent"}}
+                onMouseEnter={e=>{e.currentTarget.style.background=T.surfaceHover;e.currentTarget.style.color=T.text;}}
+                onMouseLeave={e=>{e.currentTarget.style.background=T.surface4;e.currentTarget.style.color=T.textSub;}}>
                 <span>{s.emoji}</span><span>{s.title}</span>
               </button>
             ))}
@@ -637,7 +643,7 @@ function Tabs({active,onChange,highlight=[]}){
     {id:"about",label:"À propos",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.4"/><line x1="11" y1="10" x2="11" y2="16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="11" cy="7" r="1" fill="currentColor"/></svg>},
   ];
   return(
-    <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:"rgba(5,5,6,0.92)",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:`0.5px solid ${T.borderFaint}`,paddingBottom:"env(safe-area-inset-bottom,0px)",zIndex:50}}>
+    <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:T.bgTabBar,backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:`0.5px solid ${T.borderFaint}`,paddingBottom:"env(safe-area-inset-bottom,0px)",zIndex:50}}>
       <div style={{display:"flex",padding:"6px 0 2px"}}>
         {tabs.map(t=>{
           const isActive=active===t.id;
@@ -699,7 +705,7 @@ function Toast({msg,visible}){
 function Splash({visible}){
   return(
     <div style={{
-      position:"fixed",inset:0,background:"#050506",
+      position:"fixed",inset:0,background:T.bg,
       display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
       zIndex:999999,
       opacity:visible?1:0,
@@ -863,7 +869,7 @@ function Onboarding({onAdd,onDone}){
   const Dots=()=>(
     <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:32}}>
       {[0,1,2].map(i=>(
-        <div key={i} onClick={()=>{ if(i<2)setStep(i); }} style={{width:i===step?24:6,height:6,borderRadius:3,background:i===step?"#0ecb81":"rgba(255,255,255,0.12)",transition:"all .3s cubic-bezier(.16,1,.3,1)",cursor:i<2?"pointer":"default"}}/>
+        <div key={i} onClick={()=>{ if(i<2)setStep(i); }} style={{width:i===step?24:6,height:6,borderRadius:3,background:i===step?T.accent:T.borderSubtle,transition:"all .3s cubic-bezier(.16,1,.3,1)",cursor:i<2?"pointer":"default"}}/>
       ))}
     </div>
   );
@@ -872,13 +878,13 @@ function Onboarding({onAdd,onDone}){
   const TOTAL_SLIDES = 3;
 
   return(
-    <div style={{position:"fixed",inset:0,background:"#050506",zIndex:99998,display:"flex",flexDirection:"column",maxWidth:430,margin:"0 auto",overflow:"hidden"}}
+    <div style={{position:"fixed",inset:0,background:T.bg,zIndex:99998,display:"flex",flexDirection:"column",maxWidth:430,margin:"0 auto",overflow:"hidden"}}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}>
 
       {/* ETF added toast */}
-      <div style={{position:"fixed",top:`calc(env(safe-area-inset-top,16px) + 60px)`,left:"50%",transform:`translateX(-50%) translateY(${showCheck?0:-16}px)`,opacity:showCheck?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:"rgba(14,203,129,0.15)",backdropFilter:"blur(20px)",border:"0.5px solid rgba(14,203,129,0.4)",borderRadius:20,padding:"10px 18px",zIndex:200,display:"flex",alignItems:"center",gap:8,pointerEvents:"none",whiteSpace:"nowrap"}}>
+      <div style={{position:"fixed",top:`calc(env(safe-area-inset-top,16px) + 60px)`,left:"50%",transform:`translateX(-50%) translateY(${showCheck?0:-16}px)`,opacity:showCheck?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:T.accentBg,backdropFilter:"blur(20px)",border:`0.5px solid ${T.accentBorder}`,borderRadius:20,padding:"10px 18px",zIndex:200,display:"flex",alignItems:"center",gap:8,pointerEvents:"none",whiteSpace:"nowrap"}}>
         <div style={{width:16,height:16,borderRadius:"50%",background:T.accent,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
         <span style={{fontSize:13,color:T.accent,fontWeight:600}}>ETF ajouté au portefeuille</span>
       </div>
@@ -886,9 +892,9 @@ function Onboarding({onAdd,onDone}){
       {/* Top nav */}
       <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,display:"flex",justifyContent:"space-between",alignItems:"center",padding:"calc(env(safe-area-inset-top,16px) + 8px) 20px 8px",zIndex:100,pointerEvents:"none"}}>
         <div style={{pointerEvents:"auto"}}>
-          {step>0&&<button onClick={()=>setStep(s=>s-1)} style={{background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,color:T.textSub,fontSize:20,cursor:"pointer",padding:"6px 14px",lineHeight:1}}>‹</button>}
+          {step>0&&<button onClick={()=>setStep(s=>s-1)} style={{background:T.bgBlur,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,color:T.textSub,fontSize:20,cursor:"pointer",padding:"6px 14px",lineHeight:1}}>‹</button>}
         </div>
-        <button onClick={done} style={{pointerEvents:"auto",background:"rgba(5,5,6,0.6)",backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,color:T.text4,fontSize:12,cursor:"pointer",padding:"6px 14px"}}>Passer</button>
+        <button onClick={done} style={{pointerEvents:"auto",background:T.bgBlur,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,color:T.text4,fontSize:12,cursor:"pointer",padding:"6px 14px"}}>Passer</button>
       </div>
 
       {/* ── UNIFIED TRACK — all 3 slides ── */}
@@ -918,7 +924,7 @@ function Onboarding({onAdd,onDone}){
               {added.length>0&&(
                 <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:6}}>
                   {added.map((h,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:10,background:lastAdded===i?"rgba(14,203,129,0.12)":"rgba(14,203,129,0.06)",border:`0.5px solid ${lastAdded===i?"rgba(14,203,129,0.4)":"rgba(14,203,129,0.15)"}`,borderRadius:12,padding:"10px 14px",animation:lastAdded===i?"popIn .4s cubic-bezier(.16,1,.3,1)":"none",boxShadow:lastAdded===i?"0 0 16px rgba(14,203,129,0.2)":"none",transition:"background .4s,border .4s,box-shadow .4s"}}>
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:10,background:lastAdded===i?T.accentBg:T.surfaceFaint,border:`0.5px solid ${lastAdded===i?"rgba(14,203,129,0.4)":"rgba(14,203,129,0.15)"}`,borderRadius:12,padding:"10px 14px",animation:lastAdded===i?"popIn .4s cubic-bezier(.16,1,.3,1)":"none",boxShadow:lastAdded===i?"0 0 16px rgba(14,203,129,0.2)":"none",transition:"background .4s,border .4s,box-shadow .4s"}}>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:12,fontWeight:500,color:T.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{h.name}</div>
                         <div style={{fontSize:10,color:T.text4,marginTop:2}}>{h.ticker}</div>
@@ -985,8 +991,8 @@ function Onboarding({onAdd,onDone}){
 
       {/* ── FIXED BOTTOM CONTROLS — outside track, same position on all 3 slides ── */}
       <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:10}}>
-        <div style={{height:48,background:"linear-gradient(to bottom,transparent,#050506)",pointerEvents:"none"}}/>
-        <div style={{background:"#050506",padding:"4px 24px 40px"}}>
+        <div style={{height:48,background:`linear-gradient(to bottom,transparent,${T.bg})`,pointerEvents:"none"}}/>
+        <div style={{background:T.bg,padding:"4px 24px 40px"}}>
           <Dots/>
           {step<2?(
             <button onClick={()=>setStep(s=>s+1)}
@@ -1259,7 +1265,7 @@ export default function App(){
 
       <div style={{position:"relative",zIndex:1}}>
         {/* ── HEADER ── */}
-        <header style={{padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",background:"rgba(5,5,6,0.8)",position:"sticky",top:0,zIndex:50}}>
+        <header style={{padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",background:T.bgHeader,position:"sticky",top:0,zIndex:50}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <img src="/icon-180.png" alt="" style={{width:30,height:30,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.target.style.display="none";}}/>
             <div>
