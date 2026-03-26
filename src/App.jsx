@@ -1615,15 +1615,28 @@ export default function App(){
                 </Glass>
               )}
 
-              {/* Legal */}
-              <Glass style={{padding:"20px"}}>
-                <div style={{fontSize:10,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Mentions légales</div>
-                <p style={{margin:"0 0 14px",fontSize:13,color:T.text4,lineHeight:1.7}}>
-                  ETF Score est un outil d'analyse personnel. Les scores, indicateurs et suggestions affichés <strong style={{color:T.textSub}}>ne constituent pas un conseil en investissement</strong> au sens de la réglementation AMF.
-                </p>
-                <p style={{margin:0,fontSize:13,color:T.text4,lineHeight:1.7}}>
-                  Tout investissement comporte un risque de perte en capital. Consultez un conseiller financier agréé avant toute décision d'investissement.
-                </p>
+              {/* Appearance */}
+              <Glass style={{padding:"18px 20px"}}> 
+                <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Paramètres</div>
+                <div style={{display:"flex",gap:8}}>
+                  {[{id:true,label:"Sombre",icon:"🌙",badge:null},{id:false,label:"Claire",icon:"☀️",badge:"Alpha"}].map(opt=>(
+                    <button key={String(opt.id)} onClick={()=>{setDarkMode(opt.id);localStorage.setItem('etf-theme',opt.id?'dark':'light');}}
+                      style={{
+                        flex:1,padding:"12px 8px",borderRadius:T.radiusSm,cursor:"pointer",
+                        background:darkMode===opt.id?T.accentBg:T.surfaceFaint,
+                        border:`0.5px solid ${darkMode===opt.id?T.accentBorder:T.borderSubtle}`,
+                        display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,
+                        transition:"all .15s",
+                        minHeight:80,
+                      }}>
+                      <span style={{fontSize:20}}>{opt.icon}</span>
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                        <span style={{fontSize:12,fontWeight:darkMode===opt.id?600:400,color:darkMode===opt.id?T.accent:T.textGhost}}>{opt.label}</span>
+                        {opt.badge&&<span style={{fontSize:9,fontWeight:600,color:T.warning,background:T.warningBg,border:`0.5px solid ${T.warningBorder}`,borderRadius:4,padding:"1px 5px",letterSpacing:.5}}>{opt.badge}</span>}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </Glass>
 
               {/* Reset onboarding */}
@@ -1653,30 +1666,6 @@ export default function App(){
                 <p style={{margin:0,fontSize:13,color:T.text4,lineHeight:1.7}}>
                   Tout investissement comporte un risque de perte en capital. Consultez un conseiller financier agréé avant toute décision d'investissement.
                 </p>
-              </Glass>
-
-              {/* Appearance */}
-              <Glass style={{padding:"18px 20px"}}> 
-                <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Paramètres</div>
-                <div style={{display:"flex",gap:8}}>
-                  {[{id:true,label:"Sombre",icon:"🌙",badge:null},{id:false,label:"Claire",icon:"☀️",badge:"Alpha"}].map(opt=>(
-                    <button key={String(opt.id)} onClick={()=>{setDarkMode(opt.id);localStorage.setItem('etf-theme',opt.id?'dark':'light');}}
-                      style={{
-                        flex:1,padding:"12px 8px",borderRadius:T.radiusSm,cursor:"pointer",
-                        background:darkMode===opt.id?T.accentBg:T.surfaceFaint,
-                        border:`0.5px solid ${darkMode===opt.id?T.accentBorder:T.borderSubtle}`,
-                        display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,
-                        transition:"all .15s",
-                        minHeight:80,
-                      }}>
-                      <span style={{fontSize:20}}>{opt.icon}</span>
-                      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                        <span style={{fontSize:12,fontWeight:darkMode===opt.id?600:400,color:darkMode===opt.id?T.accent:T.textGhost}}>{opt.label}</span>
-                        {opt.badge&&<span style={{fontSize:9,fontWeight:600,color:T.warning,background:T.warningBg,border:`0.5px solid ${T.warningBorder}`,borderRadius:4,padding:"1px 5px",letterSpacing:.5}}>{opt.badge}</span>}
-                      </div>
-                    </button>
-                  ))}
-                </div>
               </Glass>
 
               {/* Data disclaimer */}
