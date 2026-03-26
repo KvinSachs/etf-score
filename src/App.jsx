@@ -1084,7 +1084,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
         <div style={{display:"flex",gap:8,marginBottom:20}}>
           {FREQS.map(f=>(
             <button key={f.id} onClick={()=>setFreq(f.id)}
-              style={{flex:1,background:freq===f.id?"rgba(14,203,129,0.12)":"rgba(255,255,255,0.04)",border:`0.5px solid ${freq===f.id?"rgba(14,203,129,0.4)":"rgba(255,255,255,0.08)"}`,borderRadius:12,padding:"10px 4px",color:freq===f.id?"#0ecb81":"rgba(255,255,255,0.4)",fontSize:11,fontWeight:freq===f.id?700:400,cursor:"pointer",transition:"all .15s"}}>
+              style={{flex:1,background:freq===f.id?T.accentBg:T.surface4,border:`0.5px solid ${freq===f.id?T.accentBorder:T.borderSubtle}`,borderRadius:12,padding:"10px 4px",color:freq===f.id?T.accent:T.text4,fontSize:11,fontWeight:freq===f.id?700:400,cursor:"pointer",transition:"all .15s"}}>
               {f.label}
             </button>
           ))}
@@ -1106,7 +1106,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
         <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Prochaine exécution</div>
         <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
           min={new Date().toISOString().split("T")[0]}
-          style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"14px 16px",color:T.text2,fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:"dark"}}/>
+          style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"14px 16px",color:T.text2,fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:T.bg==="#050506"?"dark":"light"}}/>
 
         {/* Preview */}
         {preview&&startDate&&(
@@ -1235,7 +1235,7 @@ export default function App(){
   if(!ready)return(<div style={{minHeight:"100vh",background:"#050506",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.1)",borderTopColor:"#0ecb81",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
 
   return(
-    <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:T.fontText,maxWidth:430,margin:"0 auto"}}>
+    <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:T.fontText,maxWidth:430,margin:"0 auto",colorScheme:T.bg==="#050506"?"dark":"light"}}>
       <style>{`
         ${FONTS}
         *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
