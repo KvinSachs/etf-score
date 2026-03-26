@@ -974,7 +974,7 @@ function Onboarding({onAdd,onDone}){
                   <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Populaires</div>
                   <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                     {[{t:"IWDA",l:"iShares Monde"},{t:"VWCE",l:"Vanguard All-World"},{t:"MWRD",l:"Amundi Monde PEA"},{t:"PAEEM",l:"Émergents PEA"}].map(({t,l})=>(
-                      <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)} style={{background:T.surface4,border:`0.5px solid ${T.border}`,borderRadius:20,padding:"6px 14px",color:T.text3,fontSize:12,cursor:"pointer",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";e.currentTarget.style.color="#fff";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}>
+                      <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)} style={{background:T.surface4,border:`0.5px solid ${T.border}`,borderRadius:20,padding:"6px 14px",color:T.text3,fontSize:12,cursor:"pointer",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.background=T.surfaceHover;e.currentTarget.style.color=T.text;}} onMouseLeave={e=>{e.currentTarget.style.background=T.surface4;e.currentTarget.style.color=T.text3;}}>
                         {l}
                       </button>
                     ))}
@@ -1636,7 +1636,7 @@ export default function App(){
               <Glass style={{padding:"18px 20px"}}> 
                 <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Apparence</div>
                 <div style={{display:"flex",gap:8}}>
-                  {[{id:true,label:"Sombre",icon:"🌙"},{id:false,label:"Claire",icon:"☀️"}].map(opt=>(
+                  {[{id:true,label:"Sombre",icon:"🌙",badge:null},{id:false,label:"Claire",icon:"☀️",badge:"Alpha"}].map(opt=>(
                     <button key={String(opt.id)} onClick={()=>{setDarkMode(opt.id);localStorage.setItem('etf-theme',opt.id?'dark':'light');}}
                       style={{
                         flex:1,padding:"12px 8px",borderRadius:T.radiusSm,cursor:"pointer",
@@ -1647,6 +1647,7 @@ export default function App(){
                       }}>
                       <span style={{fontSize:20}}>{opt.icon}</span>
                       <span style={{fontSize:12,fontWeight:darkMode===opt.id?600:400,color:darkMode===opt.id?T.accent:T.textGhost}}>{opt.label}</span>
+                      {opt.badge&&<span style={{fontSize:9,fontWeight:600,color:T.warning,background:T.warningBg,border:`0.5px solid ${T.warningBorder}`,borderRadius:4,padding:"1px 5px",letterSpacing:.5}}>{opt.badge}</span>}
                     </button>
                   ))}
                 </div>
