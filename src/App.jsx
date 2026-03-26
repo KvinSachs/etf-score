@@ -1275,7 +1275,6 @@ export default function App(){
             <div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <span style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:800,color:T.text,letterSpacing:-.3}}>ETF Score</span>
-                <span style={{fontSize:8,fontWeight:800,color:T.accent,letterSpacing:2,background:"rgba(14,203,129,0.1)",border:"0.5px solid rgba(14,203,129,0.25)",padding:"2px 6px",borderRadius:3,fontFamily:T.fontDisplay}}>EXPERT</span>
               </div>
               <div style={{fontSize:10,color:T.text5,marginTop:0,letterSpacing:.3}}>Analyse multicritères</div>
             </div>
