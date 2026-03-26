@@ -1627,6 +1627,35 @@ export default function App(){
                 </p>
               </Glass>
 
+              {/* Reset onboarding */}
+              <Glass style={{padding:"16px 20px"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <div style={{width:36,height:36,borderRadius:10,background:T.surfaceHover,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18}}>👋</div>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:600,color:T.text,marginBottom:2}}>Revoir l'introduction</div>
+                      <div style={{fontSize:11,color:T.text4}}>Relancer l'onboarding depuis le début</div>
+                    </div>
+                  </div>
+                  <button onClick={()=>{localStorage.removeItem("etf-onboarding-seen");window.location.reload();}}
+                    style={{background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"7px 14px",color:T.accent,fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,transition:"opacity .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.opacity=".75"}
+                    onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                    Lancer →
+                  </button>
+                </div>
+              </Glass>
+              {/* Legal */}
+              <Glass style={{padding:"20px"}}>
+                <div style={{fontSize:10,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Mentions légales</div>
+                <p style={{margin:"0 0 14px",fontSize:13,color:T.text4,lineHeight:1.7}}>
+                  ETF Score est un outil d'analyse personnel. Les scores, indicateurs et suggestions affichés <strong style={{color:T.textSub}}>ne constituent pas un conseil en investissement</strong> au sens de la réglementation AMF.
+                </p>
+                <p style={{margin:0,fontSize:13,color:T.text4,lineHeight:1.7}}>
+                  Tout investissement comporte un risque de perte en capital. Consultez un conseiller financier agréé avant toute décision d'investissement.
+                </p>
+              </Glass>
+
               {/* Appearance */}
               <Glass style={{padding:"18px 20px"}}> 
                 <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Paramètres</div>
@@ -1660,24 +1689,6 @@ export default function App(){
                 </p>
               </Glass>
 
-              {/* Reset onboarding */}
-              <Glass style={{padding:"16px 20px"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:12}}>
-                    <div style={{width:36,height:36,borderRadius:10,background:T.surfaceHover,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18}}>👋</div>
-                    <div>
-                      <div style={{fontSize:13,fontWeight:600,color:T.text,marginBottom:2}}>Revoir l'introduction</div>
-                      <div style={{fontSize:11,color:T.text4}}>Relancer l'onboarding depuis le début</div>
-                    </div>
-                  </div>
-                  <button onClick={()=>{localStorage.removeItem("etf-onboarding-seen");window.location.reload();}}
-                    style={{background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"7px 14px",color:T.accent,fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,transition:"opacity .15s"}}
-                    onMouseEnter={e=>e.currentTarget.style.opacity=".75"}
-                    onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-                    Lancer →
-                  </button>
-                </div>
-              </Glass>
             </div>
           )}
         </div>
