@@ -1186,6 +1186,126 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
   );
 }
 
+
+/* ─── IMPORT / EXPORT ────────────────────────────────────────────────────────── */
+function ImportExport({holdings,holdingsWithPlan,onImport}){
+  const[importing,setImporting]=useState(false);
+  const[result,setResult]=useState(null); // {ok:[], errors:[]}
+  const fileRef=useRef(null);
+
+  // Download template CSV
+  const downloadTemplate=()=>{
+    const rows=[["Ticker","Montant (€)"],...Object.keys(DB).map(t=>[t,""])];
+    const csv=rows.map(r=>r.join(",")).join("\n");
+    const blob=new Blob([csv],{type:"text/csv"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download="etf-score-template.csv";a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Export current portfolio
+  const exportPortfolio=()=>{
+    if(!holdingsWithPlan.length)return;
+    const rows=[["Ticker","Nom","Montant (€)"],...holdingsWithPlan.map(h=>[h.ticker,DB[h.ticker]?.name||h.name,h.amount.toFixed(2)])];
+    const csv=rows.map(r=>`${r[0]},${r[1]},${r[2]}`).join("\n");
+    const blob=new Blob([csv],{type:"text/csv"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download="mon-portefeuille-etf.csv";a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Parse imported file
+  const handleFile=e=>{
+    const file=e.target.files?.[0];
+    if(!file)return;
+    setImporting(true);setResult(null);
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const text=ev.target.result;
+        const lines=text.split(/\r?\n/).filter(l=>l.trim());
+        const ok=[],errors=[];
+        // Skip header if first line contains non-numeric second column
+        const startIdx=isNaN(parseFloat(lines[0]?.split(",")[1]))?1:0;
+        for(let i=startIdx;i<lines.length;i++){
+          const parts=lines[i].split(",");
+          const rawTicker=(parts[0]||"").trim().toUpperCase();
+          const rawAmt=(parts[parts.length-1]||"").trim().replace(/[^0-9.]/g,"");
+          const amount=parseFloat(rawAmt);
+          // Try ticker directly, then ISIN lookup
+          const ticker=DB[rawTicker]?rawTicker:(ISIN_MAP[rawTicker]||null);
+          if(!ticker||!DB[ticker]){errors.push({line:i+1,raw:rawTicker,reason:"ETF introuvable"});continue;}
+          if(isNaN(amount)||amount<=0){errors.push({line:i+1,raw:rawTicker,reason:"Montant invalide"});continue;}
+          ok.push({ticker,name:DB[ticker].name,amount});
+        }
+        setResult({ok,errors});
+        if(ok.length>0)ok.forEach(h=>onImport(h.ticker,h.amount));
+      }catch(err){
+        setResult({ok:[],errors:[{line:0,raw:"",reason:"Fichier illisible"}]});
+      }
+      setImporting(false);
+      if(fileRef.current)fileRef.current.value="";
+    };
+    reader.readAsText(file);
+  };
+
+  return(
+    <Glass style={{padding:"16px 16px"}}>
+      <div style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Import / Export</div>
+      <div style={{display:"flex",gap:8,marginBottom:result?12:0}}>
+        {/* Import */}
+        <button onClick={()=>fileRef.current?.click()}
+          style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"11px 12px",cursor:"pointer",transition:"opacity .15s"}}
+          onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
+          onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.accent} strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <span style={{fontSize:12,fontWeight:600,color:T.accent}}>Importer CSV</span>
+        </button>
+        {/* Export */}
+        <button onClick={exportPortfolio}
+          style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"11px 12px",cursor:holdingsWithPlan.length?"pointer":"not-allowed",opacity:holdingsWithPlan.length?1:0.4,transition:"opacity .15s"}}
+          onMouseEnter={e=>{if(holdingsWithPlan.length)e.currentTarget.style.opacity=".7";}}
+          onMouseLeave={e=>e.currentTarget.style.opacity=holdingsWithPlan.length?"1":"0.4"}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 9V1M4 4l3-3 3 3" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <span style={{fontSize:12,fontWeight:500,color:T.text3}}>Exporter</span>
+        </button>
+        {/* Template */}
+        <button onClick={downloadTemplate}
+          style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"11px 12px",cursor:"pointer",transition:"opacity .15s"}}
+          onMouseEnter={e=>e.currentTarget.style.opacity=".7"}
+          onMouseLeave={e=>e.currentTarget.style.opacity="1"}
+          title="Télécharger le template">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke={T.text4} strokeWidth="1.3"/><line x1="4.5" y1="5" x2="9.5" y2="5" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/><line x1="4.5" y1="7.5" x2="9.5" y2="7.5" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/><line x1="4.5" y1="10" x2="7.5" y2="10" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/></svg>
+          <span style={{fontSize:11,color:T.text4}}>Template</span>
+        </button>
+      </div>
+      <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleFile} style={{display:"none"}}/>
+      {/* Result feedback */}
+      {result&&(
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {result.ok.length>0&&(
+            <div style={{display:"flex",alignItems:"center",gap:8,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:10,padding:"9px 12px"}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:T.accent,flexShrink:0}}/>
+              <span style={{fontSize:12,color:T.accent,fontWeight:500}}>{result.ok.length} ETF importé{result.ok.length>1?"s":""} avec succès</span>
+            </div>
+          )}
+          {result.errors.length>0&&(
+            <div style={{background:T.dangerBg,border:`0.5px solid ${T.dangerBorder}`,borderRadius:10,padding:"9px 12px"}}>
+              <div style={{fontSize:12,color:T.danger,fontWeight:500,marginBottom:4}}>{result.errors.length} ligne{result.errors.length>1?"s":""} ignorée{result.errors.length>1?"s":""}</div>
+              {result.errors.slice(0,3).map((e,i)=>(
+                <div key={i} style={{fontSize:11,color:T.text4}}>· Ligne {e.line} {e.raw?`"${e.raw}"`:""} — {e.reason}</div>
+              ))}
+            </div>
+          )}
+          <button onClick={()=>setResult(null)} style={{background:"none",border:"none",fontSize:11,color:T.text5,cursor:"pointer",padding:0,textAlign:"left"}}>Fermer</button>
+        </div>
+      )}
+    </Glass>
+  );
+}
+
 /* ─── MAIN ───────────────────────────────────────────────────────────────────── */
 export default function App(){
   const[holdings,setHoldings]=useState([]);
@@ -1539,6 +1659,7 @@ export default function App(){
                 <div style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Ajouter un ETF</div>
                 <Search onAdd={addHolding} suggestions={suggestions}/>
               </Glass>
+              <ImportExport holdings={holdings} holdingsWithPlan={holdingsWithPlan} onImport={addHolding}/>
 
               {holdings.length>0&&(
                 <div>
