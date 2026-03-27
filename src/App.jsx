@@ -1259,31 +1259,45 @@ function ImportExport({holdings,holdingsWithPlan,onImport}){
   return(
     <Glass style={{padding:"16px 16px"}}>
       <div style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Import / Export</div>
-      <div style={{display:"flex",gap:8,marginBottom:result?12:0}}>
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:result?12:0}}>
         {/* Import */}
         <button onClick={()=>fileRef.current?.click()}
-          style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"11px 12px",cursor:"pointer",transition:"opacity .15s"}}
+          style={{width:"100%",display:"flex",alignItems:"center",gap:12,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
           onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.accent} strokeWidth="1.5" strokeLinecap="round"/></svg>
-          <span style={{fontSize:12,fontWeight:600,color:T.accent}}>Importer CSV</span>
+          <div style={{width:36,height:36,borderRadius:10,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.accent} strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </div>
+          <div style={{textAlign:"left"}}>
+            <div style={{fontSize:13,fontWeight:600,color:T.accent,marginBottom:2}}>Importer un CSV</div>
+            <div style={{fontSize:11,color:T.text4}}>Colonnes : ISIN, Nom, Montant</div>
+          </div>
         </button>
         {/* Export */}
         <button onClick={exportPortfolio}
-          style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"11px 12px",cursor:holdingsWithPlan.length?"pointer":"not-allowed",opacity:holdingsWithPlan.length?1:0.4,transition:"opacity .15s"}}
+          style={{width:"100%",display:"flex",alignItems:"center",gap:12,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:holdingsWithPlan.length?"pointer":"not-allowed",opacity:holdingsWithPlan.length?1:0.4,transition:"opacity .15s"}}
           onMouseEnter={e=>{if(holdingsWithPlan.length)e.currentTarget.style.opacity=".7";}}
           onMouseLeave={e=>e.currentTarget.style.opacity=holdingsWithPlan.length?"1":"0.4"}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 9V1M4 4l3-3 3 3" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round"/></svg>
-          <span style={{fontSize:12,fontWeight:500,color:T.text3}}>Exporter</span>
+          <div style={{width:36,height:36,borderRadius:10,background:T.surfaceHover,border:`0.5px solid ${T.borderSubtle}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M7 9V1M4 4l3-3 3 3" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </div>
+          <div style={{textAlign:"left"}}>
+            <div style={{fontSize:13,fontWeight:500,color:T.text3,marginBottom:2}}>Exporter mon portefeuille</div>
+            <div style={{fontSize:11,color:T.text5}}>{holdingsWithPlan.length?`${holdingsWithPlan.length} position${holdingsWithPlan.length>1?"s":""}  · CSV":"Aucune position à exporter"}</div>
+          </div>
         </button>
         {/* Template */}
         <button onClick={downloadTemplate}
-          style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"11px 12px",cursor:"pointer",transition:"opacity .15s"}}
+          style={{width:"100%",display:"flex",alignItems:"center",gap:12,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".7"}
-          onMouseLeave={e=>e.currentTarget.style.opacity="1"}
-          title="Télécharger le template">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke={T.text4} strokeWidth="1.3"/><line x1="4.5" y1="5" x2="9.5" y2="5" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/><line x1="4.5" y1="7.5" x2="9.5" y2="7.5" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/><line x1="4.5" y1="10" x2="7.5" y2="10" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/></svg>
-          <span style={{fontSize:11,color:T.text4}}>Template</span>
+          onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+          <div style={{width:36,height:36,borderRadius:10,background:T.surfaceHover,border:`0.5px solid ${T.borderSubtle}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke={T.text4} strokeWidth="1.3"/><line x1="4.5" y1="5" x2="9.5" y2="5" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/><line x1="4.5" y1="7.5" x2="9.5" y2="7.5" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/><line x1="4.5" y1="10" x2="7.5" y2="10" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/></svg>
+          </div>
+          <div style={{textAlign:"left"}}>
+            <div style={{fontSize:13,fontWeight:500,color:T.text3,marginBottom:2}}>Télécharger le template</div>
+            <div style={{fontSize:11,color:T.text5}}>Tous les ETF disponibles pré-listés</div>
+          </div>
         </button>
       </div>
       <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleFile} style={{display:"none"}}/>
