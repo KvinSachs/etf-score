@@ -1728,7 +1728,6 @@ export default function App(){
                     })}
                   </div>
                 </div>
-              </div>
               ):(
                 <Glass style={{padding:"40px 24px",textAlign:"center"}}>
                   <div style={{fontSize:32,marginBottom:12,opacity:.3}}>◎</div>
