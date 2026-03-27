@@ -1098,8 +1098,8 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
             placeholder="0"
             inputMode="decimal"
             style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"14px 36px 14px 16px",color:T.text,fontSize:20,fontWeight:700,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s"}}
-            onFocus={e=>e.target.style.borderColor=T.accentGlow;e.target.style.boxShadow=`0 0 0 3px ${T.accentBg}`}
-            onBlur={e=>e.target.style.borderColor=T.border;e.target.style.boxShadow="none"}/>
+            onFocus={e=>{e.target.style.borderColor=T.accentGlow;e.target.style.boxShadow=`0 0 0 3px ${T.accentBg}`;}}
+            onBlur={e=>{e.target.style.borderColor=T.border;e.target.style.boxShadow="none";}}/>
           <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:16,color:T.text5,fontWeight:500,pointerEvents:"none"}}>€</span>
         </div>
 
