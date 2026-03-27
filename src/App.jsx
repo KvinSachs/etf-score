@@ -1009,6 +1009,11 @@ function Onboarding({onAdd,onDone}){
                       </button>
                     ))}
                   </div>
+                  {/* Import hint */}
+                  <div style={{marginTop:16,paddingTop:14,borderTop:`0.5px solid ${T.borderFaint}`,display:"flex",alignItems:"center",gap:8}}>
+                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.text5} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.text5} strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    <span style={{fontSize:11,color:T.text5,lineHeight:1.5}}>Vous avez déjà un portefeuille ? Importez un CSV depuis l'onglet <strong style={{color:T.text4,fontWeight:600}}>Mes ETF</strong> après l'introduction.</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1195,9 +1200,9 @@ function ImportExport({holdings,holdingsWithPlan,onImport}){
 
   // Download template CSV
   const downloadTemplate=()=>{
-    const rows=[["Ticker","Montant (€)"],...Object.keys(DB).map(t=>[t,""])];
-    const csv=rows.map(r=>r.join(",")).join("\n");
-    const blob=new Blob([csv],{type:"text/csv"});
+    const rows=[["ISIN","Nom","Montant (€)"],...Object.keys(DB).map(t=>[DB[t].isin||"",DB[t].name,""])];
+    const csv=rows.map(r=>`${r[0]},${r[1].replace(/,/g," ")},${r[2]}`).join("\n");
+    const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url;a.download="etf-score-template.csv";a.click();
@@ -1207,9 +1212,9 @@ function ImportExport({holdings,holdingsWithPlan,onImport}){
   // Export current portfolio
   const exportPortfolio=()=>{
     if(!holdingsWithPlan.length)return;
-    const rows=[["Ticker","Nom","Montant (€)"],...holdingsWithPlan.map(h=>[h.ticker,DB[h.ticker]?.name||h.name,h.amount.toFixed(2)])];
-    const csv=rows.map(r=>`${r[0]},${r[1]},${r[2]}`).join("\n");
-    const blob=new Blob([csv],{type:"text/csv"});
+    const rows=[["ISIN","Nom","Montant (€)"],...holdingsWithPlan.map(h=>[DB[h.ticker]?.isin||"",DB[h.ticker]?.name||h.name,h.amount.toFixed(2)])];
+    const csv=rows.map(r=>`${r[0]},${r[1].replace(/,/g," ")},${r[2]}`).join("\n");
+    const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url;a.download="mon-portefeuille-etf.csv";a.click();
@@ -1227,17 +1232,17 @@ function ImportExport({holdings,holdingsWithPlan,onImport}){
         const text=ev.target.result;
         const lines=text.split(/\r?\n/).filter(l=>l.trim());
         const ok=[],errors=[];
-        // Skip header if first line contains non-numeric second column
-        const startIdx=isNaN(parseFloat(lines[0]?.split(",")[1]))?1:0;
+        // Skip header row (first line has non-numeric last column)
+        const startIdx=isNaN(parseFloat(lines[0]?.split(",").pop()?.replace(/[^0-9.]/g,"")))?1:0;
         for(let i=startIdx;i<lines.length;i++){
           const parts=lines[i].split(",");
-          const rawTicker=(parts[0]||"").trim().toUpperCase();
+          const rawISIN=(parts[0]||"").trim().toUpperCase();
           const rawAmt=(parts[parts.length-1]||"").trim().replace(/[^0-9.]/g,"");
           const amount=parseFloat(rawAmt);
-          // Try ticker directly, then ISIN lookup
-          const ticker=DB[rawTicker]?rawTicker:(ISIN_MAP[rawTicker]||null);
-          if(!ticker||!DB[ticker]){errors.push({line:i+1,raw:rawTicker,reason:"ETF introuvable"});continue;}
-          if(isNaN(amount)||amount<=0){errors.push({line:i+1,raw:rawTicker,reason:"Montant invalide"});continue;}
+          // ISIN lookup → ticker
+          const ticker=ISIN_MAP[rawISIN]||null;
+          if(!ticker||!DB[ticker]){errors.push({line:i+1,raw:rawISIN,reason:"ISIN introuvable"});continue;}
+          if(isNaN(amount)||amount<=0){errors.push({line:i+1,raw:rawISIN,reason:"Montant invalide"});continue;}
           ok.push({ticker,name:DB[ticker].name,amount});
         }
         setResult({ok,errors});
