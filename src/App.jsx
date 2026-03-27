@@ -580,8 +580,8 @@ function Search({onAdd,suggestions=[]}){
     <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10}}>
       <div style={{position:"relative"}}>
         <input value={q} onChange={e=>{setQ(e.target.value);setSelectedTicker(null);setErr("");setHi(0);setOpen(true);}}
-          onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor="rgba(255,255,255,0.25)";}}
-          onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
+          onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor=T.accentGlow;}}
+          onBlur={e=>e.target.style.borderColor=T.border}
           onKeyDown={onKey} placeholder="Nom, ISIN ou ticker…" style={inp}/>
         {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);setOpen(false);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:T.surfaceHover,border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>}
         {open&&results.length>0&&(
@@ -610,7 +610,7 @@ function Search({onAdd,suggestions=[]}){
       <div style={{display:"flex",gap:10}}>
         <div style={{flex:1,position:"relative"}}>
           <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doAdd()}
-            onFocus={e=>e.target.style.borderColor="rgba(255,255,255,0.25)"} onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}
+            onFocus={e=>e.target.style.borderColor=T.accentGlow} onBlur={e=>e.target.style.borderColor=T.border}
             placeholder="Montant" style={{...inp,width:"100%",paddingRight:36}}/>
           <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:T.text4,fontWeight:500,pointerEvents:"none"}}>€</span>
         </div>
@@ -949,8 +949,8 @@ function Onboarding({onAdd,onDone}){
               <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10}}>
                 <div style={{position:"relative"}}>
                   <input value={q} onChange={e=>{setQ(e.target.value);setSelectedTicker(null);setErr("");setOpen(true);}}
-                    onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
-                    onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);}}
+                    onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor=T.accentGlow;setInputFocused(true);}}
+                    onBlur={e=>{e.target.style.borderColor=T.border;setTimeout(()=>setInputFocused(false),200);}}
                     placeholder="Nom, ISIN ou ticker…"
                     style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"15px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s"}}/>
                   {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:T.surfaceHover,border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>}
@@ -968,8 +968,8 @@ function Onboarding({onAdd,onDone}){
                 <div style={{position:"relative"}}>
                   <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
                     onKeyDown={e=>e.key==="Enter"&&addOne()}
-                    onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.1)";setTimeout(()=>setInputFocused(false),200);if(selectedTicker&&parseFloat(amt)>0)addOne();}}
-                    onFocus={e=>{e.target.style.borderColor="rgba(14,203,129,0.4)";setInputFocused(true);}}
+                    onBlur={e=>{e.target.style.borderColor=T.border;setTimeout(()=>setInputFocused(false),200);if(selectedTicker&&parseFloat(amt)>0)addOne();}}
+                    onFocus={e=>{e.target.style.borderColor=T.accentGlow;setInputFocused(true);}}
                     inputMode="decimal" placeholder="Montant investi"
                     style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"15px 36px 15px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
                   <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:T.text4,fontWeight:500,pointerEvents:"none"}}>€</span>
@@ -1098,8 +1098,8 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
             placeholder="0"
             inputMode="decimal"
             style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"14px 36px 14px 16px",color:T.text,fontSize:20,fontWeight:700,outline:"none",boxSizing:"border-box",WebkitAppearance:"none",transition:"border-color .2s"}}
-            onFocus={e=>e.target.style.borderColor="rgba(14,203,129,0.4)"}
-            onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
+            onFocus={e=>e.target.style.borderColor=T.accentGlow}
+            onBlur={e=>e.target.style.borderColor=T.border}/>
           <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:16,color:T.text5,fontWeight:500,pointerEvents:"none"}}>€</span>
         </div>
 
