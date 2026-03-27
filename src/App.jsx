@@ -1283,7 +1283,7 @@ function ImportExport({holdings,holdingsWithPlan,onImport}){
           </div>
           <div style={{textAlign:"left"}}>
             <div style={{fontSize:13,fontWeight:500,color:T.text3,marginBottom:2}}>Exporter mon portefeuille</div>
-            <div style={{fontSize:11,color:T.text5}}>{holdingsWithPlan.length?`${holdingsWithPlan.length} position${holdingsWithPlan.length>1?"s":""}  · CSV":"Aucune position à exporter"}</div>
+            <div style={{fontSize:11,color:T.text5}}>{holdingsWithPlan.length?`${holdingsWithPlan.length} position${holdingsWithPlan.length>1?"s":""} · CSV`:"Aucune position à exporter"}</div>
           </div>
         </button>
         {/* Template */}
