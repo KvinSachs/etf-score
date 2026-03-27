@@ -12,7 +12,7 @@ const ISIN_MAP = {
   "US46090E1038":"QQQ","LU1681038243":"PANX","FR0011550185":"ESE",
   "LU1737652823":"EWLD","IE00B0M63177":"EEM","IE00BF4RFH31":"IUSN",
   "LU1681038672":"EPRA","IE00B945VV12":"VEUR","IE00B579F325":"SGLD",
-  "IE00BDBRDM35":"AGGH","IE00B1XNHC34":"INRG","IE00B3F81R35":"IEAG",
+  "IE00BDBRDM35":"AGGH","IE00B1XNHC34":"INRG","IE00B3F81R35":"IEAG","LU0478205379":"XBLC","IE00BZ163K21":"VCBO","LU1650490457":"AMUE","FR0013346681":"OBLI","FR0013416716":"GOLD","IE00B4ND3602":"IGLN","JE00B588CD74":"WGLD","IE00BTJRMP35":"XMEM","IE00B469F816":"SPYM","FR0010429068":"LYMEM",
   "IE00B5BMR087":"CSPX","LU1681041575":"MEUD","LU1681042773":"BCHN",
   "IE00B8GF1M35":"CBRE","LU1681043599":"MWRD","LU1681043086":"PAASI",
   "FR0011440478":"PAEMF","FR0013412038":"PCEU","FR0013411980":"PTPXE",
@@ -20,7 +20,7 @@ const ISIN_MAP = {
   "LU0908500753":"MEUD6","IE00BG47KH54":"VAGF","IE00B4WXJJ64":"XGLE",
   "FR0013412285":"PCPUS","FR0013412020":"PUST","LU1829220216":"PAASI2",
   "IE00B4L5YX21":"HMWO","IE00B5BMR087":"CSPX","LU1737652670":"RS2K",
-  "IE00B3F81R35":"IEAG","IE00BYZK4776":"SPPW","LU1650490622":"LCWD",
+  "IE00B3F81R35":"IEAG","LU0478205379":"XBLC","IE00BZ163K21":"VCBO","LU1650490457":"AMUE","FR0013346681":"OBLI","FR0013416716":"GOLD","IE00B4ND3602":"IGLN","JE00B588CD74":"WGLD","IE00BTJRMP35":"XMEM","IE00B469F816":"SPYM","FR0010429068":"LYMEM","IE00BYZK4776":"SPPW","LU1650490622":"LCWD",
   "FR0010959676":"CW8","IE00B42Z5J44":"CNDX","LU1829219669":"PANX2",
 };
 
@@ -79,6 +79,23 @@ const DB = {
   "RS2K":{ name:"Lyxor Russell 2000 UCITS ETF", isin:"LU1737652670", p:"Lyxor", assetClass:"equity", currencies:{USD:100}, geo:{"Amér. du Nord":100}, sec:{"Finance":17,"Santé":15,"Industrie":18,"Technologie":13,"Conso. discr.":11,"Énergie":6,"Matériaux":4,"Immobilier":7,"Conso. cour.":4,"Autres":5}, overlaps:{}},
 
   "IEAG":{ name:"iShares Euro Aggregate Bond", isin:"IE00B3F81R35", p:"iShares", assetClass:"bond", currencies:{EUR:90,Autres:10}, geo:{"Europe":90,"Autres":10}, sec:{"Oblig. souv.":70,"Oblig. corp.":25,"Autres":5}, overlaps:{"AGGH":35}},
+
+  /* ── OBLIGATIONS EURO CORPORATE ─────────────────────────────────────────── */
+  "IEAC":{ name:"iShares Core EUR Corporate Bond UCITS ETF", isin:"IE00B3F81R35", p:"iShares", assetClass:"bond", currencies:{EUR:95,Autres:5}, geo:{"Europe":95,"Autres":5}, sec:{"Oblig. corp.":100}, overlaps:{"XBLC":90,"VCBO":85}},
+  "XBLC":{ name:"Xtrackers II EUR Corporate Bond UCITS ETF", isin:"LU0478205379", p:"Xtrackers", assetClass:"bond", currencies:{EUR:95,Autres:5}, geo:{"Europe":95,"Autres":5}, sec:{"Oblig. corp.":100}, overlaps:{"IEAC":90,"VCBO":85}},
+  "VCBO":{ name:"Vanguard EUR Corporate Bond UCITS ETF", isin:"IE00BZ163K21", p:"Vanguard", assetClass:"bond", currencies:{EUR:95,Autres:5}, geo:{"Europe":95,"Autres":5}, sec:{"Oblig. corp.":100}, overlaps:{"IEAC":85,"XBLC":85}},
+  "AMUE":{ name:"Amundi Euro Government Bond UCITS ETF", isin:"LU1650490457", p:"Amundi", assetClass:"bond", currencies:{EUR:100}, geo:{"Europe":100}, sec:{"Oblig. souv.":100}, overlaps:{"XGLE":80}},
+  "OBLI":{ name:"Lyxor PEA Obligations d'État Euro UCITS ETF", isin:"FR0013346681", p:"Amundi", assetClass:"bond", currencies:{EUR:100}, geo:{"Europe":100}, sec:{"Oblig. souv.":100}, overlaps:{"AMUE":80,"XGLE":75}},
+
+  /* ── OR PHYSIQUE ──────────────────────────────────────────────────────────── */
+  "GOLD":{ name:"Amundi Physical Gold ETC", isin:"FR0013416716", p:"Amundi", assetClass:"commodity", currencies:{USD:100}, geo:{"Global":100}, sec:{"Or":100}, overlaps:{"IGLN":99,"WGLD":99}},
+  "IGLN":{ name:"iShares Physical Gold ETC", isin:"IE00B4ND3602", p:"iShares", assetClass:"commodity", currencies:{USD:100}, geo:{"Global":100}, sec:{"Or":100}, overlaps:{"GOLD":99,"WGLD":99}},
+  "WGLD":{ name:"WisdomTree Physical Swiss Gold", isin:"JE00B588CD74", p:"WisdomTree", assetClass:"commodity", currencies:{USD:100}, geo:{"Global":100}, sec:{"Or":100}, overlaps:{"GOLD":99,"IGLN":99}},
+
+  /* ── MARCHÉS ÉMERGENTS ────────────────────────────────────────────────────── */
+  "XMEM":{ name:"Xtrackers MSCI Emerging Markets UCITS ETF", isin:"IE00BTJRMP35", p:"Xtrackers", assetClass:"equity", currencies:{TWD:22,INR:19,CNY:23,KRW:12,BRL:5,Autres:19}, geo:{"Chine":23,"Taiwan":22,"Inde":19,"Corée du Sud":12,"Brésil":5,"Autres EM":19}, sec:{"Technologie":32,"Finance":22,"Conso. discr.":11,"Télécom":9,"Énergie":6,"Matériaux":6,"Industrie":5,"Santé":4,"Conso. cour.":5}, overlaps:{"EIMI":95,"PAEEM":90}},
+  "SPYM":{ name:"SPDR MSCI Emerging Markets UCITS ETF", isin:"IE00B469F816", p:"SPDR", assetClass:"equity", currencies:{TWD:22,INR:19,CNY:23,KRW:12,BRL:5,Autres:19}, geo:{"Chine":23,"Taiwan":22,"Inde":19,"Corée du Sud":12,"Brésil":5,"Autres EM":19}, sec:{"Technologie":32,"Finance":22,"Conso. discr.":11,"Télécom":9,"Énergie":6,"Matériaux":6,"Industrie":5,"Santé":4,"Conso. cour.":5}, overlaps:{"EIMI":95,"XMEM":95}},
+  "LYMEM":{ name:"Lyxor MSCI Emerging Markets UCITS ETF", isin:"FR0010429068", p:"Amundi", assetClass:"equity", currencies:{TWD:22,INR:18,CNY:24,KRW:12,BRL:5,Autres:19}, geo:{"Chine":24,"Taiwan":22,"Inde":18,"Corée du Sud":12,"Brésil":5,"Autres EM":19}, sec:{"Technologie":31,"Finance":22,"Conso. discr.":11,"Télécom":9,"Énergie":6,"Matériaux":6,"Industrie":5,"Santé":4,"Conso. cour.":6}, overlaps:{"EIMI":95,"PAEEM":90,"XMEM":95}},
 };
 
 const STORAGE_KEY = "etf-portfolio-v2";
@@ -249,13 +266,18 @@ const CAT={
     {ticker:"EWLD",label:"Monde entier · Amundi",desc:"Pays développés + marchés émergents. Éligible PEA.",ter:"0.38%",tags:["✅ Éligible PEA","🌐 Monde complet"]},
   ]},
   bonds:{title:"Obligations",emoji:"🔒",color:T.accent,why:"Les obligations amortissent la volatilité et protègent lors des krachs actions.",options:[
-    {ticker:"IEAG",label:"Obligations euro · iShares",desc:"Souveraines et corporate en euros. Zéro risque de change.",ter:"0.09%",tags:["💰 Le moins cher","🇪🇺 Zéro risque €"]},
+    {ticker:"IEAC",label:"Corporate euro · iShares",desc:"Le plus grand ETF obligataire corporate en euros. 10 Mds€ d'encours, très liquide.",ter:"0.09%",tags:["⭐ Le plus populaire","🇪🇺 Zéro risque €"]},
+    {ticker:"XBLC",label:"Corporate euro · Xtrackers",desc:"Même indice que IEAC, frais identiques. Alternative solide chez Xtrackers.",ter:"0.09%",tags:["💰 Frais identiques","💧 Liquide"]},
+    {ticker:"VCBO",label:"Corporate euro · Vanguard",desc:"Corporate bonds zone euro — Vanguard, très bien diversifié.",ter:"0.10%",tags:["🏦 Vanguard","🇪🇺 Euro pur"]},
+    {ticker:"IEAG",label:"Aggregate euro · iShares",desc:"Mix souverain + corporate en euros. Zéro risque de change.",ter:"0.09%",tags:["💰 Le moins cher","🔀 Souv. + Corp."]},
     {ticker:"VAGF",label:"Global Aggregate couvert · Vanguard",desc:"Obligations mondiales couvertes en euros — très diversifié.",ter:"0.10%",tags:["🌍 Le plus diversifié","💧 Liquide"]},
-    {ticker:"AGGH",label:"Global Aggregate · iShares",desc:"Obligations du monde entier, couvertes en euros.",ter:"0.10%",tags:["🌍 Diversifié","🏦 iShares"]},
-    {ticker:"XGLE",label:"Govt Bond Euro · iShares",desc:"Obligations souveraines européennes uniquement — risque minimal.",ter:"0.09%",tags:["🏛️ Souveraines","🇪🇺 Euro pur"]},
+    {ticker:"OBLI",label:"Oblig. État Euro PEA · Amundi",desc:"Le seul ETF obligataire éligible PEA. Obligations souveraines zone euro.",ter:"0.25%",tags:["✅ Éligible PEA","🏛️ Souveraines"]},
   ]},
   gold:{title:"Or",emoji:"✨",color:"#f0b90b",why:"5-10% d'or protège contre l'inflation et les crises systémiques.",options:[
-    {ticker:"SGLD",label:"Or physique · Invesco",desc:"Or physique en coffre à Londres. Meilleur choix pour les investisseurs européens.",ter:"0.12%",tags:["💰 Le moins cher","🏦 Or physique"]},
+    {ticker:"GOLD",label:"Or physique · Amundi",desc:"Or physique alloué chez HSBC. 10 Mds€ d'encours, domicilié en France.",ter:"0.12%",tags:["⭐ Le plus populaire FR","🏦 Or physique"]},
+    {ticker:"IGLN",label:"Or physique · iShares",desc:"Le plus grand ETC or au monde. 28 Mds€, très liquide.",ter:"0.12%",tags:["💧 Très liquide","🏦 BlackRock"]},
+    {ticker:"SGLD",label:"Or physique · Invesco",desc:"Or physique en coffre à Londres. Frais très compétitifs.",ter:"0.12%",tags:["💰 Le moins cher","🔒 Or alloué"]},
+    {ticker:"WGLD",label:"Or physique Suisse · WisdomTree",desc:"Or physique stocké en Suisse. Référence européenne pour les investisseurs institutionnels.",ter:"0.15%",tags:["🇨🇭 Stocké en Suisse","🏦 WisdomTree"]},
   ]},
   realestate:{title:"Immobilier coté",emoji:"🏢",color:"#f0b90b",why:"Les REITs offrent revenus réguliers et décorrélation partielle des actions.",options:[
     {ticker:"EPRA",label:"Immobilier mondial · Amundi",desc:"Foncières cotées mondiales — bonne exposition Europe et Asie.",ter:"0.24%",tags:["✅ Éligible PEA"]},
@@ -268,8 +290,11 @@ const CAT={
     {ticker:"VEUR",label:"Europe · Vanguard",desc:"UK, France, Suisse, Allemagne — très liquide.",ter:"0.10%",tags:["💧 Très liquide"]},
   ]},
   emerging:{title:"Marchés émergents",emoji:"📈",color:"#a78bfa",why:"Les émergents = ~40% du PIB mondial, souvent absents des portefeuilles.",options:[
-    {ticker:"PAEEM",label:"Émergents · Amundi",desc:"Chine, Inde, Taiwan, Brésil — grandes capitalisations.",ter:"0.20%",tags:["✅ Éligible PEA","⭐ Le plus populaire"]},
-    {ticker:"EIMI",label:"Émergents étendu · iShares",desc:"Chine, Inde, Taiwan + mid et small caps.",ter:"0.18%",tags:["💰 Le moins cher"]},
+    {ticker:"EIMI",label:"Émergents IMI · iShares",desc:"26 Mds€ d'encours. Couvre grandes, moyennes et petites caps — le plus complet.",ter:"0.18%",tags:["⭐ Le plus populaire","🌍 Large + Mid + Small"]},
+    {ticker:"XMEM",label:"Émergents · Xtrackers",desc:"Réplication physique, frais compétitifs. Très bonne liquidité.",ter:"0.18%",tags:["💰 Frais bas","🏦 Xtrackers"]},
+    {ticker:"SPYM",label:"Émergents · SPDR",desc:"MSCI Emerging Markets standard — grande diversification géographique.",ter:"0.18%",tags:["💧 Liquide","🏦 State Street"]},
+    {ticker:"PAEEM",label:"Émergents PEA · Amundi",desc:"Le seul ETF émergents éligible PEA. Chine, Inde, Taiwan, Brésil.",ter:"0.20%",tags:["✅ Éligible PEA","🏛️ Synthétique"]},
+    {ticker:"LYMEM",label:"Émergents · Lyxor/Amundi",desc:"Version Lyxor (fusionnée Amundi) de l'indice MSCI EM.",ter:"0.30%",tags:["🇫🇷 Domicilié France","📊 MSCI Standard"]},
   ]},
   smallcaps:{title:"Petites capitalisations",emoji:"🔬",color:"#a78bfa",why:"Prime de rendement historique — complément idéal à un ETF large caps.",options:[
     {ticker:"IUSN",label:"Small caps mondiales · iShares",desc:"Diversifie sur les petites entreprises mondiales.",ter:"0.35%",tags:["🌍 Le plus diversifié"]},
