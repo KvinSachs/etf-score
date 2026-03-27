@@ -1328,7 +1328,9 @@ export default function App(){
   const[splash,setSplash]=useState(true);
   const[activeRec,setActiveRec]=useState(null);
   const[plans,setPlans]=useState({}); // {ticker: {freq, amount, startDate}}
-  const[editPlan,setEditPlan]=useState(null); // ticker being edited
+  const[editPlan,setEditPlan]=useState(null);
+  const[showAddSheet,setShowAddSheet]=useState(false);
+  const[showImportSheet,setShowImportSheet]=useState(false); // ticker being edited
   const[recMode,setRecMode]=useState("essential");
   const toastTimer=useRef(null);
 
@@ -1660,13 +1662,9 @@ export default function App(){
           {/* ETF TAB */}
           {tab==="ptf"&&(
             <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn .3s ease"}}>
-              <Glass style={{padding:"18px 16px"}}>
-                <div style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Ajouter un ETF</div>
-                <Search onAdd={addHolding} suggestions={suggestions}/>
-              </Glass>
-              <ImportExport holdings={holdings} holdingsWithPlan={holdingsWithPlan} onImport={addHolding}/>
 
-              {holdings.length>0&&(
+              {/* Positions — toujours en premier */}
+              {holdings.length>0?(
                 <div>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,padding:"0 4px"}}>
                     <span style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase"}}>Positions</span>
@@ -1730,7 +1728,59 @@ export default function App(){
                     })}
                   </div>
                 </div>
+              </div>
+              ):(
+                <Glass style={{padding:"40px 24px",textAlign:"center"}}>
+                  <div style={{fontSize:32,marginBottom:12,opacity:.3}}>◎</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text,marginBottom:8}}>Aucune position</div>
+                  <div style={{fontSize:13,color:T.text4,lineHeight:1.7}}>Ajoutez vos ETF pour analyser votre portefeuille.</div>
+                </Glass>
               )}
+
+              {/* Actions bar */}
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={()=>setShowAddSheet(true)}
+                  style={{flex:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
+                  onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/></svg>
+                  <span style={{fontSize:13,fontWeight:600,color:T.accent}}>Ajouter un ETF</span>
+                </button>
+                <button onClick={()=>setShowImportSheet(true)}
+                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"14px 12px",cursor:"pointer",transition:"opacity .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.opacity=".7"}
+                  onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  <span style={{fontSize:12,fontWeight:500,color:T.text3}}>Import / Export</span>
+                </button>
+              </div>
+
+              {/* Add ETF sheet */}
+              {showAddSheet&&(
+                <Sheet onClose={()=>setShowAddSheet(false)}>
+                  <div style={{padding:"8px 20px 40px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                      <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>Ajouter un ETF</div>
+                      <button onClick={()=>setShowAddSheet(false)} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+                    </div>
+                    <Search onAdd={(t,a)=>{addHolding(t,a);setShowAddSheet(false);}} suggestions={suggestions}/>
+                  </div>
+                </Sheet>
+              )}
+
+              {/* Import/Export sheet */}
+              {showImportSheet&&(
+                <Sheet onClose={()=>setShowImportSheet(false)}>
+                  <div style={{padding:"8px 20px 40px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                      <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>Import / Export</div>
+                      <button onClick={()=>setShowImportSheet(false)} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+                    </div>
+                    <ImportExport holdings={holdings} holdingsWithPlan={holdingsWithPlan} onImport={(t,a)=>{addHolding(t,a);}}/>
+                  </div>
+                </Sheet>
+              )}
+
             </div>
           )}
 
