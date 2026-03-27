@@ -141,25 +141,25 @@ const T_DARK = {...T}; // immutable copy of dark theme
 
 const T_LIGHT = {
   ...T_DARK,
-  bg:           "#f2f2f7",
+  bg:           "#f8f7f5",
   bgElevated:   "#ffffff",
   bgDropdown:   "#ffffff",
-  shadowDropdown: "0 8px 32px rgba(0,0,0,0.12)",
-  bgBlur:       "rgba(242,242,247,0.85)",
-  bgHeader:     "rgba(242,242,247,0.92)",
-  bgTabBar:     "rgba(242,242,247,0.95)",
-  bgOverlay:    "rgba(0,0,0,0.4)",
-  surface:      "rgba(0,0,0,0.05)",
-  surfaceHover: "rgba(0,0,0,0.08)",
-  surfaceFaint: "rgba(0,0,0,0.03)",
-  surfaceMed:   "rgba(0,0,0,0.06)",
-  surfaceStrong:"rgba(0,0,0,0.08)",
-  surfaceActive:"rgba(0,0,0,0.12)",
-  border:       "rgba(0,0,0,0.1)",
-  borderFaint:  "rgba(0,0,0,0.08)",
-  borderSubtle: "rgba(0,0,0,0.1)",
-  surface4:     "rgba(0,0,0,0.04)",
-  text:         "#000000",
+  shadowDropdown: "0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06)",
+  bgBlur:       "rgba(248,247,245,0.88)",
+  bgHeader:     "rgba(248,247,245,0.94)",
+  bgTabBar:     "rgba(248,247,245,0.97)",
+  bgOverlay:    "rgba(0,0,0,0.35)",
+  surface:      "#ffffff",
+  surfaceHover: "rgba(0,0,0,0.04)",
+  surfaceFaint: "rgba(0,0,0,0.02)",
+  surfaceMed:   "rgba(0,0,0,0.04)",
+  surfaceStrong:"rgba(0,0,0,0.06)",
+  surfaceActive:"rgba(0,0,0,0.08)",
+  border:       "rgba(0,0,0,0.07)",
+  borderFaint:  "rgba(0,0,0,0.05)",
+  borderSubtle: "rgba(0,0,0,0.06)",
+  surface4:     "#ffffff",
+  text:         "#1a1a1a",
   textSub:      "rgba(0,0,0,0.82)",
   textMuted:    "rgba(0,0,0,0.70)",
   textFaint:    "rgba(0,0,0,0.62)",
@@ -171,8 +171,8 @@ const T_LIGHT = {
   text3:        "rgba(0,0,0,0.58)",
   text4:        "rgba(0,0,0,0.50)",
   text5:        "rgba(0,0,0,0.40)",
-  indicatorTrack: "rgba(0,0,0,0.08)",
-  arcTrack:       "rgba(0,0,0,0.12)",
+  indicatorTrack: "rgba(0,0,0,0.07)",
+  arcTrack:       "rgba(0,0,0,0.10)",
 };
 
 
@@ -319,16 +319,17 @@ function sc(s){
 
 /* ─── LIQUID GLASS SURFACE ───────────────────────────────────────────────────── */
 function Glass({children,style={},onClick}){
+  const isDark=T.bg==="#050506";
   return(
     <div onClick={onClick} style={{
       background:T.surface,
       border:`0.5px solid ${T.border}`,
       borderRadius:T.radiusLg,
       position:"relative",
+      boxShadow:isDark?"none":"0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
       ...style
     }}>
-      {/* Top sheen */}
-      <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent)",pointerEvents:"none",borderRadius:"20px 20px 0 0"}}/>
+      {isDark&&<div style={{position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent)",pointerEvents:"none",borderRadius:"20px 20px 0 0"}}/>}
       {children}
     </div>
   );
@@ -1263,8 +1264,8 @@ export default function App(){
 
       {/* Ambient */}
       <div aria-hidden="true" style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
-        <div style={{position:"absolute",top:"-30%",left:"-20%",width:"70%",height:"65%",background:"radial-gradient(ellipse,rgba(14,203,129,0.04) 0%,transparent 65%)"}}/>
-        <div style={{position:"absolute",bottom:"-25%",right:"-20%",width:"65%",height:"60%",background:"radial-gradient(ellipse,rgba(59,130,246,0.04) 0%,transparent 65%)"}}/>
+        <div style={{position:"absolute",top:"-30%",left:"-20%",width:"70%",height:"65%",background:T.bg==="#050506"?"radial-gradient(ellipse,rgba(14,203,129,0.04) 0%,transparent 65%)":"radial-gradient(ellipse,rgba(14,203,129,0.07) 0%,transparent 60%)"}}/>
+        <div style={{position:"absolute",bottom:"-25%",right:"-20%",width:"65%",height:"60%",background:T.bg==="#050506"?"radial-gradient(ellipse,rgba(59,130,246,0.04) 0%,transparent 65%)":"radial-gradient(ellipse,rgba(59,130,246,0.06) 0%,transparent 60%)"}}/>
       </div>
 
       <div style={{position:"relative",zIndex:1}}>
