@@ -1535,28 +1535,26 @@ export default function App(){
           {tab==="scores"&&(
             <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn .3s ease"}}>
 
-              {/* Hero score block */}
+              {/* Hero score block — sans card, flottant sur le fond */}
               {holdings.length>0&&(
-                <Glass style={{padding:"22px 20px"}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                    <div>
-                      <div style={{fontSize:10,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:8,fontWeight:600}}>Score global</div>
-                      <div style={{display:"flex",alignItems:"baseline",gap:4}}>
-                        <span style={{fontSize:52,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-2}}>{scores.total.toFixed(1)}</span>
-                        <span style={{fontSize:18,color:T.text5,fontWeight:300}}>/20</span>
-                      </div>
-                      <div style={{fontSize:11,color:g.text,marginTop:4,fontWeight:500}}>{g.label}</div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"8px 4px 4px"}}>
+                  <div>
+                    <div style={{fontSize:9,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:10,fontWeight:600}}>Score global</div>
+                    <div style={{display:"flex",alignItems:"baseline",gap:4}}>
+                      <span style={{fontSize:58,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-2}}>{scores.total.toFixed(1)}</span>
+                      <span style={{fontSize:20,color:T.text5,fontWeight:300}}>/20</span>
                     </div>
-                    <div style={{textAlign:"right"}}>
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4,marginBottom:8}}>
-                        <span style={{fontSize:10,color:T.text5,letterSpacing:3,textTransform:"uppercase",fontWeight:600}}>Apports</span>
-                        <IBtn label="Montant investi" text="Somme totale versée — ne tient pas compte des variations de marché."/>
-                      </div>
-                      <div style={{fontSize:24,fontWeight:800,color:T.text0,letterSpacing:-.5}}>{total.toLocaleString("fr-FR")} €</div>
-                      <div style={{fontSize:11,color:T.text5,marginTop:4}}>{holdings.length} position{holdings.length>1?"s":""}</div>
-                    </div>
+                    <div style={{fontSize:11,color:g.text,marginTop:6,fontWeight:600,letterSpacing:.3}}>{g.label}</div>
                   </div>
-                </Glass>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4,marginBottom:10}}>
+                      <span style={{fontSize:9,color:T.text5,letterSpacing:3,textTransform:"uppercase",fontWeight:600}}>Apports</span>
+                      <IBtn label="Montant investi" text="Somme totale versée — ne tient pas compte des variations de marché."/>
+                    </div>
+                    <div style={{fontSize:26,fontWeight:800,color:T.text,letterSpacing:-.5}}>{total.toLocaleString("fr-FR")} €</div>
+                    <div style={{fontSize:11,color:T.text5,marginTop:6}}>{holdings.length} position{holdings.length>1?"s":""}</div>
+                  </div>
+                </div>
               )}
 
               {/* Score rings */}
@@ -1744,36 +1742,32 @@ export default function App(){
             <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn .3s ease"}}>
 
               {/* Positions — toujours en premier */}
-              {/* Barre d'actions — 2 lignes */}
-              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
-                {/* Ligne 1 — label + compteur + effacer */}
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 2px"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase"}}>Positions</span>
-                    {holdings.length>0&&<span style={{fontSize:9,color:T.text5,background:T.surfaceFaint,border:`0.5px solid ${T.borderFaint}`,borderRadius:20,padding:"1px 7px"}}>{holdings.length}</span>}
-                  </div>
-                  {holdings.length>0&&<button onClick={()=>setConfirmReset(true)} style={{background:"none",border:"none",color:"rgba(255,77,77,0.4)",fontSize:11,cursor:"pointer",padding:"2px 0"}}>Tout effacer</button>}
-                </div>
-                {/* Ligne 2 — boutons pleine largeur */}
-                <div style={{display:"flex",gap:8}}>
-                  <button onClick={()=>setShowAddSheet(true)}
-                    style={{flex:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"13px 16px",cursor:"pointer",transition:"opacity .15s"}}
-                    onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
-                    onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-                    <svg width="14" height="14" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/></svg>
-                    <span style={{fontSize:13,fontWeight:600,color:T.accent}}>Ajouter un ETF</span>
-                  </button>
-                  <button onClick={()=>setShowImportSheet(true)}
-                    style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"13px 12px",cursor:"pointer",transition:"opacity .15s"}}
-                    onMouseEnter={e=>e.currentTarget.style.opacity=".7"}
-                    onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round"/></svg>
-                    <span style={{fontSize:12,fontWeight:500,color:T.text3}}>Import</span>
-                  </button>
-                </div>
+              {/* Boutons d'action */}
+              <div style={{display:"flex",gap:8,marginBottom:12}}>
+                <button onClick={()=>setShowAddSheet(true)}
+                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"13px 16px",cursor:"pointer",transition:"opacity .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
+                  onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                  <svg width="14" height="14" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/></svg>
+                  <span style={{fontSize:13,fontWeight:600,color:T.accent}}>Ajouter un ETF</span>
+                </button>
+                <button onClick={()=>setShowImportSheet(true)}
+                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"13px 16px",cursor:"pointer",transition:"opacity .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.opacity=".7"}
+                  onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  <span style={{fontSize:12,fontWeight:500,color:T.text3}}>Import</span>
+                </button>
               </div>
               {holdings.length>0?(
                 <div>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,padding:"0 2px"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase"}}>Positions</span>
+                      <span style={{fontSize:9,color:T.text5,background:T.surfaceFaint,border:`0.5px solid ${T.borderFaint}`,borderRadius:20,padding:"1px 7px"}}>{holdings.length}</span>
+                    </div>
+                    <button onClick={()=>setConfirmReset(true)} style={{background:"none",border:"none",color:"rgba(255,77,77,0.4)",fontSize:11,cursor:"pointer",padding:"2px 0"}}>Tout effacer</button>
+                  </div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     {holdings.map((h,i)=>{
                       const pct=total>0?(h.amount/total*100):0;
