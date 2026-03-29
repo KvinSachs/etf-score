@@ -1744,12 +1744,36 @@ export default function App(){
             <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn .3s ease"}}>
 
               {/* Positions — toujours en premier */}
+              {/* Barre d'actions sticky */}
+              <div style={{
+                display:"flex",alignItems:"center",justifyContent:"space-between",
+                marginBottom:10,padding:"0 2px",
+              }}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase"}}>Positions</span>
+                  {holdings.length>0&&<span style={{fontSize:9,color:T.text5,background:T.surfaceFaint,border:`0.5px solid ${T.borderFaint}`,borderRadius:20,padding:"1px 7px"}}>{holdings.length}</span>}
+                </div>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <button onClick={()=>setShowImportSheet(true)}
+                    style={{display:"flex",alignItems:"center",gap:5,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:20,padding:"5px 10px",cursor:"pointer",transition:"opacity .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.opacity=".7"}
+                    onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                    <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    <span style={{fontSize:11,color:T.text3,fontWeight:500}}>Import</span>
+                  </button>
+                  <button onClick={()=>setShowAddSheet(true)}
+                    style={{display:"flex",alignItems:"center",gap:5,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:20,padding:"5px 10px",cursor:"pointer",transition:"opacity .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
+                    onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/></svg>
+                    <span style={{fontSize:11,color:T.accent,fontWeight:600}}>Ajouter</span>
+                  </button>
+                  {holdings.length>0&&<button onClick={()=>setConfirmReset(true)} style={{background:"none",border:"none",color:"rgba(255,77,77,0.4)",fontSize:11,cursor:"pointer",padding:"5px 2px"}}>Effacer</button>}
+                </div>
+              </div>
               {holdings.length>0?(
                 <div>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,padding:"0 4px"}}>
-                    <span style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase"}}>Positions</span>
-                    <button onClick={()=>setConfirmReset(true)} style={{background:"none",border:"none",color:"rgba(255,77,77,0.5)",fontSize:11,cursor:"pointer"}}>Tout effacer</button>
-                  </div>
+                  <div style={{display:"none"}}>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     {holdings.map((h,i)=>{
                       const pct=total>0?(h.amount/total*100):0;
@@ -1815,24 +1839,6 @@ export default function App(){
                   <div style={{fontSize:13,color:T.text4,lineHeight:1.7}}>Ajoutez vos ETF pour analyser votre portefeuille.</div>
                 </Glass>
               )}
-
-              {/* Actions bar */}
-              <div style={{display:"flex",gap:8}}>
-                <button onClick={()=>setShowAddSheet(true)}
-                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
-                  onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
-                  onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/></svg>
-                  <span style={{fontSize:13,fontWeight:600,color:T.accent}}>Ajouter un ETF</span>
-                </button>
-                <button onClick={()=>setShowImportSheet(true)}
-                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
-                  onMouseEnter={e=>e.currentTarget.style.opacity=".7"}
-                  onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round"/></svg>
-                  <span style={{fontSize:12,fontWeight:500,color:T.text3}}>Import / Export</span>
-                </button>
-              </div>
 
               {/* Add ETF sheet */}
               {showAddSheet&&(
