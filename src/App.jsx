@@ -1485,6 +1485,19 @@ export default function App(){
 
       <div style={{position:"relative",zIndex:1}}>
         {/* ── HEADER ── */}
+        {/* Status bar cover — fills area above header with theme bg */}
+        <div style={{
+          position:"fixed",
+          top:0,
+          left:"50%",
+          transform:"translateX(-50%)",
+          width:"100%",
+          maxWidth:430,
+          height:"env(safe-area-inset-top, 0px)",
+          background:T.bg,
+          zIndex:51,
+          pointerEvents:"none",
+        }}/>
         <header style={{paddingTop:"14px",paddingBottom:"14px",paddingLeft:"20px",paddingRight:"20px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(60px) saturate(200%)",WebkitBackdropFilter:"blur(60px) saturate(200%)",background:T.bgHeader,position:"sticky",top:"env(safe-area-inset-top, 0px)",zIndex:50,
           maskImage:"linear-gradient(to bottom, black 85%, transparent 100%)",
           WebkitMaskImage:"linear-gradient(to bottom, black 85%, transparent 100%)",
