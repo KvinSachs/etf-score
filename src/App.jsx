@@ -1489,13 +1489,15 @@ export default function App(){
         {/* ── HEADER ── */}
 
         <header style={{
-          paddingTop:"calc(env(safe-area-inset-top, 0px) + 14px)",
+          paddingTop:"14px",
           paddingBottom:"14px",paddingLeft:"20px",paddingRight:"20px",
           display:"flex",alignItems:"center",justifyContent:"space-between",
           backdropFilter:"blur(60px) saturate(200%)",
           WebkitBackdropFilter:"blur(60px) saturate(200%)",
           background:T.bgHeader,
-          position:"sticky",top:0,zIndex:50,
+          position:"sticky",
+          top:"env(safe-area-inset-top, 0px)",
+          zIndex:50,
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <img src="/logo-etf.svg" alt="ETF Score" style={{width:24,height:28,objectFit:"contain",flexShrink:0}}/>
