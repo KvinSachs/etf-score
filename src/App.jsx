@@ -672,18 +672,67 @@ function Tabs({active,onChange,highlight=[]}){
     {id:"ptf",label:"Mes ETF",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M2 15C5 15 5.5 9 9 9C12.5 9 12.5 13 16 11.5C18.5 10.5 19.5 5 21 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>},
     {id:"about",label:"À propos",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.4"/><line x1="11" y1="10" x2="11" y2="16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="11" cy="7" r="1" fill="currentColor"/></svg>},
   ];
+  const isDark=T.bg==="#050506";
   return(
-    <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:T.bgTabBar,backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",borderTop:`0.5px solid ${T.borderFaint}`,paddingBottom:"env(safe-area-inset-bottom,0px)",zIndex:50}}>
-      <div style={{display:"flex",padding:"6px 0 2px"}}>
+    <div style={{
+      position:"fixed",
+      bottom:0,
+      left:"50%",
+      transform:"translateX(-50%)",
+      width:"100%",
+      maxWidth:430,
+      paddingBottom:"env(safe-area-inset-bottom, 16px)",
+      paddingLeft:16,
+      paddingRight:16,
+      paddingTop:10,
+      zIndex:50,
+      pointerEvents:"none",
+    }}>
+      {/* Gélule flottante */}
+      <div style={{
+        display:"flex",
+        background:isDark?"rgba(28,28,30,0.82)":"rgba(255,255,255,0.82)",
+        backdropFilter:"blur(40px) saturate(200%)",
+        WebkitBackdropFilter:"blur(40px) saturate(200%)",
+        borderRadius:40,
+        border:`0.5px solid ${isDark?"rgba(255,255,255,0.12)":"rgba(0,0,0,0.08)"}`,
+        boxShadow:isDark
+          ?"0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 0.5px 0 rgba(255,255,255,0.08)"
+          :"0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06), inset 0 0.5px 0 rgba(255,255,255,0.8)",
+        padding:"6px 8px",
+        pointerEvents:"auto",
+        position:"relative",
+        overflow:"hidden",
+      }}>
+        {/* Top sheen */}
+        <div style={{position:"absolute",top:0,left:"10%",right:"10%",height:"0.5px",background:isDark?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.9)",borderRadius:"0 0 2px 2px",pointerEvents:"none"}}/>
         {tabs.map(t=>{
           const isActive=active===t.id;
           return(
             <button key={t.id} onClick={()=>onChange(t.id)}
-              style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",color:isActive?T.text:T.text5,WebkitTapHighlightColor:"transparent",transition:"color .15s",position:"relative",fontFamily:"-apple-system,BlinkMacSystemFont,system-ui,sans-serif"}}>
-              {isActive&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:16,height:2,borderRadius:1,background:T.accent}}/>}
-              {t.icon}
-              <span style={{fontSize:9,fontWeight:isActive?600:400,letterSpacing:.3,lineHeight:1}}>{t.label}</span>
-              {highlight.includes(t.id)&&!isActive&&<div style={{position:"absolute",top:6,right:"20%",width:5,height:5,borderRadius:"50%",background:T.accent,boxShadow:"0 0 6px #0ecb81",animation:"pulse 2s infinite"}}/>}
+              style={{
+                flex:1,background:"none",border:"none",cursor:"pointer",
+                display:"flex",flexDirection:"column",alignItems:"center",gap:3,
+                padding:"8px 4px",
+                color:isActive?T.accent:T.text4,
+                WebkitTapHighlightColor:"transparent",
+                transition:"color .2s",
+                position:"relative",
+                fontFamily:"-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
+                borderRadius:32,
+              }}>
+              {/* Active pill background */}
+              {isActive&&<div style={{
+                position:"absolute",inset:0,
+                background:isDark?"rgba(14,203,129,0.12)":"rgba(14,203,129,0.1)",
+                borderRadius:32,
+                border:`0.5px solid rgba(14,203,129,0.2)`,
+              }}/>}
+              <div style={{position:"relative",zIndex:1}}>
+                {t.icon}
+              </div>
+              <span style={{fontSize:9,fontWeight:isActive?700:400,letterSpacing:.3,lineHeight:1,position:"relative",zIndex:1}}>{t.label}</span>
+              {highlight.includes(t.id)&&!isActive&&<div style={{position:"absolute",top:6,right:"18%",width:5,height:5,borderRadius:"50%",background:T.accent,boxShadow:`0 0 6px ${T.accent}`,animation:"pulse 2s infinite"}}/>}
             </button>
           );
         })}
