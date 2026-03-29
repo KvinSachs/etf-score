@@ -124,10 +124,6 @@ const T = {
   accentBg:     "rgba(14,203,129,0.1)",
   accentBorder: "rgba(14,203,129,0.25)",
   accentGlow:   "rgba(14,203,129,0.4)",
-  cta:          "#2563EB",
-  ctaBg:        "rgba(37,99,235,0.12)",
-  ctaBorder:    "rgba(37,99,235,0.3)",
-  ctaGlow:      "rgba(37,99,235,0.4)",
   danger:       "#ff4d4d",
   dangerBg:     "rgba(255,77,77,0.08)",
   dangerBorder: "rgba(255,77,77,0.2)",
@@ -875,10 +871,10 @@ function Onboarding({onAdd,onDone}){
     {
       icon:(
         <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
-          <circle cx="36" cy="36" r="32" stroke="rgba(37,99,235,0.15)" strokeWidth="1"/>
-          <circle cx="36" cy="36" r="22" stroke="rgba(37,99,235,0.08)" strokeWidth="1"/>
-          <path d="M18 46C23 46 25 32 30 32C35 32 35 40 41 37C46 34 49 22 55 18" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter="drop-shadow(0 0 8px #2563EB)"/>
-          <circle cx="55" cy="18" r="4" fill="#2563EB" filter="drop-shadow(0 0 8px #2563EB)"/>
+          <circle cx="36" cy="36" r="32" stroke="rgba(14,203,129,0.12)" strokeWidth="1"/>
+          <circle cx="36" cy="36" r="22" stroke="rgba(14,203,129,0.08)" strokeWidth="1"/>
+          <path d="M18 46C23 46 25 32 30 32C35 32 35 40 41 37C46 34 49 22 55 18" stroke="#0ecb81" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter="drop-shadow(0 0 8px #0ecb81)"/>
+          <circle cx="55" cy="18" r="4" fill="#0ecb81" filter="drop-shadow(0 0 8px #0ecb81)"/>
         </svg>
       ),
       title:"Analysez votre portefeuille ETF",
@@ -887,10 +883,10 @@ function Onboarding({onAdd,onDone}){
     {
       icon:(
         <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
-          <rect x="8" y="42" width="14" height="22" rx="2" fill="rgba(37,99,235,0.1)" stroke="rgba(37,99,235,0.25)" strokeWidth="1"/>
-          <rect x="29" y="28" width="14" height="36" rx="2" fill="rgba(37,99,235,0.2)" stroke="rgba(37,99,235,0.4)" strokeWidth="1"/>
-          <rect x="50" y="12" width="14" height="52" rx="2" fill="rgba(37,99,235,0.35)" stroke="#2563EB" strokeWidth="1"/>
-          <circle cx="57" cy="7" r="5" fill="#2563EB" filter="drop-shadow(0 0 8px #2563EB)"/>
+          <rect x="8" y="42" width="14" height="22" rx="2" fill="rgba(14,203,129,0.1)" stroke="rgba(14,203,129,0.3)" strokeWidth="1"/>
+          <rect x="29" y="28" width="14" height="36" rx="2" fill="rgba(14,203,129,0.2)" stroke="rgba(14,203,129,0.4)" strokeWidth="1"/>
+          <rect x="50" y="12" width="14" height="52" rx="2" fill="rgba(14,203,129,0.35)" stroke="#0ecb81" strokeWidth="1"/>
+          <circle cx="57" cy="7" r="5" fill="#0ecb81" filter="drop-shadow(0 0 8px #0ecb81)"/>
         </svg>
       ),
       title:"Un score clair sur 20",
@@ -903,7 +899,7 @@ function Onboarding({onAdd,onDone}){
   const Dots=()=>(
     <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:32}}>
       {[0,1,2].map(i=>(
-        <div key={i} onClick={()=>{ if(i<2)setStep(i); }} style={{width:i===step?24:6,height:6,borderRadius:3,background:i===step?T.cta:T.borderSubtle,transition:"all .3s cubic-bezier(.16,1,.3,1)",cursor:i<2?"pointer":"default"}}/>
+        <div key={i} onClick={()=>{ if(i<2)setStep(i); }} style={{width:i===step?24:6,height:6,borderRadius:3,background:i===step?T.accent:T.borderSubtle,transition:"all .3s cubic-bezier(.16,1,.3,1)",cursor:i<2?"pointer":"default"}}/>
       ))}
     </div>
   );
@@ -1042,7 +1038,7 @@ function Onboarding({onAdd,onDone}){
             </button>
           ):(
             <button onClick={done}
-              style={{width:"100%",background:added.length>0?T.cta:T.surfaceMed,border:added.length>0?"none":`0.5px solid ${T.border}`,borderRadius:16,padding:"17px",color:added.length>0?"#fff":T.text4,fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}}
+              style={{width:"100%",background:added.length>0?T.accent:T.surfaceMed,border:added.length>0?"none":`0.5px solid ${T.border}`,borderRadius:16,padding:"17px",color:added.length>0?"#000":T.text4,fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}}
               onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
               {added.length>0?`Analyser mon portefeuille (${added.length} ETF) →`:"Passer cette étape"}
@@ -1266,14 +1262,14 @@ function ImportExport({holdings,holdingsWithPlan,onImport}){
       <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:result?12:0}}>
         {/* Import */}
         <button onClick={()=>fileRef.current?.click()}
-          style={{width:"100%",display:"flex",alignItems:"center",gap:12,background:T.ctaBg,border:`0.5px solid ${T.ctaBorder}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
+          style={{width:"100%",display:"flex",alignItems:"center",gap:12,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
           onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-          <div style={{width:36,height:36,borderRadius:10,background:T.ctaBg,border:`0.5px solid ${T.ctaBorder}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <div style={{width:36,height:36,borderRadius:10,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
             <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.accent} strokeWidth="1.5" strokeLinecap="round"/></svg>
           </div>
           <div style={{textAlign:"left"}}>
-            <div style={{fontSize:13,fontWeight:600,color:T.cta,marginBottom:2}}>Importer un CSV</div>
+            <div style={{fontSize:13,fontWeight:600,color:T.accent,marginBottom:2}}>Importer un CSV</div>
             <div style={{fontSize:11,color:T.text4}}>Colonnes : ISIN, Nom, Montant</div>
           </div>
         </button>
@@ -1757,11 +1753,11 @@ export default function App(){
               {/* Actions bar */}
               <div style={{display:"flex",gap:8}}>
                 <button onClick={()=>setShowAddSheet(true)}
-                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:T.ctaBg,border:`0.5px solid ${T.ctaBorder}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
+                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
                   onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
                   onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke={T.cta} strokeWidth="1.8" strokeLinecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke={T.cta} strokeWidth="1.8" strokeLinecap="round"/></svg>
-                  <span style={{fontSize:13,fontWeight:600,color:T.cta}}>Ajouter un ETF</span>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/></svg>
+                  <span style={{fontSize:13,fontWeight:600,color:T.accent}}>Ajouter un ETF</span>
                 </button>
                 <button onClick={()=>setShowImportSheet(true)}
                   style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
@@ -1869,7 +1865,7 @@ export default function App(){
                     </div>
                   </div>
                   <button onClick={()=>{localStorage.removeItem("etf-onboarding-seen");window.location.reload();}}
-                    style={{background:T.ctaBg,border:`0.5px solid ${T.ctaBorder}`,borderRadius:T.radiusSm,padding:"7px 14px",color:T.cta,fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,transition:"opacity .15s"}}
+                    style={{background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"7px 14px",color:T.accent,fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,transition:"opacity .15s"}}
                     onMouseEnter={e=>e.currentTarget.style.opacity=".75"}
                     onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
                     Lancer →
