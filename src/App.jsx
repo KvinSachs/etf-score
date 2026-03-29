@@ -799,17 +799,17 @@ function Splash({visible}){
         {/* Glow */}
         <div style={{
           position:"absolute",inset:-40,
-          background:"radial-gradient(circle,rgba(14,203,129,0.12) 0%,transparent 70%)",
+          background:"radial-gradient(circle,rgba(139,92,246,0.2) 0%,transparent 70%)",
           animation:visible?"splashGlow 1.2s ease .4s both":"none",
         }}/>
         <img
           src="/logo-etf.svg"
           alt="ETF Score"
           style={{
-            width:64,height:74,
+            width:52,height:60,
             objectFit:"contain",
             position:"relative",zIndex:1,
-            filter:"drop-shadow(0 4px 24px rgba(255,255,255,0.15))",
+            filter:"drop-shadow(0 4px 24px rgba(139,92,246,0.3))",
           }}
         />
       </div>
