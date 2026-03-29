@@ -1496,7 +1496,7 @@ export default function App(){
           WebkitBackdropFilter:"blur(60px) saturate(200%)",
           background:T.bgHeader,
           position:"sticky",
-          top:"env(safe-area-inset-top, 0px)",
+          top:0,
           zIndex:50,
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>

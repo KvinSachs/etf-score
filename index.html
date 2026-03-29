@@ -47,6 +47,7 @@
         min-height: 100vh;
         min-height: 100dvh;
         min-height: -webkit-fill-available;
+        padding-top: var(--sat);
         padding-left: var(--sal);
         padding-right: var(--sar);
       }
@@ -55,6 +56,12 @@
       @media all and (display-mode: standalone) {
         html, body, #root {
           background: #0e0e0f !important;
+        }
+        body {
+          padding-top: 0 !important;
+        }
+        #root {
+          padding-top: var(--sat);
         }
       }
     </style>
