@@ -806,7 +806,7 @@ function Splash({visible}){
           src="/logo-etf.svg"
           alt="ETF Score"
           style={{
-            width:80,height:92,
+            width:64,height:74,
             objectFit:"contain",
             position:"relative",zIndex:1,
             filter:"drop-shadow(0 4px 24px rgba(255,255,255,0.15))",
@@ -1506,7 +1506,7 @@ export default function App(){
           paddingBottom:"22px",marginBottom:"-8px",
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <img src="/icon-180.png" alt="" style={{width:30,height:30,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.target.style.display="none";}}/>
+            <img src="/logo-etf.svg" alt="ETF Score" style={{width:24,height:28,objectFit:"contain",flexShrink:0}}/>
             <div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <span style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:800,color:T.text,letterSpacing:-.3}}>ETF Score</span>
@@ -1883,7 +1883,7 @@ export default function App(){
             <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
               <Glass style={{padding:"24px 20px"}}>
                 <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
-                  <img src="/icon-180.png" alt="" style={{width:52,height:52,borderRadius:14,objectFit:"cover"}} onError={e=>e.target.style.display="none"}/>
+                  <img src="/logo-etf.svg" alt="ETF Score" style={{width:44,height:52,objectFit:"contain"}}/>
                   <div>
                     <div style={{fontSize:18,fontWeight:700,color:T.text,letterSpacing:-.3}}>ETF Score</div>
                     <div style={{fontSize:11,color:T.text4,marginTop:2}}>Analyse multicritères · v3</div>
