@@ -1537,7 +1537,19 @@ export default function App(){
 
               {/* Hero score block — sans card, flottant sur le fond */}
               {holdings.length>0&&(
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"8px 4px 4px"}}>
+                <div style={{position:"relative"}}>
+                  {/* Ambient glow vert → violet */}
+                  <div style={{
+                    position:"absolute",
+                    top:"50%",left:"50%",
+                    transform:"translate(-50%,-50%)",
+                    width:"140%",height:"220%",
+                    background:"radial-gradient(ellipse at 30% 50%, rgba(14,203,129,0.13) 0%, rgba(139,92,246,0.07) 50%, transparent 70%)",
+                    pointerEvents:"none",
+                    zIndex:0,
+                    filter:"blur(8px)",
+                  }}/>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"8px 4px 4px",position:"relative",zIndex:1}}>
                   <div>
                     <div style={{fontSize:9,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:10,fontWeight:600}}>Score global</div>
                     <div style={{display:"flex",alignItems:"baseline",gap:4}}>
@@ -1554,6 +1566,7 @@ export default function App(){
                     <div style={{fontSize:26,fontWeight:800,color:T.text,letterSpacing:-.5}}>{total.toLocaleString("fr-FR")} €</div>
                     <div style={{fontSize:11,color:T.text5,marginTop:6}}>{holdings.length} position{holdings.length>1?"s":""}</div>
                   </div>
+                </div>
                 </div>
               )}
 
