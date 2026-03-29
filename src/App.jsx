@@ -1773,7 +1773,6 @@ export default function App(){
               </div>
               {holdings.length>0?(
                 <div>
-                  <div style={{display:"none"}}>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     {holdings.map((h,i)=>{
                       const pct=total>0?(h.amount/total*100):0;
