@@ -799,19 +799,17 @@ function Splash({visible}){
         {/* Glow */}
         <div style={{
           position:"absolute",inset:-40,
-          background:"radial-gradient(circle,rgba(139,92,246,0.2) 0%,transparent 70%)",
+          background:"radial-gradient(circle,rgba(14,203,129,0.15) 0%,transparent 70%)",
           animation:visible?"splashGlow 1.2s ease .4s both":"none",
         }}/>
-        <img
-          src="/logo-etf.svg"
-          alt="ETF Score"
-          style={{
-            width:52,height:60,
-            objectFit:"contain",
-            position:"relative",zIndex:1,
-            filter:"drop-shadow(0 4px 24px rgba(139,92,246,0.3))",
-          }}
-        />
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" style={{position:"relative",zIndex:1}}>
+          <rect width="72" height="72" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
+          <circle cx="36" cy="36" r="28" stroke="rgba(14,203,129,0.1)" strokeWidth="1"/>
+          <path d="M18 46C23 46 25 32 30 32C35 32 35 40 41 37C46 34 49 22 55 18"
+            stroke="#0ecb81" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            style={{filter:"drop-shadow(0 0 8px #0ecb81)"}}/>
+          <circle cx="55" cy="18" r="4" fill="#0ecb81" style={{filter:"drop-shadow(0 0 10px #0ecb81)"}}/>
+        </svg>
       </div>
 
       {/* App name */}
@@ -1500,7 +1498,7 @@ export default function App(){
           zIndex:50,
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <img src="/logo-etf.svg" alt="ETF Score" style={{width:24,height:28,objectFit:"contain",flexShrink:0}}/>
+            <img src="/icon-180.png" alt="" style={{width:30,height:30,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.target.style.display="none";}}/>
             <div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <span style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:800,color:T.text,letterSpacing:-.3}}>ETF Score</span>
@@ -1877,7 +1875,7 @@ export default function App(){
             <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
               <Glass style={{padding:"24px 20px"}}>
                 <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
-                  <img src="/logo-etf.svg" alt="ETF Score" style={{width:44,height:52,objectFit:"contain"}}/>
+                  <img src="/icon-180.png" alt="" style={{width:52,height:52,borderRadius:14,objectFit:"cover"}} onError={e=>e.target.style.display="none"}/>
                   <div>
                     <div style={{fontSize:18,fontWeight:700,color:T.text,letterSpacing:-.3}}>ETF Score</div>
                     <div style={{fontSize:11,color:T.text4,marginTop:2}}>Analyse multicritères · v3</div>
