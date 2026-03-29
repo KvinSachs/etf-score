@@ -1544,7 +1544,7 @@ export default function App(){
                     top:"50%",left:"50%",
                     transform:"translate(-50%,-50%)",
                     width:"140%",height:"220%",
-                    background:"radial-gradient(ellipse at 30% 50%, rgba(14,203,129,0.13) 0%, rgba(139,92,246,0.07) 50%, transparent 70%)",
+                    background:"radial-gradient(ellipse at 25% 50%, rgba(14,203,129,0.07) 0%, rgba(99,102,241,0.09) 45%, rgba(139,92,246,0.05) 65%, transparent 80%)",
                     pointerEvents:"none",
                     zIndex:0,
                     filter:"blur(8px)",
