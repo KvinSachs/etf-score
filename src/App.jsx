@@ -1436,7 +1436,7 @@ export default function App(){
 
       <div style={{position:"relative",zIndex:1}}>
         {/* ── HEADER ── */}
-        <header style={{paddingTop:"14px",paddingBottom:"14px",paddingLeft:"20px",paddingRight:"20px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",background:T.bgHeader,position:"sticky",top:0,zIndex:50}}>
+        <header style={{paddingTop:"14px",paddingBottom:"14px",paddingLeft:"20px",paddingRight:"20px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",background:T.bgHeader,position:"sticky",top:"env(safe-area-inset-top, 0px)",zIndex:50}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <img src="/icon-180.png" alt="" style={{width:30,height:30,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.target.style.display="none";}}/>
             <div>
@@ -1463,7 +1463,7 @@ export default function App(){
         </header>
 
         {/* ── CONTENT ── */}
-        <div style={{padding:"14px 16px 90px"}}>
+        <div style={{padding:`14px 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
 
           {/* SCORES */}
           {tab==="scores"&&(
@@ -1753,14 +1753,14 @@ export default function App(){
               {/* Actions bar */}
               <div style={{display:"flex",gap:8}}>
                 <button onClick={()=>setShowAddSheet(true)}
-                  style={{flex:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
+                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:T.accentBg,border:`0.5px solid ${T.accentBorder}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
                   onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
                   onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke={T.accent} strokeWidth="1.8" strokeLinecap="round"/></svg>
                   <span style={{fontSize:13,fontWeight:600,color:T.accent}}>Ajouter un ETF</span>
                 </button>
                 <button onClick={()=>setShowImportSheet(true)}
-                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"14px 12px",cursor:"pointer",transition:"opacity .15s"}}
+                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:T.radiusSm,padding:"14px 16px",cursor:"pointer",transition:"opacity .15s"}}
                   onMouseEnter={e=>e.currentTarget.style.opacity=".7"}
                   onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke={T.text3} strokeWidth="1.5" strokeLinecap="round"/></svg>
