@@ -107,7 +107,7 @@ const T = {
   bgDropdown:   "rgba(14,14,14,0.97)",
   shadowDropdown: "0 24px 60px rgba(0,0,0,0.8)",
   bgBlur:       "rgba(5,5,6,0.6)",
-  bgHeader:     "rgba(5,5,6,0.8)",
+  bgHeader:     "rgba(5,5,6,0.88)",
   bgTabBar:     "rgba(5,5,6,0.92)",
   bgOverlay:    "rgba(0,0,0,0.65)",
   surface:      "rgba(255,255,255,0.05)",
@@ -163,7 +163,7 @@ const T_LIGHT = {
   bgDropdown:   "#ffffff",
   shadowDropdown: "0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06)",
   bgBlur:       "rgba(248,247,245,0.88)",
-  bgHeader:     "rgba(248,247,245,0.94)",
+  bgHeader:     "rgba(248,247,245,0.97)",
   bgTabBar:     "rgba(248,247,245,0.97)",
   bgOverlay:    "rgba(0,0,0,0.35)",
   surface:      "#ffffff",
@@ -1485,7 +1485,11 @@ export default function App(){
 
       <div style={{position:"relative",zIndex:1}}>
         {/* ── HEADER ── */}
-        <header style={{paddingTop:"14px",paddingBottom:"14px",paddingLeft:"20px",paddingRight:"20px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(40px) saturate(180%)",WebkitBackdropFilter:"blur(40px) saturate(180%)",background:T.bgHeader,position:"sticky",top:"env(safe-area-inset-top, 0px)",zIndex:50}}>
+        <header style={{paddingTop:"14px",paddingBottom:"14px",paddingLeft:"20px",paddingRight:"20px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(60px) saturate(200%)",WebkitBackdropFilter:"blur(60px) saturate(200%)",background:T.bgHeader,position:"sticky",top:"env(safe-area-inset-top, 0px)",zIndex:50,
+          maskImage:"linear-gradient(to bottom, black 85%, transparent 100%)",
+          WebkitMaskImage:"linear-gradient(to bottom, black 85%, transparent 100%)",
+          paddingBottom:"22px",marginBottom:"-8px",
+        }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <img src="/icon-180.png" alt="" style={{width:30,height:30,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.target.style.display="none";}}/>
             <div>
