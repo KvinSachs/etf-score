@@ -1487,6 +1487,16 @@ export default function App(){
         {/* ── HEADER ── */}
 
 
+        {/* Rubber-band gap cover */}
+        <div style={{
+          position:"fixed",top:0,left:"50%",
+          transform:"translateX(-50%)",
+          width:"100%",maxWidth:430,
+          height:"calc(env(safe-area-inset-top, 0px) + 60px)",
+          background:T.bg,
+          zIndex:49,
+          pointerEvents:"none",
+        }}/>
         <header style={{
           paddingTop:"calc(env(safe-area-inset-top, 0px) + 14px)",
           paddingBottom:"14px",paddingLeft:"20px",paddingRight:"20px",
@@ -1527,7 +1537,7 @@ export default function App(){
         </header>
 
         {/* ── CONTENT ── */}
-        <div style={{
+        <div className="scroll-container" style={{
           position:"fixed",
           top:`calc(env(safe-area-inset-top, 0px) + 48px)`,
           bottom:0,left:"50%",
@@ -1535,8 +1545,6 @@ export default function App(){
           width:"100%",maxWidth:430,
           overflowY:"scroll",
           overflowX:"hidden",
-          WebkitOverflowScrolling:"touch",
-          overscrollBehavior:"none",
         }}>
         <div style={{padding:`14px 16px calc(90px + env(safe-area-inset-bottom, 0px))`,overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
 
@@ -1547,8 +1555,8 @@ export default function App(){
               {/* Hero score block — sans card, flottant sur le fond */}
               {holdings.length>0&&(
                 <div style={{position:"relative",margin:"0 -16px",padding:"0 16px"}}>
-                  {/* Ambient glow vert → violet — fixed so it escapes overflow:hidden */}
-                  <div style={{
+                  {/* Ambient glow — scores tab only, fixed */}
+                  {tab==="scores"&&<div style={{
                     position:"fixed",
                     top:"calc(env(safe-area-inset-top, 0px) + 48px)",
                     left:0,right:0,
@@ -1557,7 +1565,7 @@ export default function App(){
                     pointerEvents:"none",
                     zIndex:0,
                     filter:"blur(16px)",
-                  }}/>
+                  }}/>}
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"20px 4px 24px",position:"relative",zIndex:1}}>
                   <div>
                     <div style={{fontSize:9,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:10,fontWeight:600}}>Score global</div>
