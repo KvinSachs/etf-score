@@ -1512,7 +1512,6 @@ export default function App(){
           width:"100%",
           maxWidth:430,
           zIndex:50,
-          borderBottom:`0.5px solid ${T.borderFaint}`,
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <img src="/icon-180.png" alt="" style={{width:30,height:30,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.target.style.display="none";}}/>
@@ -1538,6 +1537,17 @@ export default function App(){
             </div>
           </div>
         </header>
+        {/* Header bottom fade */}
+        <div style={{
+          position:"fixed",
+          top:"calc(env(safe-area-inset-top, 0px) + 48px)",
+          left:"50%",transform:"translateX(-50%)",
+          width:"100%",maxWidth:430,
+          height:24,
+          background:`linear-gradient(to bottom, ${T.bg}, transparent)`,
+          zIndex:49,
+          pointerEvents:"none",
+        }}/>
 
         {/* ── CONTENT ── */}
         <div className="scroll-container"
