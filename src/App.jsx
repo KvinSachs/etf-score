@@ -1486,7 +1486,7 @@ export default function App(){
       <div style={{position:"relative",zIndex:1}}>
         {/* ── HEADER ── */}
 
-        {/* Status bar cover */}
+        {/* Status bar cover — opaque, no leak */}
         <div style={{
           position:"fixed",
           top:0,
@@ -1494,11 +1494,9 @@ export default function App(){
           transform:"translateX(-50%)",
           width:"100%",
           maxWidth:430,
-          height:"env(safe-area-inset-top, 0px)",
-          background:T.bgHeader,
-          backdropFilter:"blur(60px) saturate(200%)",
-          WebkitBackdropFilter:"blur(60px) saturate(200%)",
-          zIndex:51,
+          height:"calc(env(safe-area-inset-top, 0px) + 2px)",
+          background:T.bg,
+          zIndex:52,
           pointerEvents:"none",
         }}/>
         <header style={{
