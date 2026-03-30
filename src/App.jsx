@@ -1534,14 +1534,15 @@ export default function App(){
           transform:"translateX(-50%)",
           width:"100%",maxWidth:430,
           overflowY:"scroll",
+          overflowX:"hidden",
           WebkitOverflowScrolling:"touch",
           overscrollBehavior:"none",
         }}>
-        <div style={{padding:`14px 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
+        <div style={{padding:`14px 16px calc(90px + env(safe-area-inset-bottom, 0px))`,overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
 
           {/* SCORES */}
           {tab==="scores"&&(
-            <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn .3s ease"}}>
+            <div style={{display:"flex",flexDirection:"column",overflowX:"hidden",width:"100%",gap:12,animation:"fadeIn .3s ease"}}>
 
               {/* Hero score block — sans card, flottant sur le fond */}
               {holdings.length>0&&(
@@ -1706,7 +1707,7 @@ export default function App(){
           )}
 
           {tab==="geo"&&(
-            <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
+            <div style={{display:"flex",flexDirection:"column",overflowX:"hidden",width:"100%",gap:14,animation:"fadeIn .3s ease"}}>
               {Object.keys(scores.geoMap).length>0?(
                 <>
                   {/* Context stats */}
@@ -1732,7 +1733,7 @@ export default function App(){
             </div>
           )}
           {tab==="sec"&&(
-            <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
+            <div style={{display:"flex",flexDirection:"column",overflowX:"hidden",width:"100%",gap:14,animation:"fadeIn .3s ease"}}>
               {Object.keys(scores.secMap).length>0?(
                 <>
                   {/* Context stats */}
@@ -1760,7 +1761,7 @@ export default function App(){
 
           {/* ETF TAB */}
           {tab==="ptf"&&(
-            <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn .3s ease"}}>
+            <div style={{display:"flex",flexDirection:"column",overflowX:"hidden",width:"100%",gap:12,animation:"fadeIn .3s ease"}}>
 
               {/* Positions — toujours en premier */}
               {/* Boutons d'action */}
@@ -1886,7 +1887,7 @@ export default function App(){
 
           {/* ABOUT TAB */}
           {tab==="about"&&(
-            <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
+            <div style={{display:"flex",flexDirection:"column",overflowX:"hidden",width:"100%",gap:14,animation:"fadeIn .3s ease"}}>
               <Glass style={{padding:"24px 20px"}}>
                 <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
                   <img src="/icon-180.png" alt="" style={{width:52,height:52,borderRadius:14,objectFit:"cover"}} onError={e=>e.target.style.display="none"}/>
