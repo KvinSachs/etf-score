@@ -1544,7 +1544,8 @@ export default function App(){
           ref={scrollRef}
           onTouchStart={e=>{
             scrollTouchY.current=e.touches[0].clientY;
-            scrollTouchActive.current=true;
+            const el=scrollRef.current;
+            scrollTouchActive.current=el?el.scrollTop<=0:false;
           }}
           onTouchMove={e=>{
             if(!scrollTouchActive.current)return;
@@ -1554,7 +1555,7 @@ export default function App(){
             // Only elastic when at top and pulling down
             if(el.scrollTop<=0&&dy>0){
               e.preventDefault();
-              const pull=Math.min(dy*0.35,60);
+              const pull=Math.min(dy*0.45,90);
               el.style.transform=`translateX(-50%) translateY(${pull}px)`;
               el.style.transition="none";
             }
