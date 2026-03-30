@@ -1547,16 +1547,16 @@ export default function App(){
               {/* Hero score block — sans card, flottant sur le fond */}
               {holdings.length>0&&(
                 <div style={{position:"relative",margin:"0 -16px",padding:"0 16px"}}>
-                  {/* Ambient glow vert → violet — full width */}
+                  {/* Ambient glow vert → violet — fixed so it escapes overflow:hidden */}
                   <div style={{
-                    position:"absolute",
-                    top:"50%",left:"50%",
-                    transform:"translate(-50%,-50%)",
-                    width:"100vw",height:"300%",
-                    background:"radial-gradient(ellipse at 30% 50%, rgba(14,203,129,0.07) 0%, rgba(99,102,241,0.09) 45%, rgba(139,92,246,0.05) 65%, transparent 80%)",
+                    position:"fixed",
+                    top:"calc(env(safe-area-inset-top, 0px) + 48px)",
+                    left:0,right:0,
+                    height:"220px",
+                    background:"radial-gradient(ellipse at 30% 40%, rgba(14,203,129,0.07) 0%, rgba(99,102,241,0.1) 45%, rgba(139,92,246,0.06) 65%, transparent 80%)",
                     pointerEvents:"none",
                     zIndex:0,
-                    filter:"blur(12px)",
+                    filter:"blur(16px)",
                   }}/>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"20px 4px 24px",position:"relative",zIndex:1}}>
                   <div>
