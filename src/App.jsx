@@ -1246,9 +1246,6 @@ function ImportExport({holdings,holdingsWithPlan,onImport}){
   const[importing,setImporting]=useState(false);
   const[result,setResult]=useState(null); // {ok:[], errors:[]}
   const fileRef=useRef(null);
-  const scrollRef=useRef(null);
-  const scrollTouchY=useRef(0);
-  const scrollTouchActive=useRef(false);
 
   // Download template CSV
   const downloadTemplate=()=>{
@@ -1396,7 +1393,10 @@ export default function App(){
   const[plans,setPlans]=useState({}); // {ticker: {freq, amount, startDate}}
   const[editPlan,setEditPlan]=useState(null);
   const[showAddSheet,setShowAddSheet]=useState(false);
-  const[showImportSheet,setShowImportSheet]=useState(false); // ticker being edited
+  const[showImportSheet,setShowImportSheet]=useState(false);
+  const scrollRef=useRef(null);
+  const scrollTouchY=useRef(0);
+  const scrollTouchActive=useRef(false); // ticker being edited
   const[recMode,setRecMode]=useState("essential");
   const toastTimer=useRef(null);
 
