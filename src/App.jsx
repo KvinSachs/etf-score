@@ -1576,7 +1576,7 @@ export default function App(){
             overflowY:"scroll",
             overflowX:"hidden",
           }}>
-        <div style={{padding:`14px 16px calc(90px + env(safe-area-inset-bottom, 0px))`,overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
+        <div style={{padding:`24px 16px calc(90px + env(safe-area-inset-bottom, 0px))`,overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
 
           {/* SCORES */}
           {tab==="scores"&&(
@@ -1734,11 +1734,7 @@ export default function App(){
                 <Glass style={{padding:"52px 24px",textAlign:"center"}}>
                   <div style={{fontFamily:T.fontDisplay,fontSize:44,marginBottom:16,opacity:.3}}>◎</div>
                   <div style={{fontFamily:T.fontDisplay,fontSize:16,fontWeight:800,color:T.text,marginBottom:10}}>Aucun ETF renseigné</div>
-                  <div style={{fontSize:13,color:T.text4,lineHeight:1.7,marginBottom:20}}>Allez dans l'onglet <strong style={{color:T.textSub}}>Mes ETF</strong> pour ajouter vos positions.</div>
-                  <button onClick={()=>setOnboarding(true)}
-                    style={{background:"none",border:"none",color:T.text5,fontSize:12,cursor:"pointer",padding:0,textDecoration:"underline",textUnderlineOffset:3}}>
-                    Revoir l'introduction
-                  </button>
+                  <div style={{fontSize:13,color:T.text4,lineHeight:1.7}}>Allez dans l'onglet <strong style={{color:T.textSub}}>Mes ETF</strong> pour ajouter vos positions.</div>
                 </Glass>
               )}
             </div>
