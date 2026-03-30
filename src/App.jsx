@@ -1527,7 +1527,7 @@ export default function App(){
         </header>
 
         {/* ── CONTENT ── */}
-        <div style={{padding:`calc(env(safe-area-inset-top, 0px) + 62px) 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
+        <div style={{padding:`calc(env(safe-area-inset-top, 0px) + 52px) 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
 
           {/* SCORES */}
           {tab==="scores"&&(
