@@ -1543,7 +1543,7 @@ export default function App(){
           top:"calc(env(safe-area-inset-top, 0px) + 48px)",
           left:"50%",transform:"translateX(-50%)",
           width:"100%",maxWidth:430,
-          height:24,
+          height:40,
           background:`linear-gradient(to bottom, ${T.bg}, transparent)`,
           zIndex:49,
           pointerEvents:"none",
