@@ -1246,6 +1246,9 @@ function ImportExport({holdings,holdingsWithPlan,onImport}){
   const[importing,setImporting]=useState(false);
   const[result,setResult]=useState(null); // {ok:[], errors:[]}
   const fileRef=useRef(null);
+  const scrollRef=useRef(null);
+  const scrollTouchY=useRef(0);
+  const scrollTouchActive=useRef(false);
 
   // Download template CSV
   const downloadTemplate=()=>{
@@ -1537,15 +1540,41 @@ export default function App(){
         </header>
 
         {/* ── CONTENT ── */}
-        <div className="scroll-container" style={{
-          position:"fixed",
-          top:`calc(env(safe-area-inset-top, 0px) + 48px)`,
-          bottom:0,left:"50%",
-          transform:"translateX(-50%)",
-          width:"100%",maxWidth:430,
-          overflowY:"scroll",
-          overflowX:"hidden",
-        }}>
+        <div className="scroll-container"
+          ref={scrollRef}
+          onTouchStart={e=>{
+            scrollTouchY.current=e.touches[0].clientY;
+            scrollTouchActive.current=true;
+          }}
+          onTouchMove={e=>{
+            if(!scrollTouchActive.current)return;
+            const el=scrollRef.current;
+            if(!el)return;
+            const dy=e.touches[0].clientY-scrollTouchY.current;
+            // Only elastic when at top and pulling down
+            if(el.scrollTop<=0&&dy>0){
+              e.preventDefault();
+              const pull=Math.min(dy*0.35,60);
+              el.style.transform=`translateX(-50%) translateY(${pull}px)`;
+              el.style.transition="none";
+            }
+          }}
+          onTouchEnd={()=>{
+            scrollTouchActive.current=false;
+            const el=scrollRef.current;
+            if(!el)return;
+            el.style.transform="translateX(-50%) translateY(0px)";
+            el.style.transition="transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275)";
+          }}
+          style={{
+            position:"fixed",
+            top:`calc(env(safe-area-inset-top, 0px) + 48px)`,
+            bottom:0,left:"50%",
+            transform:"translateX(-50%)",
+            width:"100%",maxWidth:430,
+            overflowY:"scroll",
+            overflowX:"hidden",
+          }}>
         <div style={{padding:`14px 16px calc(90px + env(safe-area-inset-bottom, 0px))`,overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
 
           {/* SCORES */}
