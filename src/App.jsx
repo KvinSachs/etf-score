@@ -1527,7 +1527,17 @@ export default function App(){
         </header>
 
         {/* ── CONTENT ── */}
-        <div style={{padding:`calc(env(safe-area-inset-top, 0px) + 52px) 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
+        <div style={{
+          position:"fixed",
+          top:`calc(env(safe-area-inset-top, 0px) + 48px)`,
+          bottom:0,left:"50%",
+          transform:"translateX(-50%)",
+          width:"100%",maxWidth:430,
+          overflowY:"scroll",
+          WebkitOverflowScrolling:"touch",
+          overscrollBehavior:"none",
+        }}>
+        <div style={{padding:`14px 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
 
           {/* SCORES */}
           {tab==="scores"&&(
@@ -1971,6 +1981,7 @@ export default function App(){
 
             </div>
           )}
+        </div>
         </div>
       </div>
 
