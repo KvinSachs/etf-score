@@ -1493,8 +1493,12 @@ export default function App(){
           backdropFilter:"blur(60px) saturate(200%)",
           WebkitBackdropFilter:"blur(60px) saturate(200%)",
           background:T.bgHeader,
-          position:"sticky",
-          top:0,
+          position:"fixed",
+          top:"env(safe-area-inset-top, 0px)",
+          left:"50%",
+          transform:"translateX(-50%)",
+          width:"100%",
+          maxWidth:430,
           zIndex:50,
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -1523,7 +1527,7 @@ export default function App(){
         </header>
 
         {/* ── CONTENT ── */}
-        <div style={{padding:`14px 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
+        <div style={{padding:`calc(env(safe-area-inset-top, 0px) + 74px) 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
 
           {/* SCORES */}
           {tab==="scores"&&(
