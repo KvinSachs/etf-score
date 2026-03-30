@@ -1451,7 +1451,7 @@ export default function App(){
   if(!ready)return(<div style={{minHeight:"100vh",background:"#050506",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.1)",borderTopColor:"#0ecb81",animation:"spin .8s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
 
   return(
-    <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:T.fontText,maxWidth:430,margin:"0 auto",colorScheme:T.bg==="#050506"?"dark":"light",transition:"background 0.35s cubic-bezier(.16,1,.3,1), color 0.35s cubic-bezier(.16,1,.3,1)",overflowX:"hidden"}}>
+    <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:T.fontText,maxWidth:430,margin:"0 auto",colorScheme:T.bg==="#050506"?"dark":"light",transition:"background 0.35s cubic-bezier(.16,1,.3,1), color 0.35s cubic-bezier(.16,1,.3,1)",overflowX:"hidden",overscrollBehavior:"none"}}>
       <style>{`
         ${FONTS}
         *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
