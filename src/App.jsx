@@ -802,12 +802,10 @@ function Splash({visible}){
           background:"radial-gradient(circle,rgba(14,203,129,0.15) 0%,transparent 70%)",
           animation:visible?"splashGlow 1.2s ease .4s both":"none",
         }}/>
-        <img src="/logo-etf.svg" alt="ETF Score" style={{
+        <img src="/logo-etf_score.svg" alt="ETF Score" style={{
           width:56,height:65,
           objectFit:"contain",
           position:"relative",zIndex:1,
-          mixBlendMode:T.bg==="#050506"?"screen":"normal",
-          filter:T.bg==="#050506"?"none":"invert(1)",
         }}/>
       </div>
 
@@ -1513,7 +1511,7 @@ export default function App(){
           zIndex:50,
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <img src="/logo-etf.svg" alt="ETF Score" style={{width:22,height:26,objectFit:"contain",flexShrink:0,mixBlendMode:T.bg==="#050506"?"screen":"normal",filter:T.bg==="#050506"?"none":"invert(1)"}}/>
+            <img src="/logo-etf_score.svg" alt="ETF Score" style={{width:22,height:26,objectFit:"contain",flexShrink:0}}/>
             <div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <span style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:800,color:T.text,letterSpacing:-.3}}>ETF Score</span>
@@ -1933,7 +1931,7 @@ export default function App(){
             <div style={{display:"flex",flexDirection:"column",overflowX:"hidden",width:"100%",gap:14,animation:"fadeIn .3s ease"}}>
               <Glass style={{padding:"24px 20px"}}>
                 <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
-                  <img src="/logo-etf.svg" alt="ETF Score" style={{width:44,height:52,objectFit:"contain",mixBlendMode:T.bg==="#050506"?"screen":"normal",filter:T.bg==="#050506"?"none":"invert(1)"}}/>
+                  <img src="/logo-etf_score.svg" alt="ETF Score" style={{width:44,height:52,objectFit:"contain"}}/>
                   <div>
                     <div style={{fontSize:18,fontWeight:700,color:T.text,letterSpacing:-.3}}>ETF Score</div>
                     <div style={{fontSize:11,color:T.text4,marginTop:2}}>Analyse multicritères · v3</div>
