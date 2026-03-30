@@ -1491,9 +1491,7 @@ export default function App(){
           paddingTop:"calc(env(safe-area-inset-top, 0px) + 14px)",
           paddingBottom:"14px",paddingLeft:"20px",paddingRight:"20px",
           display:"flex",alignItems:"center",justifyContent:"space-between",
-          backdropFilter:"blur(60px) saturate(200%)",
-          WebkitBackdropFilter:"blur(60px) saturate(200%)",
-          background:T.bgHeader,
+          background:T.bg,
           position:"fixed",
           top:0,
           left:"50%",
@@ -1501,6 +1499,7 @@ export default function App(){
           width:"100%",
           maxWidth:430,
           zIndex:50,
+          borderBottom:`0.5px solid ${T.borderFaint}`,
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <img src="/icon-180.png" alt="" style={{width:30,height:30,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.target.style.display="none";}}/>
@@ -1528,7 +1527,7 @@ export default function App(){
         </header>
 
         {/* ── CONTENT ── */}
-        <div style={{padding:`calc(env(safe-area-inset-top, 0px) + 80px) 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
+        <div style={{padding:`calc(env(safe-area-inset-top, 0px) + 62px) 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
 
           {/* SCORES */}
           {tab==="scores"&&(
