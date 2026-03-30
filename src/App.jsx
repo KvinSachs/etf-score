@@ -1583,7 +1583,7 @@ export default function App(){
             overflowY:"scroll",
             overflowX:"hidden",
           }}>
-        <div style={{padding:`24px 16px calc(90px + env(safe-area-inset-bottom, 0px))`,overflowX:"hidden",width:"100%",boxSizing:"border-box",minHeight:"calc(100% + 1px)"}}>
+        <div style={{padding:`40px 16px calc(90px + env(safe-area-inset-bottom, 0px))`,overflowX:"hidden",width:"100%",boxSizing:"border-box",minHeight:"calc(100% + 1px)"}}>
 
           {/* SCORES */}
           {tab==="scores"&&(
