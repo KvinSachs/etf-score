@@ -1486,28 +1486,16 @@ export default function App(){
       <div style={{position:"relative",zIndex:1}}>
         {/* ── HEADER ── */}
 
-        {/* Status bar cover — opaque, no leak */}
-        <div style={{
-          position:"fixed",
-          top:0,
-          left:"50%",
-          transform:"translateX(-50%)",
-          width:"100%",
-          maxWidth:430,
-          height:"calc(env(safe-area-inset-top, 0px) + 2px)",
-          background:T.bg,
-          zIndex:52,
-          pointerEvents:"none",
-        }}/>
+
         <header style={{
-          paddingTop:"14px",
+          paddingTop:"calc(env(safe-area-inset-top, 0px) + 14px)",
           paddingBottom:"14px",paddingLeft:"20px",paddingRight:"20px",
           display:"flex",alignItems:"center",justifyContent:"space-between",
           backdropFilter:"blur(60px) saturate(200%)",
           WebkitBackdropFilter:"blur(60px) saturate(200%)",
           background:T.bgHeader,
           position:"fixed",
-          top:"env(safe-area-inset-top, 0px)",
+          top:0,
           left:"50%",
           transform:"translateX(-50%)",
           width:"100%",
@@ -1540,7 +1528,7 @@ export default function App(){
         </header>
 
         {/* ── CONTENT ── */}
-        <div style={{padding:`calc(env(safe-area-inset-top, 0px) + 74px) 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
+        <div style={{padding:`calc(env(safe-area-inset-top, 0px) + 80px) 16px calc(90px + env(safe-area-inset-bottom, 0px))`}}>
 
           {/* SCORES */}
           {tab==="scores"&&(
