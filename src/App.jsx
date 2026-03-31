@@ -824,21 +824,24 @@ function SwipeToDelete({children,onDelete,disabled}){
 
   if(confirmed)return null;
 
+  // Flex row: [card][delete-btn] — card slides left revealing btn via overflow:hidden clip
   return(
     <div style={{position:"relative",overflow:"hidden",borderRadius:14}}>
-      <div style={{position:"absolute",top:0,right:0,bottom:0,width:THRESHOLD,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,59,48,0.12)",borderRadius:14}}>
-        <button onClick={handleDelete} style={{width:"100%",height:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3}}>
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          <span style={{fontSize:9,color:"#ff3b30",fontWeight:700,letterSpacing:.3}}>Suppr.</span>
-        </button>
-      </div>
       <div
-        style={{transform:`translateX(${dx}px)`,transition:isDraggingSwipe?"none":"transform .3s cubic-bezier(.16,1,.3,1)",willChange:"transform",borderRadius:14}}
+        style={{display:"flex",transform:`translateX(${dx}px)`,transition:isDraggingSwipe?"none":"transform .3s cubic-bezier(.16,1,.3,1)",willChange:"transform"}}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {children}
+        <div style={{flex:"0 0 100%",minWidth:"100%"}}>
+          {children}
+        </div>
+        <div style={{flex:`0 0 ${THRESHOLD}px`,width:THRESHOLD,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,59,48,0.15)",borderRadius:"0 14px 14px 0"}}>
+          <button onClick={handleDelete} style={{width:"100%",height:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3}}>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <span style={{fontSize:9,color:"#ff3b30",fontWeight:700,letterSpacing:.3}}>Suppr.</span>
+          </button>
+        </div>
       </div>
     </div>
   );
