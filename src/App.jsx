@@ -783,11 +783,12 @@ function Toast({msg,visible,onUndo,undoLabel}){
 
 /* ─── SWIPE TO DELETE ROW ────────────────────────────────────────────────────── */
 function SwipeToDelete({children,onDelete,disabled}){
-  const[dx,setDx]=React.useState(0);
-  const[confirmed,setConfirmed]=React.useState(false);
-  const startX=React.useRef(null);
-  const startY=React.useRef(null);
-  const dragging=React.useRef(false);
+  const[dx,setDx]=useState(0);
+  const[confirmed,setConfirmed]=useState(false);
+  const startX=useRef(null);
+  const startY=useRef(null);
+  const dragging=useRef(false);
+  const[isDraggingSwipe,setIsDraggingSwipe]=useState(false);
   const THRESHOLD=72;
 
   const onTouchStart=e=>{
@@ -803,6 +804,7 @@ function SwipeToDelete({children,onDelete,disabled}){
     if(!dragging.current&&Math.abs(dyRaw)>Math.abs(dxRaw))return;
     if(dxRaw>0)return;
     dragging.current=true;
+    setIsDraggingSwipe(true);
     e.stopPropagation();
     const raw=Math.abs(dxRaw);
     const capped=raw>THRESHOLD?THRESHOLD+(raw-THRESHOLD)*0.2:raw;
@@ -812,6 +814,7 @@ function SwipeToDelete({children,onDelete,disabled}){
     if(Math.abs(dx)>=THRESHOLD-4){setDx(-THRESHOLD);}else{setDx(0);}
     startX.current=null;
     dragging.current=false;
+    setIsDraggingSwipe(false);
   };
 
   const handleDelete=()=>{
@@ -822,15 +825,15 @@ function SwipeToDelete({children,onDelete,disabled}){
   if(confirmed)return null;
 
   return(
-    <div style={{position:"relative",overflow:"hidden",borderRadius:T.radiusSm}}>
-      <div style={{position:"absolute",top:0,right:0,bottom:0,width:THRESHOLD,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,59,48,0.12)",borderRadius:T.radiusSm}}>
+    <div style={{position:"relative",overflow:"hidden",borderRadius:14}}>
+      <div style={{position:"absolute",top:0,right:0,bottom:0,width:THRESHOLD,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,59,48,0.12)",borderRadius:14}}>
         <button onClick={handleDelete} style={{width:"100%",height:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3}}>
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           <span style={{fontSize:9,color:"#ff3b30",fontWeight:700,letterSpacing:.3}}>Suppr.</span>
         </button>
       </div>
       <div
-        style={{transform:`translateX(${dx}px)`,transition:dragging.current?"none":"transform .3s cubic-bezier(.16,1,.3,1)",willChange:"transform",borderRadius:T.radiusSm}}
+        style={{transform:`translateX(${dx}px)`,transition:isDraggingSwipe?"none":"transform .3s cubic-bezier(.16,1,.3,1)",willChange:"transform",borderRadius:14}}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
