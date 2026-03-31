@@ -830,12 +830,12 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
     return()=>clearTimeout(t1);
   },[playHint]);
 
-  // Drive dx via hintAnim: quick nudge then snap back
+  // Drive dx via hintAnim: full swipe to THRESHOLD, pause, snap back
   useEffect(()=>{
     if(!hintAnim)return;
-    setDx(-22);
-    const t=setTimeout(()=>setDx(0),380);
-    return()=>clearTimeout(t);
+    const t1=setTimeout(()=>setDx(-THRESHOLD),50);   // slide open
+    const t2=setTimeout(()=>setDx(0),900);            // snap back after pause
+    return()=>{clearTimeout(t1);clearTimeout(t2);};
   },[hintAnim]);
 
   const onContextMenu=e=>{
@@ -857,8 +857,12 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
 
   if(confirmed)return null;
 
+  // How much space the delete button occupies (0 → BTN_W during open)
+  const revealPct=Math.min(1,Math.abs(dx)/THRESHOLD);
+  const btnOpacity=revealPct;
+
   return(
-    <div style={{position:"relative"}}>
+    <div style={{position:"relative",overflow:"hidden",borderRadius:14}}>
       {/* Overlay — closes swipe or context menu on outside tap/click */}
       {(dx<0||ctxMenu)&&(
         <div
@@ -868,29 +872,32 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
           onContextMenu={e=>e.preventDefault()}
         />
       )}
-      {/* Swipe delete button */}
-      <div style={{
-        position:"absolute",top:0,right:0,bottom:0,width:BTN_W,
-        display:"flex",alignItems:"center",justifyContent:"center",
-        background:"rgba(255,59,48,0.15)",border:"0.5px solid rgba(255,59,48,0.25)",
-        borderRadius:14,overflow:"hidden",
-        opacity:dx<0?1:0,transition:"opacity .2s",
-        zIndex:12,pointerEvents:dx<0?"auto":"none",
-      }}>
-        <button onClick={handleDelete} style={{width:"100%",height:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4}}>
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          <span style={{fontSize:9,color:"#ff3b30",fontWeight:700,letterSpacing:.3}}>Suppr.</span>
-        </button>
-      </div>
-      {/* Sliding card */}
-      <div
-        style={{position:"relative",zIndex:11,transform:`translateX(${dx}px)`,transition:isDraggingSwipe?"none":"transform .3s cubic-bezier(.16,1,.3,1)",willChange:"transform",borderRadius:14}}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onContextMenu={onContextMenu}
-      >
-        {children}
+      {/* Flex row: card + delete button side by side, translated together */}
+      <div style={{display:"flex",transform:`translateX(${dx}px)`,transition:isDraggingSwipe?"none":"transform .38s cubic-bezier(.16,1,.3,1)",willChange:"transform"}}>
+        {/* Sliding card */}
+        <div
+          style={{flex:"0 0 100%",minWidth:"100%",position:"relative",zIndex:11,borderRadius:14}}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onContextMenu={onContextMenu}
+        >
+          {children}
+        </div>
+        {/* Delete button — lives to the right in the flex row */}
+        <div style={{
+          flex:`0 0 ${BTN_W}px`,width:BTN_W,
+          display:"flex",alignItems:"center",justifyContent:"center",
+          background:"rgba(255,59,48,0.15)",border:"0.5px solid rgba(255,59,48,0.25)",
+          borderRadius:"0 14px 14px 0",
+          opacity:btnOpacity,
+          zIndex:12,pointerEvents:dx<=-THRESHOLD+4?"auto":"none",
+        }}>
+          <button onClick={handleDelete} style={{width:"100%",height:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4}}>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <span style={{fontSize:9,color:"#ff3b30",fontWeight:700,letterSpacing:.3}}>Suppr.</span>
+          </button>
+        </div>
       </div>
       {/* Context menu (desktop right-click) */}
       {ctxMenu&&createPortal(
