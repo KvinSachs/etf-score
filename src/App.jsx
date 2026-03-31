@@ -804,7 +804,7 @@ function SwipeToDelete({children,onDelete,disabled}){
     const dxRaw=e.touches[0].clientX-startX.current;
     const dyRaw=e.touches[0].clientY-startY.current;
     if(!dragging.current&&Math.abs(dyRaw)>Math.abs(dxRaw))return;
-    if(dxRaw>0)return;
+    if(dxRaw>0){setDx(0);return;}
     dragging.current=true;
     setIsDraggingSwipe(true);
     e.stopPropagation();
@@ -896,7 +896,7 @@ function SwipeToDelete({children,onDelete,disabled}){
               width:"100%",display:"flex",alignItems:"center",gap:10,
               padding:"11px 14px",background:"none",border:"none",
               cursor:"pointer",color:"#ff3b30",fontSize:13,fontWeight:600,
-              fontFamily:"inherit",textAlign:"left",
+              fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif",textAlign:"left",
               transition:"background .15s",
             }}
             onMouseEnter={e=>e.currentTarget.style.background="rgba(255,59,48,0.12)"}
