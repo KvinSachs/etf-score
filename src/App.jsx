@@ -782,7 +782,7 @@ function Toast({msg,visible,onUndo,undoLabel}){
 }
 
 /* ─── SWIPE TO DELETE ROW ────────────────────────────────────────────────────── */
-function SwipeToDelete({children,onDelete,disabled}){
+function SwipeToDelete({children,onDelete,disabled,playHint}){
   const[dx,setDx]=useState(0);
   const[confirmed,setConfirmed]=useState(false);
   const[ctxMenu,setCtxMenu]=useState(null); // {x,y} position of context menu
@@ -790,6 +790,7 @@ function SwipeToDelete({children,onDelete,disabled}){
   const startY=useRef(null);
   const dragging=useRef(false);
   const[isDraggingSwipe,setIsDraggingSwipe]=useState(false);
+  const[hintAnim,setHintAnim]=useState(false);
   const THRESHOLD=72;
   const BTN_W=64;
 
@@ -818,6 +819,22 @@ function SwipeToDelete({children,onDelete,disabled}){
     dragging.current=false;
     setIsDraggingSwipe(false);
   };
+
+  useEffect(()=>{
+    if(!playHint)return;
+    // Write flag now — the card exists and the hint will actually play
+    localStorage.setItem("etf-swipe-hint-seen","1");
+    const t1=setTimeout(()=>setHintAnim(true),400);
+    return()=>clearTimeout(t1);
+  },[playHint]);
+
+  // Drive dx via hintAnim: slide to -28 then snap back
+  useEffect(()=>{
+    if(!hintAnim)return;
+    setDx(-28);
+    const t=setTimeout(()=>setDx(0),520);
+    return()=>clearTimeout(t);
+  },[hintAnim]);
 
   const onContextMenu=e=>{
     e.preventDefault();
@@ -1514,6 +1531,7 @@ export default function App(){
   const[disclaimerSeen,setDisclaimerSeen]=useState(false);
   const[savedAt,setSavedAt]=useState(null);
   const[toast,setToast]=useState({msg:"",visible:false});
+  const[swipeHintSeen,setSwipeHintSeen]=useState(true); // true = no hint by default
   const[onboarding,setOnboarding]=useState(false);
   const[darkMode,setDarkMode]=useState(()=>localStorage.getItem('etf-theme')!=='light');
   const[onboardStep,setOnboardStep]=useState(0);
@@ -1536,6 +1554,9 @@ export default function App(){
     setReady(true);
     const onboardingSeen=localStorage.getItem("etf-onboarding-seen");
     if(!onboardingSeen) setOnboarding(true);
+    if(!localStorage.getItem("etf-swipe-hint-seen")){
+      setSwipeHintSeen(false);
+    }
     setTimeout(()=>setSplash(false), 2800);
     if(localStorage.getItem('etf-theme')==='light')setDarkMode(false);
 
@@ -1992,7 +2013,7 @@ export default function App(){
                       const etf=DB[h.ticker];
                       const isEditing=editAmt[h.ticker]!==undefined;
                       return(
-                        <SwipeToDelete key={h.ticker} onDelete={()=>removeHolding(h.ticker)} disabled={!!editAmt[h.ticker]}>
+                        <SwipeToDelete key={h.ticker} onDelete={()=>removeHolding(h.ticker)} disabled={!!editAmt[h.ticker]} playHint={i===0&&!swipeHintSeen}>
                         <Glass style={{padding:"13px 14px",animation:`up .35s ${i*.04}s both`}}>
                           <div style={{display:"flex",alignItems:"center",gap:11}}>
                             <div style={{flex:1,minWidth:0}}>
