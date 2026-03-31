@@ -1125,13 +1125,13 @@ function planStats(plan){
   const perYear=plan.amount*versementsParAn;
   const projection10y=Math.round(plan.amount*versementsParAn*10);
 
-  // Next payment date
+  // Next payment date — use rawPeriods (not periodsElapsed) to avoid double-counting
   let nextDate;
   if(rawPeriods===0&&start>now){
     // First payment not yet reached — next is simply the start date
     nextDate=start;
   } else {
-    nextDate=new Date(start.getTime()+(periodsElapsed+1)*msPerPeriod);
+    nextDate=new Date(start.getTime()+(rawPeriods+1)*msPerPeriod);
   }
   const daysUntilNext=Math.max(1,Math.ceil((nextDate-now)/(1000*60*60*24)));
 
