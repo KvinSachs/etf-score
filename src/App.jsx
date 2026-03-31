@@ -822,17 +822,19 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
 
   useEffect(()=>{
     if(!playHint)return;
-    // Write flag now — the card exists and the hint will actually play
+    // Skip hint on non-touch devices (desktop) — right-click is enough there
+    const isTouch=window.matchMedia("(hover:none) and (pointer:coarse)").matches;
     localStorage.setItem("etf-swipe-hint-seen","1");
-    const t1=setTimeout(()=>setHintAnim(true),400);
+    if(!isTouch)return;
+    const t1=setTimeout(()=>setHintAnim(true),600);
     return()=>clearTimeout(t1);
   },[playHint]);
 
-  // Drive dx via hintAnim: slide to -28 then snap back
+  // Drive dx via hintAnim: quick nudge then snap back
   useEffect(()=>{
     if(!hintAnim)return;
-    setDx(-28);
-    const t=setTimeout(()=>setDx(0),520);
+    setDx(-22);
+    const t=setTimeout(()=>setDx(0),380);
     return()=>clearTimeout(t);
   },[hintAnim]);
 
