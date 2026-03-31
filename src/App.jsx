@@ -785,11 +785,13 @@ function Toast({msg,visible,onUndo,undoLabel}){
 function SwipeToDelete({children,onDelete,disabled}){
   const[dx,setDx]=useState(0);
   const[confirmed,setConfirmed]=useState(false);
+  const[ctxMenu,setCtxMenu]=useState(null); // {x,y} position of context menu
   const startX=useRef(null);
   const startY=useRef(null);
   const dragging=useRef(false);
   const[isDraggingSwipe,setIsDraggingSwipe]=useState(false);
   const THRESHOLD=72;
+  const BTN_W=64;
 
   const onTouchStart=e=>{
     if(disabled)return;
@@ -817,50 +819,95 @@ function SwipeToDelete({children,onDelete,disabled}){
     setIsDraggingSwipe(false);
   };
 
+  const onContextMenu=e=>{
+    e.preventDefault();
+    // Clamp so menu never overflows viewport
+    const menuW=160,menuH=44;
+    const x=Math.min(e.clientX,window.innerWidth-menuW-8);
+    const y=Math.min(e.clientY,window.innerHeight-menuH-8);
+    setCtxMenu({x,y});
+  };
+
+  const closeCtx=()=>setCtxMenu(null);
+
   const handleDelete=()=>{
     setConfirmed(true);
+    closeCtx();
     onDelete();
   };
 
   if(confirmed)return null;
 
-  const BTN_W=64;
-  const GAP=8;
-  const OPEN=BTN_W+GAP;
-
   return(
     <div style={{position:"relative"}}>
-      {/* Delete button — fully rounded, positioned to the right with a gap */}
+      {/* Overlay — closes swipe or context menu on outside tap/click */}
+      {(dx<0||ctxMenu)&&(
+        <div
+          style={{position:"fixed",inset:0,zIndex:10}}
+          onTouchStart={()=>{setDx(0);closeCtx();}}
+          onClick={()=>{setDx(0);closeCtx();}}
+          onContextMenu={e=>e.preventDefault()}
+        />
+      )}
+      {/* Swipe delete button */}
       <div style={{
         position:"absolute",top:0,right:0,bottom:0,width:BTN_W,
         display:"flex",alignItems:"center",justifyContent:"center",
         background:"rgba(255,59,48,0.15)",border:"0.5px solid rgba(255,59,48,0.25)",
         borderRadius:14,overflow:"hidden",
         opacity:dx<0?1:0,transition:"opacity .2s",
-        pointerEvents:dx<=-THRESHOLD+4?"auto":"none",
+        zIndex:12,pointerEvents:dx<0?"auto":"none",
       }}>
         <button onClick={handleDelete} style={{width:"100%",height:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4}}>
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
           <span style={{fontSize:9,color:"#ff3b30",fontWeight:700,letterSpacing:.3}}>Suppr.</span>
         </button>
       </div>
-      {/* Overlay to close on tap outside */}
-      {dx<0&&(
-        <div
-          style={{position:"fixed",inset:0,zIndex:10}}
-          onTouchStart={()=>setDx(0)}
-          onClick={()=>setDx(0)}
-        />
-      )}
       {/* Sliding card */}
       <div
         style={{position:"relative",zIndex:11,transform:`translateX(${dx}px)`,transition:isDraggingSwipe?"none":"transform .3s cubic-bezier(.16,1,.3,1)",willChange:"transform",borderRadius:14}}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
+        onContextMenu={onContextMenu}
       >
         {children}
       </div>
+      {/* Context menu (desktop right-click) */}
+      {ctxMenu&&createPortal(
+        <div
+          style={{
+            position:"fixed",left:ctxMenu.x,top:ctxMenu.y,
+            zIndex:99999,
+            background:"rgba(28,28,30,0.96)",
+            backdropFilter:"blur(20px)",
+            border:"0.5px solid rgba(255,255,255,0.1)",
+            borderRadius:12,
+            overflow:"hidden",
+            boxShadow:"0 8px 32px rgba(0,0,0,0.5)",
+            minWidth:160,
+            animation:"popIn .15s cubic-bezier(.16,1,.3,1)",
+          }}
+          onClick={e=>e.stopPropagation()}
+        >
+          <button
+            onClick={handleDelete}
+            style={{
+              width:"100%",display:"flex",alignItems:"center",gap:10,
+              padding:"11px 14px",background:"none",border:"none",
+              cursor:"pointer",color:"#ff3b30",fontSize:13,fontWeight:600,
+              fontFamily:"inherit",textAlign:"left",
+              transition:"background .15s",
+            }}
+            onMouseEnter={e=>e.currentTarget.style.background="rgba(255,59,48,0.12)"}
+            onMouseLeave={e=>e.currentTarget.style.background="none"}
+          >
+            <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Supprimer l'ETF
+          </button>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
