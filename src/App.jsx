@@ -863,22 +863,29 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
   const revealPct=Math.min(1,Math.abs(dx)/THRESHOLD);
   const btnOpacity=revealPct;
 
+  // Close on outside click/touch — captured at document level
+  useEffect(()=>{
+    if(dx>=0&&!ctxMenu)return;
+    const close=e=>{
+      // Let clicks on the delete button pass through untouched
+      if(e.target.closest&&e.target.closest("[data-swipe-btn]"))return;
+      setDx(0);closeCtx();
+    };
+    document.addEventListener("mousedown",close,true);
+    document.addEventListener("touchstart",close,{capture:true,passive:true});
+    return()=>{
+      document.removeEventListener("mousedown",close,true);
+      document.removeEventListener("touchstart",close,{capture:true,passive:true});
+    };
+  },[dx,ctxMenu]);
+
   return(
     <div style={{position:"relative",overflow:"hidden",borderRadius:14}}>
-      {/* Overlay — closes swipe or context menu on outside tap/click */}
-      {(dx<0||ctxMenu)&&(
-        <div
-          style={{position:"fixed",inset:0,zIndex:10}}
-          onTouchStart={()=>{setDx(0);closeCtx();}}
-          onClick={()=>{setDx(0);closeCtx();}}
-          onContextMenu={e=>e.preventDefault()}
-        />
-      )}
       {/* Flex row: card + delete button side by side, translated together */}
       <div style={{display:"flex",transform:`translateX(${dx}px)`,transition:isDraggingSwipe?"none":"transform .38s cubic-bezier(.16,1,.3,1)",willChange:"transform"}}>
         {/* Sliding card */}
         <div
-          style={{flex:"0 0 100%",minWidth:"100%",position:"relative",zIndex:11,borderRadius:14}}
+          style={{flex:"0 0 100%",minWidth:"100%",borderRadius:14}}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
@@ -886,21 +893,23 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
         >
           {children}
         </div>
-        {/* Delete button — gap + fully rounded */}
-        <div style={{flex:`0 0 ${BTN_W+8}px`,width:BTN_W+8,display:"flex",alignItems:"center",justifyContent:"flex-end",paddingLeft:8,boxSizing:"border-box",pointerEvents:"none"}}>
-        <div style={{
-          width:BTN_W,height:"100%",
-          display:"flex",alignItems:"center",justifyContent:"center",
-          background:"rgba(255,59,48,0.15)",border:"0.5px solid rgba(255,59,48,0.25)",
-          borderRadius:14,
-          opacity:btnOpacity,
-          zIndex:12,pointerEvents:dx<0?"auto":"none",
-        }}>
-          <button onClick={handleDelete} style={{width:"100%",height:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4}}>
+        {/* Delete button — gap left + fully rounded */}
+        <div data-swipe-btn style={{flex:`0 0 ${BTN_W+8}px`,width:BTN_W+8,paddingLeft:8,boxSizing:"border-box",display:"flex",alignItems:"center"}}>
+          <button
+            data-swipe-btn
+            onClick={handleDelete}
+            style={{
+              width:BTN_W,height:"100%",
+              display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,
+              background:"rgba(255,59,48,0.15)",border:"0.5px solid rgba(255,59,48,0.25)",
+              borderRadius:14,cursor:"pointer",
+              opacity:btnOpacity,
+              transition:"opacity .15s",
+            }}
+          >
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <span style={{fontSize:9,color:"#ff3b30",fontWeight:700,letterSpacing:.3}}>Suppr.</span>
           </button>
-        </div>
         </div>
       </div>
       {/* Context menu (desktop right-click) */}
