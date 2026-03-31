@@ -793,6 +793,7 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
   const[hintAnim,setHintAnim]=useState(false);
   const THRESHOLD=72;
   const BTN_W=64;
+  const GAP=8;
 
   const onTouchStart=e=>{
     if(disabled)return;
@@ -833,7 +834,7 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
   // Drive dx via hintAnim: full swipe to THRESHOLD, pause, snap back
   useEffect(()=>{
     if(!hintAnim)return;
-    const t1=setTimeout(()=>setDx(-THRESHOLD),50);   // slide open
+    const t1=setTimeout(()=>setDx(-(BTN_W+8)),50);   // slide open
     const t2=setTimeout(()=>setDx(0),900);            // snap back after pause
     return()=>{clearTimeout(t1);clearTimeout(t2);};
   },[hintAnim]);
@@ -858,6 +859,7 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
   if(confirmed)return null;
 
   // How much space the delete button occupies (0 → BTN_W during open)
+  const OPEN=BTN_W+8;
   const revealPct=Math.min(1,Math.abs(dx)/THRESHOLD);
   const btnOpacity=revealPct;
 
@@ -884,12 +886,13 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
         >
           {children}
         </div>
-        {/* Delete button — lives to the right in the flex row */}
+        {/* Delete button — gap + fully rounded */}
+        <div style={{flex:`0 0 ${BTN_W+8}px`,width:BTN_W+8,display:"flex",alignItems:"center",justifyContent:"flex-end",paddingRight:0}}>
         <div style={{
-          flex:`0 0 ${BTN_W}px`,width:BTN_W,
+          width:BTN_W,height:"100%",
           display:"flex",alignItems:"center",justifyContent:"center",
           background:"rgba(255,59,48,0.15)",border:"0.5px solid rgba(255,59,48,0.25)",
-          borderRadius:"0 14px 14px 0",
+          borderRadius:14,
           opacity:btnOpacity,
           zIndex:12,pointerEvents:dx<=-THRESHOLD+4?"auto":"none",
         }}>
@@ -897,6 +900,7 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <span style={{fontSize:9,color:"#ff3b30",fontWeight:700,letterSpacing:.3}}>Suppr.</span>
           </button>
+        </div>
         </div>
       </div>
       {/* Context menu (desktop right-click) */}
