@@ -887,14 +887,14 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
           {children}
         </div>
         {/* Delete button — gap + fully rounded */}
-        <div style={{flex:`0 0 ${BTN_W+8}px`,width:BTN_W+8,display:"flex",alignItems:"center",justifyContent:"flex-end",paddingRight:0}}>
+        <div style={{flex:`0 0 ${BTN_W+8}px`,width:BTN_W+8,display:"flex",alignItems:"center",justifyContent:"flex-end",paddingLeft:8,boxSizing:"border-box",pointerEvents:"none"}}>
         <div style={{
           width:BTN_W,height:"100%",
           display:"flex",alignItems:"center",justifyContent:"center",
           background:"rgba(255,59,48,0.15)",border:"0.5px solid rgba(255,59,48,0.25)",
           borderRadius:14,
           opacity:btnOpacity,
-          zIndex:12,pointerEvents:dx<=-THRESHOLD+4?"auto":"none",
+          zIndex:12,pointerEvents:dx<0?"auto":"none",
         }}>
           <button onClick={handleDelete} style={{width:"100%",height:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4}}>
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
