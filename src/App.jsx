@@ -771,11 +771,72 @@ function Disclaimer({onAccept}){
 }
 
 /* ─── TOAST ──────────────────────────────────────────────────────────────────── */
-function Toast({msg,visible}){
+function Toast({msg,visible,onUndo,undoLabel}){
   return(
-    <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${visible?0:12}px)`,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:T.bgDropdown,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,padding:"11px 18px",zIndex:9000,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:"none",whiteSpace:"nowrap"}}>
+    <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${visible?0:12}px)`,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:T.bgDropdown,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,padding:"11px 18px",zIndex:9000,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:visible?"auto":"none",whiteSpace:"nowrap"}}>
       <div style={{width:6,height:6,borderRadius:"50%",background:T.accent,boxShadow:"0 0 8px #0ecb81",flexShrink:0}}/>
       <span style={{fontSize:13,color:T.text,fontFamily:T.fontText}}>{msg}</span>
+      {onUndo&&<button onClick={onUndo} style={{background:"none",border:"none",color:T.accent,fontSize:13,fontWeight:700,cursor:"pointer",padding:"0 0 0 6px",fontFamily:T.fontText}}>{undoLabel||"Annuler"}</button>}
+    </div>
+  );
+}
+
+/* ─── SWIPE TO DELETE ROW ────────────────────────────────────────────────────── */
+function SwipeToDelete({children,onDelete,disabled}){
+  const[dx,setDx]=React.useState(0);
+  const[confirmed,setConfirmed]=React.useState(false);
+  const startX=React.useRef(null);
+  const startY=React.useRef(null);
+  const dragging=React.useRef(false);
+  const THRESHOLD=72;
+
+  const onTouchStart=e=>{
+    if(disabled)return;
+    startX.current=e.touches[0].clientX;
+    startY.current=e.touches[0].clientY;
+    dragging.current=false;
+  };
+  const onTouchMove=e=>{
+    if(startX.current===null)return;
+    const dxRaw=e.touches[0].clientX-startX.current;
+    const dyRaw=e.touches[0].clientY-startY.current;
+    if(!dragging.current&&Math.abs(dyRaw)>Math.abs(dxRaw))return;
+    if(dxRaw>0)return;
+    dragging.current=true;
+    e.stopPropagation();
+    const raw=Math.abs(dxRaw);
+    const capped=raw>THRESHOLD?THRESHOLD+(raw-THRESHOLD)*0.2:raw;
+    setDx(-capped);
+  };
+  const onTouchEnd=()=>{
+    if(Math.abs(dx)>=THRESHOLD-4){setDx(-THRESHOLD);}else{setDx(0);}
+    startX.current=null;
+    dragging.current=false;
+  };
+
+  const handleDelete=()=>{
+    setConfirmed(true);
+    onDelete();
+  };
+
+  if(confirmed)return null;
+
+  return(
+    <div style={{position:"relative",overflow:"hidden",borderRadius:T.radiusSm}}>
+      <div style={{position:"absolute",top:0,right:0,bottom:0,width:THRESHOLD,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,59,48,0.12)",borderRadius:T.radiusSm}}>
+        <button onClick={handleDelete} style={{width:"100%",height:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3}}>
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 4h9M6 4V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V4M5.5 7v4M9.5 7v4M3.5 4l.7 8.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11.5 4" stroke="#ff3b30" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <span style={{fontSize:9,color:"#ff3b30",fontWeight:700,letterSpacing:.3}}>Suppr.</span>
+        </button>
+      </div>
+      <div
+        style={{transform:`translateX(${dx}px)`,transition:dragging.current?"none":"transform .3s cubic-bezier(.16,1,.3,1)",willChange:"transform",borderRadius:T.radiusSm}}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -1396,6 +1457,8 @@ export default function App(){
   const scrollTouchActive=useRef(false); // ticker being edited
   const[recMode,setRecMode]=useState("essential");
   const toastTimer=useRef(null);
+  const undoRef=useRef(null);
+  const pendingDelete=useRef(null);
 
   useEffect(()=>{
     try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const p=JSON.parse(raw);if(p.holdings)setHoldings(p.holdings.map(h=>({...h,baseAmount:h.baseAmount??h.amount})));if(p.disclaimerSeen)setDisclaimerSeen(true);if(p.savedAt)setSavedAt(new Date(p.savedAt));if(p.plans)setPlans(p.plans);}}catch(_){}
@@ -1419,7 +1482,28 @@ export default function App(){
     setToast({msg:`${DB[ticker]?.name||ticker} ajouté`,visible:true});
     toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);
   },[]);
-  const removeHolding=useCallback(ticker=>setHoldings(p=>p.filter(h=>h.ticker!==ticker)),[]);
+  const removeHolding=useCallback(ticker=>{
+    const snap=holdings.find(h=>h.ticker===ticker);
+    const planSnap=plans[ticker];
+    pendingDelete.current={ticker,snap,planSnap};
+    setHoldings(p=>p.filter(h=>h.ticker!==ticker));
+    if(undoRef.current)clearTimeout(undoRef.current);
+    if(toastTimer.current)clearTimeout(toastTimer.current);
+    setToast({msg:`${DB[ticker]?.name||ticker} supprimé`,visible:true,undo:true});
+    undoRef.current=setTimeout(()=>{
+      pendingDelete.current=null;
+      setToast(t=>({...t,visible:false,undo:false}));
+    },3000);
+  },[holdings,plans]);
+  const undoDelete=useCallback(()=>{
+    if(!pendingDelete.current)return;
+    const{ticker,snap,planSnap}=pendingDelete.current;
+    pendingDelete.current=null;
+    if(undoRef.current)clearTimeout(undoRef.current);
+    setHoldings(p=>{if(p.find(h=>h.ticker===ticker))return p;return[...p,snap];});
+    if(planSnap)setPlans(p=>({...p,[ticker]:planSnap}));
+    setToast(t=>({...t,visible:false,undo:false}));
+  },[]);
   const updateAmount=(ticker,val)=>{
     const a=parseFloat(val);
     if(!isNaN(a)&&a>=0){
@@ -1837,18 +1921,17 @@ export default function App(){
                       const etf=DB[h.ticker];
                       const isEditing=editAmt[h.ticker]!==undefined;
                       return(
-                        <Glass key={h.ticker} style={{padding:"13px 14px",animation:`up .35s ${i*.04}s both`}}>
+                        <SwipeToDelete key={h.ticker} onDelete={()=>removeHolding(h.ticker)} disabled={!!editAmt[h.ticker]}>
+                        <Glass style={{padding:"13px 14px",animation:`up .35s ${i*.04}s both`}}>
                           <div style={{display:"flex",alignItems:"center",gap:11}}>
                             <div style={{flex:1,minWidth:0}}>
-                              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                                <span style={{fontSize:13,fontWeight:500,color:T.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{h.name}</span>
-                                <span style={{fontSize:11,color:T.text4,fontWeight:600,flexShrink:0}}>{pct.toFixed(1)}%</span>
-                              </div>
+                              <div style={{fontSize:13,fontWeight:500,color:T.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginBottom:4}}>{h.name}</div>
                               <div style={{display:"flex",alignItems:"center",gap:6}}>
                                 {etf?.isin&&<span style={{fontSize:9,fontFamily:T.fontMono,color:T.textGhost,letterSpacing:.5}}>{etf.isin}</span>}
                                 {etf&&<span style={{fontSize:9,color:ASSET_COLORS[etf.assetClass]||"rgba(255,255,255,0.4)",fontWeight:600,background:`${ASSET_COLORS[etf.assetClass]||"rgba(255,255,255,0.1)"}18`,padding:"1px 6px",borderRadius:4,letterSpacing:.3,flexShrink:0}}>{ASSET_LABELS[etf.assetClass]||etf.assetClass}</span>}
                               </div>
                             </div>
+                            <span style={{fontSize:11,color:T.text4,fontWeight:600,flexShrink:0,alignSelf:"center"}}>{pct.toFixed(1)}%</span>
                             <input type="number" value={isEditing?editAmt[h.ticker]:(holdingsWithPlan.find(x=>x.ticker===h.ticker)?.amount||h.amount)}
                               onFocus={()=>setEditAmt(p=>({...p,[h.ticker]:String(holdingsWithPlan.find(x=>x.ticker===h.ticker)?.amount||h.amount)}))}
                               onChange={e=>setEditAmt(p=>({...p,[h.ticker]:e.target.value}))}
@@ -1861,8 +1944,7 @@ export default function App(){
                               title="Plan d'investissement">
                               <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke={plans[h.ticker]?T.accent:T.text4} strokeWidth="1"/><line x1="4" y1="1" x2="4" y2="3.5" stroke={plans[h.ticker]?T.accent:T.text4} strokeWidth="1" strokeLinecap="round"/><line x1="9" y1="1" x2="9" y2="3.5" stroke={plans[h.ticker]?T.accent:T.text4} strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="6" x2="10" y2="6" stroke={plans[h.ticker]?T.accent:T.text4} strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="8.5" x2="7" y2="8.5" stroke={plans[h.ticker]?T.accent:T.text4} strokeWidth="1" strokeLinecap="round"/></svg>
                             </button>
-                            <button onClick={()=>removeHolding(h.ticker)} style={{background:"none",border:"none",color:T.text5,cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 2px",flexShrink:0,transition:"color .15s"}}
-                              onMouseEnter={e=>e.currentTarget.style.color="#ff4d4d"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.15)"}>×</button>
+
                           </div>
                           {/* Plan summary if configured */}
                           {plans[h.ticker]&&(()=>{const s=planStats(plans[h.ticker]);return s?(
@@ -1885,6 +1967,7 @@ export default function App(){
                             </div>
                           ):null;})()}
                         </Glass>
+                        </SwipeToDelete>
                       );
                     })}
                   </div>
@@ -2028,7 +2111,7 @@ export default function App(){
       </div>
 
       {/* Toasts */}
-      <Toast msg={toast.msg} visible={toast.visible}/>
+      <Toast msg={toast.msg} visible={toast.visible} onUndo={toast.undo?undoDelete:null} undoLabel="Annuler"/>
 
 
       {/* Rec action sheet */}
