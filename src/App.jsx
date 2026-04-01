@@ -1201,7 +1201,7 @@ function Onboarding({onAdd,onDone}){
           {/* Slide 3 — Add ETF */}
           <div style={{width:`${100/TOTAL_SLIDES}%`,flexShrink:0,display:"flex",flexDirection:"column",position:"relative",boxSizing:"border-box",overflow:"hidden"}}>
             <div ref={contentRef} style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"0 24px",paddingBottom:120,transform:`translateY(${kbOffset}px)`,transition:"transform .35s cubic-bezier(.16,1,.3,1)"}}>
-              <div style={{textAlign:"center",marginBottom:28,marginTop:"12vh"}}>
+              <div style={{textAlign:"center",marginBottom:28,marginTop:"5vh"}}>
                 <div style={{fontSize:21,fontWeight:700,color:T.text,marginBottom:8,letterSpacing:-.3}}>Constituez votre portefeuille</div>
                 <div style={{fontSize:14,color:T.text4,lineHeight:1.7,maxWidth:300,margin:"0 auto"}}>Ajoutez autant d'ETF que vous souhaitez. Vous pourrez toujours modifier depuis l'app.</div>
               </div>
