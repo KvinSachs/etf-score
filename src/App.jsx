@@ -1047,6 +1047,7 @@ function Onboarding({onAdd,onDone}){
   },[inputFocused]);
   const ref=useRef(null);
   const amtRef=useRef(null);
+  const focusingAmt=useRef(false);
   const swipeStart=useRef(null);
   const[dragX,setDragX]=useState(0);
   const isDragging=useRef(false);
@@ -1065,13 +1066,14 @@ function Onboarding({onAdd,onDone}){
     setSelectedTicker(ticker);
     setQ(name);
     setOpen(false);
-    // Focus amount field — must happen in same tick as user gesture for iOS keyboard
+    focusingAmt.current=true;
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
         if(amtRef.current){
           amtRef.current.focus();
           amtRef.current.click();
         }
+        focusingAmt.current=false;
       });
     });
   };
@@ -1223,7 +1225,7 @@ function Onboarding({onAdd,onDone}){
                 <div style={{position:"relative"}}>
                   <input value={q} onChange={e=>{setQ(e.target.value);setSelectedTicker(null);setErr("");setOpen(true);}}
                     onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor=T.accentGlow;e.target.style.boxShadow=`0 0 0 3px ${T.accentBg}`;setInputFocused(true);}}
-                    onBlur={e=>{e.target.style.borderColor=T.border;e.target.style.boxShadow="none";if(!e.relatedTarget||!e.relatedTarget.closest("[data-onboarding-inputs]"))setTimeout(()=>setInputFocused(false),200);}}
+                    onBlur={e=>{e.target.style.borderColor=T.border;e.target.style.boxShadow="none";if(!focusingAmt.current&&(!e.relatedTarget||!e.relatedTarget.closest("[data-onboarding-inputs]")))setTimeout(()=>setInputFocused(false),200);}}
                     placeholder="Nom, ISIN ou ticker…"
                     style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"15px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s"}}/>
                   {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:T.surfaceHover,border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>}
