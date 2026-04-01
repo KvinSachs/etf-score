@@ -824,11 +824,14 @@ function SwipeToDelete({children,onDelete,disabled,playHint,onHintPlayed}){
   useEffect(()=>{
     if(!playHint)return;
     localStorage.setItem("etf-swipe-hint-seen","1");
-    onHintPlayed?.(); // immediately mark as seen in parent so it never replays
     const isTouch=window.matchMedia("(hover:none) and (pointer:coarse)").matches;
-    if(!isTouch)return;
+    // Mark as seen AFTER animation completes so tab switches don't replay it
+    // but playHint is captured at mount — re-renders won't re-trigger this effect
+    if(!isTouch){onHintPlayed?.();return;}
     const t1=setTimeout(()=>setHintAnim(true),600);
-    return()=>clearTimeout(t1);
+    // Mark seen after full sequence (600 delay + 900 animation = 1600ms)
+    const t2=setTimeout(()=>onHintPlayed?.(),1600);
+    return()=>{clearTimeout(t1);clearTimeout(t2);};
   },[playHint]);
 
   // Drive dx via hintAnim: full swipe to THRESHOLD, pause, snap back
