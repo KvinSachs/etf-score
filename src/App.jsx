@@ -1062,12 +1062,18 @@ function Onboarding({onAdd,onDone}){
     return Object.entries(DB).filter(([t,e])=>t.includes(s)||e.name.toUpperCase().includes(s)||(e.isin&&e.isin.toUpperCase().includes(s))).slice(0,4);
   },[q,selectedTicker]);
 
-  const selectItem=(ticker,name)=>{
+  const selectItem=(ticker,name,focusNow=false)=>{
     setSelectedTicker(ticker);
     setQ(name);
     setOpen(false);
     focusingAmt.current=true;
-    requestAnimationFrame(()=>{
+    if(focusNow&&amtRef.current){
+      // Direct focus in the user gesture callstack — required for iOS PWA keyboard
+      amtRef.current.focus();
+      amtRef.current.click();
+      focusingAmt.current=false;
+    } else {
+      // Fallback for non-touch (mousedown already moved focus)
       requestAnimationFrame(()=>{
         if(amtRef.current){
           amtRef.current.focus();
@@ -1075,7 +1081,7 @@ function Onboarding({onAdd,onDone}){
         }
         focusingAmt.current=false;
       });
-    });
+    }
   };
 
   const addOne=()=>{
@@ -1232,7 +1238,7 @@ function Onboarding({onAdd,onDone}){
                   {open&&results.length>0&&(
                     <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:10,background:T.bgDropdown,border:`0.5px solid ${T.border}`,borderRadius:14,overflow:"hidden",boxShadow:T.shadowDropdown}}>
                       {results.map(([t,e])=>(
-                        <div key={t} onMouseDown={()=>selectItem(t,e.name)} style={{padding:"13px 16px",cursor:"pointer",borderBottom:`0.5px solid ${T.borderFaint}`,transition:"background .1s"}} onMouseEnter={ev=>ev.currentTarget.style.background=T.surfaceHover} onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
+                        <div key={t} onMouseDown={()=>selectItem(t,e.name)} onTouchEnd={ev=>{ev.preventDefault();selectItem(t,e.name,true);}} style={{padding:"13px 16px",cursor:"pointer",borderBottom:`0.5px solid ${T.borderFaint}`,transition:"background .1s"}} onMouseEnter={ev=>ev.currentTarget.style.background=T.surfaceHover} onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
                           <div style={{fontSize:13,fontWeight:500,color:T.text,marginBottom:3}}>{e.name}</div>
                           <div style={{fontSize:10,color:T.text5,fontFamily:"monospace"}}>{e.isin} · {ASSET_LABELS[e.assetClass]||e.assetClass}</div>
                         </div>
@@ -1254,7 +1260,7 @@ function Onboarding({onAdd,onDone}){
                   <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>Populaires</div>
                   <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                     {[{t:"IWDA",l:"iShares Monde"},{t:"VWCE",l:"Vanguard All-World"},{t:"MWRD",l:"Amundi Monde PEA"},{t:"PAEEM",l:"Émergents PEA"}].map(({t,l})=>(
-                      <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)} style={{background:T.surface4,border:`0.5px solid ${T.border}`,borderRadius:20,padding:"6px 14px",color:T.text3,fontSize:12,cursor:"pointer",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.background=T.surfaceHover;e.currentTarget.style.color=T.text;}} onMouseLeave={e=>{e.currentTarget.style.background=T.surface4;e.currentTarget.style.color=T.text3;}}>
+                      <button key={t} onMouseDown={()=>selectItem(t,DB[t]?.name||l)} onTouchEnd={e=>{e.preventDefault();selectItem(t,DB[t]?.name||l,true);}} style={{background:T.surface4,border:`0.5px solid ${T.border}`,borderRadius:20,padding:"6px 14px",color:T.text3,fontSize:12,cursor:"pointer",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.background=T.surfaceHover;e.currentTarget.style.color=T.text;}} onMouseLeave={e=>{e.currentTarget.style.background=T.surface4;e.currentTarget.style.color=T.text3;}}>
                         {l}
                       </button>
                     ))}
