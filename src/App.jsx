@@ -828,9 +828,9 @@ function SwipeToDelete({children,onDelete,disabled,playHint,onHintPlayed}){
     // Mark as seen AFTER animation completes so tab switches don't replay it
     // but playHint is captured at mount — re-renders won't re-trigger this effect
     if(!isTouch){onHintPlayed?.();return;}
-    const t1=setTimeout(()=>setHintAnim(true),600);
-    // Mark seen after full sequence (600 delay + 900 animation = 1600ms)
-    const t2=setTimeout(()=>onHintPlayed?.(),1600);
+    const t1=setTimeout(()=>setHintAnim(true),3000);
+    // Mark seen after full sequence (3000 delay + 900 animation + buffer)
+    const t2=setTimeout(()=>onHintPlayed?.(),4200);
     return()=>{clearTimeout(t1);clearTimeout(t2);};
   },[playHint]);
 
@@ -1193,11 +1193,11 @@ function Onboarding({onAdd,onDone}){
               )}
 
               {/* Search */}
-              <div ref={ref} style={{display:"flex",flexDirection:"column",gap:10}}>
+              <div ref={ref} data-onboarding-inputs style={{display:"flex",flexDirection:"column",gap:10}}>
                 <div style={{position:"relative"}}>
                   <input value={q} onChange={e=>{setQ(e.target.value);setSelectedTicker(null);setErr("");setOpen(true);}}
                     onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor=T.accentGlow;e.target.style.boxShadow=`0 0 0 3px ${T.accentBg}`;setInputFocused(true);}}
-                    onBlur={e=>{e.target.style.borderColor=T.border;e.target.style.boxShadow="none";setTimeout(()=>setInputFocused(false),200);}}
+                    onBlur={e=>{e.target.style.borderColor=T.border;e.target.style.boxShadow="none";if(!e.relatedTarget||!e.relatedTarget.closest("[data-onboarding-inputs]"))setTimeout(()=>setInputFocused(false),200);}}
                     placeholder="Nom, ISIN ou ticker…"
                     style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"15px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s"}}/>
                   {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:T.surfaceHover,border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>}
@@ -1215,7 +1215,7 @@ function Onboarding({onAdd,onDone}){
                 <div style={{position:"relative"}}>
                   <input ref={amtRef} type="number" value={amt} onChange={e=>setAmt(e.target.value)}
                     onKeyDown={e=>e.key==="Enter"&&addOne()}
-                    onBlur={e=>{e.target.style.borderColor=T.border;e.target.style.boxShadow="none";setTimeout(()=>setInputFocused(false),200);if(selectedTicker&&parseFloat(amt)>0)addOne();}}
+                    onBlur={e=>{e.target.style.borderColor=T.border;e.target.style.boxShadow="none";if(!e.relatedTarget||!e.relatedTarget.closest("[data-onboarding-inputs]"))setTimeout(()=>setInputFocused(false),200);if(selectedTicker&&parseFloat(amt)>0)addOne();}}
                     onFocus={e=>{e.target.style.borderColor=T.accentGlow;e.target.style.boxShadow=`0 0 0 3px ${T.accentBg}`;setInputFocused(true);}}
                     inputMode="decimal" placeholder="Montant investi"
                     style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"15px 36px 15px 16px",color:T.text,fontSize:15,outline:"none",boxSizing:"border-box",transition:"border-color .2s",WebkitAppearance:"none"}}/>
