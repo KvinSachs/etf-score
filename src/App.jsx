@@ -782,7 +782,7 @@ function Toast({msg,visible,onUndo,undoLabel}){
 }
 
 /* ─── SWIPE TO DELETE ROW ────────────────────────────────────────────────────── */
-function SwipeToDelete({children,onDelete,disabled,playHint}){
+function SwipeToDelete({children,onDelete,disabled,playHint,onHintPlayed}){
   const[dx,setDx]=useState(0);
   const[confirmed,setConfirmed]=useState(false);
   const[ctxMenu,setCtxMenu]=useState(null); // {x,y} position of context menu
@@ -823,9 +823,9 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
 
   useEffect(()=>{
     if(!playHint)return;
-    // Skip hint on non-touch devices (desktop) — right-click is enough there
-    const isTouch=window.matchMedia("(hover:none) and (pointer:coarse)").matches;
     localStorage.setItem("etf-swipe-hint-seen","1");
+    onHintPlayed?.(); // immediately mark as seen in parent so it never replays
+    const isTouch=window.matchMedia("(hover:none) and (pointer:coarse)").matches;
     if(!isTouch)return;
     const t1=setTimeout(()=>setHintAnim(true),600);
     return()=>clearTimeout(t1);
@@ -867,8 +867,8 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
   useEffect(()=>{
     if(dx>=0&&!ctxMenu)return;
     const close=e=>{
-      // Let clicks on the delete button pass through untouched
-      if(e.target.closest&&e.target.closest("[data-swipe-btn]"))return;
+      // Let clicks on swipe button or context menu pass through untouched
+      if(e.target.closest&&(e.target.closest("[data-swipe-btn]")||e.target.closest("[data-ctx-menu]")))return;
       setDx(0);closeCtx();
     };
     document.addEventListener("mousedown",close,true);
@@ -880,7 +880,7 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
   },[dx,ctxMenu]);
 
   return(
-    <div style={{position:"relative",overflow:"hidden",borderRadius:14}}>
+    <div style={{position:"relative",borderRadius:14}}>
       {/* Flex row: card + delete button side by side, translated together */}
       <div style={{display:"flex",transform:`translateX(${dx}px)`,transition:isDraggingSwipe?"none":"transform .38s cubic-bezier(.16,1,.3,1)",willChange:"transform"}}>
         {/* Sliding card */}
@@ -915,6 +915,7 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
       {/* Context menu (desktop right-click) */}
       {ctxMenu&&createPortal(
         <div
+          data-ctx-menu
           style={{
             position:"fixed",left:ctxMenu.x,top:ctxMenu.y,
             zIndex:99999,
@@ -930,6 +931,7 @@ function SwipeToDelete({children,onDelete,disabled,playHint}){
           onClick={e=>e.stopPropagation()}
         >
           <button
+            data-ctx-menu
             onClick={handleDelete}
             style={{
               width:"100%",display:"flex",alignItems:"center",gap:10,
@@ -2035,7 +2037,7 @@ export default function App(){
                       const etf=DB[h.ticker];
                       const isEditing=editAmt[h.ticker]!==undefined;
                       return(
-                        <SwipeToDelete key={h.ticker} onDelete={()=>removeHolding(h.ticker)} disabled={!!editAmt[h.ticker]} playHint={i===0&&!swipeHintSeen}>
+                        <SwipeToDelete key={h.ticker} onDelete={()=>removeHolding(h.ticker)} disabled={!!editAmt[h.ticker]} playHint={i===0&&!swipeHintSeen} onHintPlayed={()=>setSwipeHintSeen(true)}>
                         <Glass style={{padding:"13px 14px",animation:`up .35s ${i*.04}s both`}}>
                           <div style={{display:"flex",alignItems:"center",gap:11}}>
                             <div style={{flex:1,minWidth:0}}>
