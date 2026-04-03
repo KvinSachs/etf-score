@@ -995,7 +995,7 @@ function Splash({visible}){
         animation:visible?"splashText .5s cubic-bezier(.16,1,.3,1) .5s both":"none",
       }}>
         <div style={{fontSize:22,fontWeight:700,color:T.text,letterSpacing:-.5,textAlign:"center"}}>ETF Score</div>
-        <div style={{fontSize:11,color:T.text5,textAlign:"center",marginTop:4,letterSpacing:2,textTransform:"uppercase"}}>Analyse multicritères</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,0.55)",textAlign:"center",marginTop:4,letterSpacing:2,textTransform:"uppercase"}}>Analyse multicritères</div>
       </div>
 
       {/* Bottom indicator */}
