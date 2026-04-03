@@ -2280,7 +2280,6 @@ export default function App(){
           <style>{`@keyframes gagIn{from{opacity:0}to{opacity:1}} @keyframes gagShake{0%,100%{transform:rotate(0deg)}20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(5deg)}}`}</style>
           <div style={{fontSize:64,animation:"gagShake .5s ease .1s both"}}>😵</div>
           <div style={{fontSize:18,fontWeight:700,color:T.text,letterSpacing:-.3,textAlign:"center",padding:"0 32px"}}>Attention, ça pique les yeux !</div>
-          <div style={{fontSize:13,color:T.text4,textAlign:"center",padding:"0 40px",lineHeight:1.6}}>Passage en mode aveuglant…<br/>Bonne chance 🌞</div>
         </div></div>
       )}
       {/* Toasts */}
