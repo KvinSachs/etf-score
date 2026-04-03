@@ -149,7 +149,7 @@ const T = {
   text2:        "rgba(255,255,255,0.7)",
   text3:        "rgba(255,255,255,0.5)",
   text4:        "rgba(255,255,255,0.4)",
-  text5:        "rgba(255,255,255,0.25)",
+  text5:        "rgba(255,255,255,0.35)",
   indicatorTrack: "rgba(255,255,255,0.06)",
   arcTrack:       "rgba(255,255,255,0.06)",
 };
@@ -187,7 +187,7 @@ const T_LIGHT = {
   text2:        "rgba(0,0,0,0.72)",
   text3:        "rgba(0,0,0,0.58)",
   text4:        "rgba(0,0,0,0.50)",
-  text5:        "rgba(0,0,0,0.40)",
+  text5:        "rgba(0,0,0,0.45)",
   indicatorTrack: "rgba(0,0,0,0.07)",
   arcTrack:       "rgba(0,0,0,0.10)",
 };
