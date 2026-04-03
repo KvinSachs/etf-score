@@ -771,9 +771,13 @@ function Disclaimer({onAccept}){
 }
 
 /* ─── TOAST ──────────────────────────────────────────────────────────────────── */
-function Toast({msg,visible,onUndo,undoLabel}){
+function Toast({msg,visible,onUndo,undoLabel,position="bottom"}){
+  const isTop=position==="top";
+  const posStyle=isTop
+    ?{top:"calc(env(safe-area-inset-top,16px) + 56px)",transform:`translateX(-50%) translateY(${visible?0:-12}px)`}
+    :{bottom:80,transform:`translateX(-50%) translateY(${visible?0:12}px)`};
   return(
-    <div style={{position:"fixed",bottom:80,left:"50%",transform:`translateX(-50%) translateY(${visible?0:12}px)`,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:T.bgDropdown,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,padding:"11px 18px",zIndex:9000,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:visible?"auto":"none",whiteSpace:"nowrap"}}>
+    <div style={{position:"fixed",left:"50%",...posStyle,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:T.bgDropdown,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,padding:"11px 18px",zIndex:9000,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:visible?"auto":"none",whiteSpace:"nowrap"}}>
       <div style={{width:6,height:6,borderRadius:"50%",background:T.accent,boxShadow:"0 0 8px #0ecb81",flexShrink:0}}/>
       <span style={{fontSize:13,color:T.text,fontFamily:T.fontText}}>{msg}</span>
       {onUndo&&<button onClick={onUndo} style={{background:"none",border:"none",color:T.accent,fontSize:13,fontWeight:700,cursor:"pointer",padding:"0 0 0 6px",fontFamily:T.fontText}}>{undoLabel||"Annuler"}</button>}
@@ -1008,7 +1012,7 @@ function Splash({visible}){
 }
 
 /* ─── ONBOARDING ─────────────────────────────────────────────────────────────── */
-function Onboarding({onAdd,onDone}){
+function Onboarding({onAdd,onDone,onToast}){
   const[step,setStep]=useState(0);
   const[q,setQ]=useState("");
   const[amt,setAmt]=useState("");
@@ -1017,7 +1021,6 @@ function Onboarding({onAdd,onDone}){
   const[err,setErr]=useState("");
   const[added,setAdded]=useState([]);
   const[lastAdded,setLastAdded]=useState(null);
-  const[showCheck,setShowCheck]=useState(false);
   const[inputFocused,setInputFocused]=useState(false); // ETFs added during onboarding
   const[kbOffset,setKbOffset]=useState(0); // keyboard push offset in px
   const contentRef=useRef(null);
@@ -1092,8 +1095,8 @@ function Onboarding({onAdd,onDone}){
     const newIdx=added.length;
     setAdded(prev=>[...prev,{ticker:t,name:DB[t].name,amount:a}]);
     setLastAdded(newIdx);
-    setShowCheck(true);
-    setTimeout(()=>{setLastAdded(null);setShowCheck(false);},1200);
+    setTimeout(()=>setLastAdded(null),1200);
+    onToast?.(`${DB[t].name} ajouté`);
     setQ("");setAmt("");setSelectedTicker(null);setErr("");setOpen(false);
   };
 
@@ -1169,11 +1172,7 @@ function Onboarding({onAdd,onDone}){
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}>
 
-      {/* ETF added toast */}
-      <div style={{position:"fixed",top:`calc(env(safe-area-inset-top,16px) + 60px)`,left:"50%",transform:`translateX(-50%) translateY(${showCheck?0:-16}px)`,opacity:showCheck?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:T.accentBg,backdropFilter:"blur(20px)",border:`0.5px solid ${T.accentBorder}`,borderRadius:20,padding:"10px 18px",zIndex:200,display:"flex",alignItems:"center",gap:8,pointerEvents:"none",whiteSpace:"nowrap"}}>
-        <div style={{width:16,height:16,borderRadius:"50%",background:T.accent,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
-        <span style={{fontSize:13,color:T.accent,fontWeight:600}}>ETF ajouté au portefeuille</span>
-      </div>
+
 
       {/* Top nav */}
       <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,display:"flex",justifyContent:"space-between",alignItems:"center",padding:"calc(env(safe-area-inset-top,16px) + 8px) 20px 8px",zIndex:100,pointerEvents:"none"}}>
@@ -1591,7 +1590,7 @@ export default function App(){
   const[editAmt,setEditAmt]=useState({});
   const[disclaimerSeen,setDisclaimerSeen]=useState(false);
   const[savedAt,setSavedAt]=useState(null);
-  const[toast,setToast]=useState({msg:"",visible:false});
+  const[toast,setToast]=useState({msg:"",visible:false,position:"bottom"});
   const[swipeHintSeen,setSwipeHintSeen]=useState(true); // true = no hint by default
   const[onboarding,setOnboarding]=useState(false);
   const[darkMode,setDarkMode]=useState(()=>localStorage.getItem('etf-theme')!=='light');
@@ -1632,7 +1631,7 @@ export default function App(){
   const addHolding=useCallback((ticker,amount)=>{
     setHoldings(prev=>{const ex=prev.find(h=>h.ticker===ticker);if(ex)return prev.map(h=>h.ticker===ticker?{...h,amount:h.amount+amount,baseAmount:(h.baseAmount??h.amount)+amount}:h);return[...prev,{ticker,name:DB[ticker].name,amount,baseAmount:amount}];});
     if(toastTimer.current)clearTimeout(toastTimer.current);
-    setToast({msg:`${DB[ticker]?.name||ticker} ajouté`,visible:true});
+    setToast({msg:`${DB[ticker]?.name||ticker} ajouté`,visible:true,position:"bottom"});
     toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);
   },[]);
   const removeHolding=useCallback(ticker=>{
@@ -1712,7 +1711,7 @@ export default function App(){
 
       <Splash visible={splash}/>
       {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)}/>}
-      {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={()=>{setOnboarding(false);setTab("scores");}}/>}
+      {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={()=>{setOnboarding(false);setTab("scores");}} onToast={msg=>{if(toastTimer.current)clearTimeout(toastTimer.current);setToast({msg,visible:true,position:"top"});toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);}}/>}
 
       {/* Ambient */}
       <div aria-hidden="true" style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
@@ -2264,7 +2263,7 @@ export default function App(){
       </div>
 
       {/* Toasts */}
-      <Toast msg={toast.msg} visible={toast.visible} onUndo={toast.undo?undoDelete:null} undoLabel="Annuler"/>
+      <Toast msg={toast.msg} visible={toast.visible} onUndo={toast.undo?undoDelete:null} undoLabel="Annuler" position={toast.position||"bottom"}/>
 
 
       {/* Rec action sheet */}
