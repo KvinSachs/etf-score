@@ -1699,7 +1699,9 @@ export default function App(){
         input{outline:none;-webkit-appearance:none}
         input::placeholder{color:${T.text5}}
         input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
-        button{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+        button{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;transition:transform .12s cubic-bezier(.16,1,.3,1),opacity .12s}
+        button:active{transform:scale(0.96);opacity:0.75}
+        button:disabled:active{transform:none;opacity:1}
         @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes popIn{0%{opacity:0;transform:scale(0.7)}60%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
         @keyframes checkFade{0%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(0.8)}}
