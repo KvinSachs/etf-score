@@ -960,6 +960,114 @@ function SwipeToDelete({children,onDelete,disabled,playHint,onHintPlayed}){
   );
 }
 
+
+/* ─── WELCOME SCREEN ─────────────────────────────────────────────────────────── */
+function WelcomeScreen({score,onDone}){
+  const canvasRef=useRef(null);
+  const[displayScore,setDisplayScore]=useState(0);
+  const[phase,setPhase]=useState("in"); // in → hold → out
+
+  // Confetti
+  useEffect(()=>{
+    const canvas=canvasRef.current;
+    if(!canvas)return;
+    const ctx=canvas.getContext("2d");
+    canvas.width=canvas.offsetWidth;
+    canvas.height=canvas.offsetHeight;
+    const particles=[];
+    const colors=["#0ecb81","#ffffff","#a78bfa","#60a5fa","#fbbf24","#f472b6"];
+    for(let i=0;i<90;i++){
+      particles.push({
+        x:Math.random()*canvas.width,
+        y:-20-Math.random()*200,
+        r:Math.random()*5+2,
+        d:Math.random()*2+1,
+        color:colors[Math.floor(Math.random()*colors.length)],
+        tilt:Math.random()*10-5,
+        tiltAngle:0,
+        tiltSpeed:Math.random()*.07+.02,
+      });
+    }
+    let frame;
+    const draw=()=>{
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p=>{
+        p.tiltAngle+=p.tiltSpeed;
+        p.y+=p.d+1;
+        p.x+=Math.sin(p.tiltAngle)*1.5;
+        p.tilt=Math.sin(p.tiltAngle)*12;
+        if(p.y>canvas.height+20){p.y=-20;p.x=Math.random()*canvas.width;}
+        ctx.beginPath();
+        ctx.lineWidth=p.r;
+        ctx.strokeStyle=p.color;
+        ctx.moveTo(p.x+p.tilt+p.r/2,p.y);
+        ctx.lineTo(p.x+p.tilt,p.y+p.tilt+p.r/2);
+        ctx.stroke();
+      });
+      frame=requestAnimationFrame(draw);
+    };
+    // Small delay before starting
+    const t=setTimeout(()=>draw(),100);
+    return()=>{clearTimeout(t);cancelAnimationFrame(frame);};
+  },[]);
+
+  // Score count-up
+  useEffect(()=>{
+    let start=null;
+    const duration=1000;
+    const step=ts=>{
+      if(!start)start=ts;
+      const p=Math.min((ts-start)/duration,1);
+      const ease=1-Math.pow(1-p,3);
+      setDisplayScore(Math.round(ease*score*10)/10);
+      if(p<1)requestAnimationFrame(step);
+    };
+    const t=setTimeout(()=>requestAnimationFrame(step),400);
+    return()=>clearTimeout(t);
+  },[score]);
+
+  // Auto dismiss after 2.8s
+  useEffect(()=>{
+    const t=setTimeout(()=>{setPhase("out");},2200);
+    const t2=setTimeout(()=>onDone(),2700);
+    return()=>{clearTimeout(t);clearTimeout(t2);};
+  },[]);
+
+  return(
+    <div style={{
+      position:"fixed",inset:0,zIndex:99999,
+      display:"flex",justifyContent:"center",
+      opacity:phase==="out"?0:1,
+      transition:phase==="out"?"opacity .5s cubic-bezier(.16,1,.3,1)":"opacity .3s",
+      pointerEvents:"none",
+    }}>
+      <div style={{
+        width:"100%",maxWidth:430,height:"100%",
+        background:T.bg,
+        display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+        gap:8,position:"relative",overflow:"hidden",
+      }}>
+        <canvas ref={canvasRef} style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
+        <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
+          <div style={{fontSize:52,animation:"popIn .5s cubic-bezier(.16,1,.3,1) .1s both"}}>🎉</div>
+          <div style={{fontFamily:T.fontDisplay,fontSize:22,fontWeight:800,color:T.text,letterSpacing:-.5,animation:"up .5s cubic-bezier(.16,1,.3,1) .2s both"}}>
+            Portefeuille créé !
+          </div>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,animation:"up .5s cubic-bezier(.16,1,.3,1) .35s both"}}>
+            <div style={{fontFamily:T.fontDisplay,fontSize:56,fontWeight:800,color:T.accent,lineHeight:1,letterSpacing:-2}}>
+              {displayScore.toFixed(1)}
+            </div>
+            <div style={{fontSize:12,color:T.text4,letterSpacing:2,textTransform:"uppercase",fontWeight:600}}>/20</div>
+          </div>
+          <div style={{fontSize:13,color:T.text4,animation:"up .5s cubic-bezier(.16,1,.3,1) .45s both"}}>
+            Score de diversification
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── SPLASH ─────────────────────────────────────────────────────────────────── */
 function Splash({visible}){
   return(
@@ -1105,7 +1213,7 @@ function Onboarding({onAdd,onDone,onToast}){
     // Commit all added ETFs to parent on exit
     added.forEach(h=>onAdd(h.ticker,h.amount));
     localStorage.setItem("etf-onboarding-seen","1");
-    onDone();
+    onDone(added.length>0);
   };
 
   // Swipe handling — content follows finger
@@ -1594,6 +1702,7 @@ export default function App(){
   const[toast,setToast]=useState({msg:"",visible:false,position:"bottom"});
   const[swipeHintSeen,setSwipeHintSeen]=useState(true); // true = no hint by default
   const[onboarding,setOnboarding]=useState(false);
+  const[showWelcome,setShowWelcome]=useState(false);
   const[darkMode,setDarkMode]=useState(()=>localStorage.getItem('etf-theme')!=='light');
   const[lightGag,setLightGag]=useState(false);
   const[onboardStep,setOnboardStep]=useState(0);
@@ -1718,7 +1827,8 @@ export default function App(){
 
       <Splash visible={splash}/>
       {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)}/>}
-      {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={()=>{setOnboarding(false);setTab("scores");}} onToast={msg=>{if(toastTimer.current)clearTimeout(toastTimer.current);setToast({msg,visible:true,position:"top"});toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);}}/>}
+      {showWelcome&&<WelcomeScreen score={scores.total} onDone={()=>setShowWelcome(false)}/> }
+      {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={(hasEtfs)=>{if(hasEtfs){setOnboarding(false);setTab("scores");setShowWelcome(true);}else{setOnboarding(false);setTab("scores");}}} onToast={msg=>{if(toastTimer.current)clearTimeout(toastTimer.current);setToast({msg,visible:true,position:"top"});toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);}}/>}
 
       {/* Ambient */}
       <div aria-hidden="true" style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
