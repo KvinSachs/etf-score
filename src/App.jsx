@@ -775,7 +775,7 @@ function Toast({msg,visible,onUndo,undoLabel,position="bottom"}){
   const isTop=position==="top";
   const posStyle=isTop
     ?{top:"calc(env(safe-area-inset-top,16px) + 56px)",transform:`translateX(-50%) translateY(${visible?0:-12}px)`}
-    :{bottom:80,transform:`translateX(-50%) translateY(${visible?0:12}px)`};
+    :{bottom:"calc(60px + env(safe-area-inset-bottom, 0px) + 16px)",transform:`translateX(-50%) translateY(${visible?0:12}px)`};
   return(
     <div style={{position:"fixed",left:"50%",...posStyle,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:T.bgDropdown,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,padding:"11px 18px",zIndex:999999,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:visible?"auto":"none",whiteSpace:"nowrap"}}>
       <div style={{width:6,height:6,borderRadius:"50%",background:T.accent,boxShadow:"0 0 8px #0ecb81",flexShrink:0}}/>
