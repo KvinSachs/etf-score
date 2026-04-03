@@ -1620,6 +1620,23 @@ export default function App(){
       setSwipeHintSeen(false);
     }
     setTimeout(()=>setSplash(false), 2800);
+
+    // Re-show splash briefly when app comes back from background (iOS PWA behaviour)
+    const onVisibility=()=>{
+      if(!document.hidden)return;
+      // App going to background — flag it
+      onVisibility._hidden=true;
+    };
+    const onVisibilityReturn=()=>{
+      if(document.hidden||!onVisibility._hidden)return;
+      onVisibility._hidden=false;
+      setSplash(true);
+      setTimeout(()=>setSplash(false),1800);
+    };
+    document.addEventListener("visibilitychange",()=>{
+      if(document.hidden){onVisibility._hidden=true;}
+      else if(onVisibility._hidden){onVisibility._hidden=false;setSplash(true);setTimeout(()=>setSplash(false),1800);}
+    });
     if(localStorage.getItem('etf-theme')==='light')setDarkMode(false);
 
   },[]);
