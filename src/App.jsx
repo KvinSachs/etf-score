@@ -1749,7 +1749,7 @@ export default function App(){
           zIndex:50,
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <img src="/logo-etf_score.svg" alt="ETF Score" style={{width:14,height:17,objectFit:"contain",flexShrink:0,filter:T.bg==="#050506"?"invert(1)":"none"}}/>
+            <img src="/logo-etf_score.svg" alt="ETF Score" style={{width:20,height:23,objectFit:"contain",flexShrink:0,filter:T.bg==="#050506"?"invert(1)":"none"}}/>
             <div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <span style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:800,color:T.text,letterSpacing:-.3}}>ETF Score</span>
