@@ -1621,23 +1621,7 @@ export default function App(){
     }
     setTimeout(()=>setSplash(false), 2800);
 
-    // Re-show splash when app comes back from background (iOS PWA)
-    // visibilitychange alone is unreliable in standalone mode — combine with pageshow
-    let wasHidden=false;
-    const onVisibility=()=>{
-      if(document.hidden){wasHidden=true;}
-      else if(wasHidden){wasHidden=false;setSplash(true);setTimeout(()=>setSplash(false),1800);}
-    };
-    const onPageShow=e=>{
-      // persisted=true means restored from bfcache (back/forward or app switcher)
-      if(e.persisted){setSplash(true);setTimeout(()=>setSplash(false),1800);}
-    };
-    document.addEventListener("visibilitychange",onVisibility);
-    window.addEventListener("pageshow",onPageShow);
-    return()=>{
-      document.removeEventListener("visibilitychange",onVisibility);
-      window.removeEventListener("pageshow",onPageShow);
-    };
+
     if(localStorage.getItem('etf-theme')==='light')setDarkMode(false);
 
   },[]);
