@@ -576,10 +576,10 @@ function SuggestionSheet({catalog,onSelect,onClose}){
 }
 
 /* ─── SEARCH ─────────────────────────────────────────────────────────────────── */
-function Search({onAdd,suggestions=[]}){
-  const[q,setQ]=useState(""),[amt,setAmt]=useState(""),[open,setOpen]=useState(false);
+function Search({onAdd,suggestions=[],initialTicker=null}){
+  const[q,setQ]=useState(initialTicker?DB[initialTicker]?.name||initialTicker:""),[amt,setAmt]=useState(""),[open,setOpen]=useState(false);
   const[hi,setHi]=useState(0),[err,setErr]=useState(""),[activeSug,setActiveSug]=useState(null);
-  const[selectedTicker,setSelectedTicker]=useState(null);
+  const[selectedTicker,setSelectedTicker]=useState(initialTicker);
   const ref=useRef(null),amtRef=useRef(null);
   useEffect(()=>{const f=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",f);return()=>document.removeEventListener("mousedown",f);},[]);
   const resolved=useMemo(()=>{if(selectedTicker)return selectedTicker;const u=q.trim().toUpperCase();if(/^[A-Z]{2}[A-Z0-9]{10}$/.test(u)&&ISIN_MAP[u])return ISIN_MAP[u];return u;},[q,selectedTicker]);
@@ -1602,6 +1602,7 @@ export default function App(){
   const[plans,setPlans]=useState({}); // {ticker: {freq, amount, startDate}}
   const[editPlan,setEditPlan]=useState(null);
   const[showAddSheet,setShowAddSheet]=useState(false);
+  const[addSheetTicker,setAddSheetTicker]=useState(null);
   const[showImportSheet,setShowImportSheet]=useState(false);
   const scrollRef=useRef(null);
   const scrollTouchY=useRef(0);
@@ -2144,7 +2145,7 @@ export default function App(){
                       <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>Ajouter un ETF</div>
                       <button onClick={()=>setShowAddSheet(false)} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
                     </div>
-                    <Search onAdd={(t,a)=>{addHolding(t,a);setShowAddSheet(false);}} suggestions={suggestions}/>
+                    <Search onAdd={(t,a)=>{addHolding(t,a);setShowAddSheet(false);setAddSheetTicker(null);}} suggestions={suggestions} initialTicker={addSheetTicker}/>
                   </div>
                 </Sheet>
               )}
@@ -2287,7 +2288,7 @@ export default function App(){
 
 
       {/* Rec action sheet */}
-      {activeRec&&CAT[activeRec]&&<SuggestionSheet catalog={CAT[activeRec]} onSelect={ticker=>{setTab("ptf");setActiveRec(null);}} onClose={()=>setActiveRec(null)}/>}
+      {activeRec&&CAT[activeRec]&&<SuggestionSheet catalog={CAT[activeRec]} onSelect={ticker=>{setTab("ptf");setActiveRec(null);setAddSheetTicker(ticker);setShowAddSheet(true);}} onClose={()=>setActiveRec(null)}/>}
 
       {/* Plan sheet */}
       {editPlan&&<PlanSheet
