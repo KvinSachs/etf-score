@@ -1594,6 +1594,7 @@ export default function App(){
   const[swipeHintSeen,setSwipeHintSeen]=useState(true); // true = no hint by default
   const[onboarding,setOnboarding]=useState(false);
   const[darkMode,setDarkMode]=useState(()=>localStorage.getItem('etf-theme')!=='light');
+  const[lightGag,setLightGag]=useState(false);
   const[onboardStep,setOnboardStep]=useState(0);
   const[splash,setSplash]=useState(true);
   const[activeRec,setActiveRec]=useState(null);
@@ -2199,7 +2200,14 @@ export default function App(){
                 <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Paramètres</div>
                 <div style={{display:"flex",gap:8}}>
                   {[{id:true,label:"Sombre",icon:"🌙",badge:null},{id:false,label:"Claire",icon:"☀️",badge:"Alpha"}].map(opt=>(
-                    <button key={String(opt.id)} onClick={()=>{setDarkMode(opt.id);localStorage.setItem('etf-theme',opt.id?'dark':'light');}}
+                    <button key={String(opt.id)} onClick={()=>{
+                      if(!opt.id&&darkMode){
+                        setLightGag(true);
+                        setTimeout(()=>{setLightGag(false);setDarkMode(false);localStorage.setItem('etf-theme','light');},2200);
+                      } else {
+                        setDarkMode(opt.id);localStorage.setItem('etf-theme',opt.id?'dark':'light');
+                      }
+                    }}
                       style={{
                         flex:1,padding:"12px 8px",borderRadius:T.radiusSm,cursor:"pointer",
                         background:darkMode===opt.id?T.accentBg:T.surfaceFaint,
@@ -2262,6 +2270,15 @@ export default function App(){
         </div>
       </div>
 
+      {/* Light mode gag overlay */}
+      {lightGag&&(
+        <div style={{position:"fixed",inset:0,zIndex:9999999,background:"#ffffff",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,animation:"gagIn .15s ease both"}}>
+          <style>{`@keyframes gagIn{from{opacity:0}to{opacity:1}} @keyframes gagShake{0%,100%{transform:rotate(0deg)}20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(5deg)}}`}</style>
+          <div style={{fontSize:64,animation:"gagShake .5s ease .1s both"}}>😵</div>
+          <div style={{fontSize:18,fontWeight:700,color:"#1a1a1a",letterSpacing:-.3,textAlign:"center",padding:"0 32px"}}>Attention, ça pique les yeux !</div>
+          <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",textAlign:"center",padding:"0 40px",lineHeight:1.6}}>Passage en mode aveuglant…<br/>Bonne chance 🌞</div>
+        </div>
+      )}
       {/* Toasts */}
       <Toast msg={toast.msg} visible={toast.visible} onUndo={toast.undo?undoDelete:null} undoLabel="Annuler" position={toast.position||"bottom"}/>
 
