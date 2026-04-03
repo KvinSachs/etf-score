@@ -983,9 +983,10 @@ function Splash({visible}){
           animation:visible?"splashGlow 1.2s ease .4s both":"none",
         }}/>
         <img src="/logo-etf_score.svg" alt="ETF Score" style={{
-          width:56,height:65,
+          width:44,height:50,
           objectFit:"contain",
           position:"relative",zIndex:1,
+          color:T.text,
         }}/>
       </div>
 
@@ -1748,7 +1749,7 @@ export default function App(){
           zIndex:50,
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <img src="/logo-etf_score.svg" alt="ETF Score" style={{width:22,height:26,objectFit:"contain",flexShrink:0}}/>
+            <img src="/logo-etf_score.svg" alt="ETF Score" style={{width:18,height:21,objectFit:"contain",flexShrink:0,color:T.text}}/>
             <div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <span style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:800,color:T.text,letterSpacing:-.3}}>ETF Score</span>
@@ -2167,7 +2168,7 @@ export default function App(){
             <div style={{display:"flex",flexDirection:"column",overflowX:"hidden",width:"100%",gap:14,animation:"fadeIn .3s ease"}}>
               <Glass style={{padding:"24px 20px"}}>
                 <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
-                  <img src="/logo-etf_score.svg" alt="ETF Score" style={{width:44,height:52,objectFit:"contain"}}/>
+                  <img src="/logo-etf_score.svg" alt="ETF Score" style={{width:36,height:42,objectFit:"contain",color:T.text}}/>
                   <div>
                     <div style={{fontSize:18,fontWeight:700,color:T.text,letterSpacing:-.3}}>ETF Score</div>
                     <div style={{fontSize:11,color:T.text4,marginTop:2}}>Analyse multicritères · v3</div>
