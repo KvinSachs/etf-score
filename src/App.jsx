@@ -2272,12 +2272,12 @@ export default function App(){
 
       {/* Light mode gag overlay */}
       {lightGag&&(
-        <div style={{position:"fixed",inset:0,zIndex:9999999,background:"#ffffff",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,animation:"gagIn .15s ease both"}}>
+        <div style={{position:"fixed",inset:0,zIndex:9999999,display:"flex",justifyContent:"center"}}><div style={{width:"100%",maxWidth:430,height:"100%",background:T.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,animation:"gagIn .15s ease both"}}>
           <style>{`@keyframes gagIn{from{opacity:0}to{opacity:1}} @keyframes gagShake{0%,100%{transform:rotate(0deg)}20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(5deg)}}`}</style>
           <div style={{fontSize:64,animation:"gagShake .5s ease .1s both"}}>😵</div>
-          <div style={{fontSize:18,fontWeight:700,color:"#1a1a1a",letterSpacing:-.3,textAlign:"center",padding:"0 32px"}}>Attention, ça pique les yeux !</div>
-          <div style={{fontSize:13,color:"rgba(0,0,0,0.45)",textAlign:"center",padding:"0 40px",lineHeight:1.6}}>Passage en mode aveuglant…<br/>Bonne chance 🌞</div>
-        </div>
+          <div style={{fontSize:18,fontWeight:700,color:T.text,letterSpacing:-.3,textAlign:"center",padding:"0 32px"}}>Attention, ça pique les yeux !</div>
+          <div style={{fontSize:13,color:T.text4,textAlign:"center",padding:"0 40px",lineHeight:1.6}}>Passage en mode aveuglant…<br/>Bonne chance 🌞</div>
+        </div></div>
       )}
       {/* Toasts */}
       <Toast msg={toast.msg} visible={toast.visible} onUndo={toast.undo?undoDelete:null} undoLabel="Annuler" position={toast.position||"bottom"}/>
