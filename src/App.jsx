@@ -1621,22 +1621,23 @@ export default function App(){
     }
     setTimeout(()=>setSplash(false), 2800);
 
-    // Re-show splash briefly when app comes back from background (iOS PWA behaviour)
+    // Re-show splash when app comes back from background (iOS PWA)
+    // visibilitychange alone is unreliable in standalone mode — combine with pageshow
+    let wasHidden=false;
     const onVisibility=()=>{
-      if(!document.hidden)return;
-      // App going to background — flag it
-      onVisibility._hidden=true;
+      if(document.hidden){wasHidden=true;}
+      else if(wasHidden){wasHidden=false;setSplash(true);setTimeout(()=>setSplash(false),1800);}
     };
-    const onVisibilityReturn=()=>{
-      if(document.hidden||!onVisibility._hidden)return;
-      onVisibility._hidden=false;
-      setSplash(true);
-      setTimeout(()=>setSplash(false),1800);
+    const onPageShow=e=>{
+      // persisted=true means restored from bfcache (back/forward or app switcher)
+      if(e.persisted){setSplash(true);setTimeout(()=>setSplash(false),1800);}
     };
-    document.addEventListener("visibilitychange",()=>{
-      if(document.hidden){onVisibility._hidden=true;}
-      else if(onVisibility._hidden){onVisibility._hidden=false;setSplash(true);setTimeout(()=>setSplash(false),1800);}
-    });
+    document.addEventListener("visibilitychange",onVisibility);
+    window.addEventListener("pageshow",onPageShow);
+    return()=>{
+      document.removeEventListener("visibilitychange",onVisibility);
+      window.removeEventListener("pageshow",onPageShow);
+    };
     if(localStorage.getItem('etf-theme')==='light')setDarkMode(false);
 
   },[]);
