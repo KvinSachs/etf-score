@@ -1851,7 +1851,7 @@ export default function App(){
 
   useEffect(()=>{
     if(!ready)return;setSaved(false);
-    const t=setTimeout(async()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify({holdings,disclaimerSeen,savedAt:new Date().toISOString()}));}catch(_){}setSaved(true);},700);
+    const t=setTimeout(async()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify({holdings,disclaimerSeen,savedAt:new Date().toISOString(),plans}));}catch(_){}setSaved(true);},700);
     return()=>clearTimeout(t);
   },[holdings,disclaimerSeen,plans,ready]);
 
@@ -2078,12 +2078,6 @@ export default function App(){
                       <span style={{fontSize:20,color:T.text5,fontWeight:300}}>/20</span>
                     </div>
                     <div style={{fontSize:11,color:g.text,marginTop:6,fontWeight:600,letterSpacing:.3}}>{g.label}</div>
-                    {Object.keys(plans).length>0&&(
-                      <button onClick={()=>setShowProjection(true)} style={{marginTop:14,display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"rgba(255,255,255,0.06)",border:`0.5px solid ${T.borderSubtle}`,borderRadius:20,padding:"6px 14px",cursor:"pointer",color:T.textSub,fontSize:11,fontWeight:500}}>
-                        <span>Projection DCA</span>
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M5.5 2.5L8 5l-2.5 2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      </button>
-                    )}
                   </div>
                   <div style={{textAlign:"right"}}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4,marginBottom:10}}>
@@ -2094,6 +2088,14 @@ export default function App(){
                     <div style={{fontSize:11,color:T.text5,marginTop:6}}>{holdings.length} position{holdings.length>1?"s":""}</div>
                   </div>
                 </div>
+                {Object.keys(plans).length>0&&(
+                  <div style={{display:"flex",justifyContent:"center",paddingBottom:16,position:"relative",zIndex:1}}>
+                    <button onClick={()=>setShowProjection(true)} style={{display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,0.06)",border:`0.5px solid ${T.borderSubtle}`,borderRadius:20,padding:"6px 14px",cursor:"pointer",color:T.textSub,fontSize:11,fontWeight:500}}>
+                      <span>Projection DCA</span>
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M5.5 2.5L8 5l-2.5 2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
+                  </div>
+                )}
                 </div>
               )}
 
