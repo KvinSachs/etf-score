@@ -514,7 +514,7 @@ function Sheet({children,onClose}){
   return createPortal(
     <div onClick={onClose} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
       <div ref={ref} onClick={e=>e.stopPropagation()} onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
-        style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,minHeight:"50vh",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
+        style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,height:"calc(100vh - env(safe-area-inset-top, 0px) - 12px)",display:"flex",flexDirection:"column",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
         <div style={{display:"flex",justifyContent:"center",padding:"12px 0 4px",cursor:"grab"}}>
           <div style={{width:36,height:4,borderRadius:2,background:T.surfaceStrong}}/>
         </div>
@@ -528,7 +528,7 @@ function Sheet({children,onClose}){
 function SuggestionSheet({catalog,onSelect,onClose}){
   return(
     <Sheet onClose={onClose}>
-      <div style={{padding:"8px 20px 40px"}}>
+      <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:20}}>{catalog.emoji}</span>
@@ -1446,7 +1446,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
 
   return(
     <Sheet onClose={onClose}>
-      <div style={{padding:"8px 20px 40px"}}>
+      <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <div>
             <div style={{fontSize:15,fontWeight:700,color:T.text}}>Plan d'investissement</div>
@@ -2233,7 +2233,7 @@ export default function App(){
               {/* Add ETF sheet */}
               {showAddSheet&&(
                 <Sheet onClose={()=>setShowAddSheet(false)}>
-                  <div style={{padding:"8px 20px 40px"}}>
+                  <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
                       <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>Ajouter un ETF</div>
                       <button onClick={()=>setShowAddSheet(false)} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
@@ -2246,7 +2246,7 @@ export default function App(){
               {/* Import/Export sheet */}
               {showImportSheet&&(
                 <Sheet onClose={()=>setShowImportSheet(false)}>
-                  <div style={{padding:"8px 20px 40px"}}>
+                  <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
                       <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>Import / Export</div>
                       <button onClick={()=>setShowImportSheet(false)} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
@@ -2397,7 +2397,7 @@ export default function App(){
       {/* Reset */}
       {confirmReset&&(
         <Sheet onClose={()=>setConfirmReset(false)}>
-          <div style={{padding:"8px 20px 40px",textAlign:"center"}}>
+          <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))",textAlign:"center"}}>
             <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:800,color:T.text,marginBottom:8}}>Effacer le portefeuille ?</div>
             <div style={{fontSize:13,color:T.text4,marginBottom:24,lineHeight:1.65}}>Toutes vos positions seront supprimées. Irréversible.</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
