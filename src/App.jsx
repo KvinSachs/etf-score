@@ -228,6 +228,104 @@ function projectPortfolio(holdings, plans, yearsAhead){
   return projected;
 }
 
+
+/* ─── DCA OPTIMIZER ──────────────────────────────────────────────────────────── */
+function optimizeDCA(holdings, plans, yearsAhead=5){
+  const periodsPerYear={weekly:52,monthly:12,quarterly:4};
+  const monthlyEquiv={weekly:52/12,monthly:1,quarterly:1/3};
+
+  // 1. Compute total monthly budget across all existing plans
+  const existingTickers=Object.keys(plans).filter(t=>plans[t]?.amount>0);
+  const totalMonthlyBudget=existingTickers.reduce((sum,t)=>{
+    const p=plans[t];
+    return sum+(p.amount*(monthlyEquiv[p.freq]||1));
+  },0);
+
+  if(totalMonthlyBudget<=0) return null;
+
+  // 2. Determine default freq (most common among existing plans, fallback monthly)
+  const freqCount={weekly:0,monthly:0,quarterly:0};
+  existingTickers.forEach(t=>{freqCount[plans[t].freq]=(freqCount[plans[t].freq]||0)+1;});
+  const defaultFreq=Object.entries(freqCount).sort((a,b)=>b[1]-a[1])[0]?.[0]||"monthly";
+
+  // 3. All tickers to consider = holdings (existing plans + new ones)
+  const allTickers=holdings.map(h=>h.ticker);
+
+  // 4. Gradient-based optimization — iterate to maximize score
+  // Initialize weights: existing plans keep their weight, new ones start at 0
+  let weights={};
+  allTickers.forEach(t=>{
+    const p=plans[t];
+    if(p?.amount>0){
+      weights[t]=(p.amount*(monthlyEquiv[p.freq]||1))/totalMonthlyBudget;
+    } else {
+      weights[t]=0;
+    }
+  });
+
+  // Helper: build plans from weights and simulate portfolio at yearsAhead
+  const simulate=(w)=>{
+    const simPlans={};
+    allTickers.forEach(t=>{
+      const freq=plans[t]?.freq||defaultFreq;
+      const ppy=periodsPerYear[freq]||12;
+      const monthlyAmt=w[t]*totalMonthlyBudget;
+      const perPeriod=monthlyAmt/(ppy/12);
+      if(perPeriod>=5){
+        simPlans[t]={freq,amount:Math.round(perPeriod*100)/100,startDate:plans[t]?.startDate||new Date().toISOString().split("T")[0]};
+      }
+    });
+    return computeScores(projectPortfolio(holdings,simPlans,yearsAhead)).total;
+  };
+
+  // Simple gradient ascent — 80 iterations
+  const STEP=0.02;
+  const MIN_WEIGHT=0; // allow 0
+  for(let iter=0;iter<80;iter++){
+    let bestDelta=0,bestFrom=null,bestTo=null;
+    // Try transferring weight from each ticker to each other
+    for(const from of allTickers){
+      if(weights[from]<STEP) continue;
+      for(const to of allTickers){
+        if(to===from) continue;
+        // Try shifting STEP from → to
+        const trial={...weights};
+        trial[from]-=STEP;
+        trial[to]+=STEP;
+        const delta=simulate(trial)-simulate(weights);
+        if(delta>bestDelta){bestDelta=delta;bestFrom=from;bestTo=to;}
+      }
+    }
+    if(!bestFrom) break; // converged
+    weights[bestFrom]-=STEP;
+    weights[bestTo]+=STEP;
+  }
+
+  // 5. Build final optimized plans
+  const optimizedPlans={};
+  allTickers.forEach(t=>{
+    const freq=plans[t]?.freq||defaultFreq;
+    const ppy=periodsPerYear[freq]||12;
+    const monthlyAmt=weights[t]*totalMonthlyBudget;
+    const perPeriod=monthlyAmt/(ppy/12);
+    const rounded=Math.round(perPeriod/5)*5; // round to nearest 5€ for practicality
+    if(rounded>=5){
+      optimizedPlans[t]={
+        freq,
+        amount:rounded,
+        startDate:plans[t]?.startDate||new Date().toISOString().split("T")[0],
+      };
+    }
+    // 0€ = no plan (omit)
+  });
+
+  // 6. Compute projected scores
+  const score5yBefore=computeScores(projectPortfolio(holdings,plans,yearsAhead)).total;
+  const score5yAfter=computeScores(projectPortfolio(holdings,optimizedPlans,yearsAhead)).total;
+
+  return{optimizedPlans,score5yBefore,score5yAfter,totalMonthlyBudget,defaultFreq};
+}
+
 /* ─── RECS & POSITIVE (identical logic) ─────────────────────────────────────── */
 function buildPositive(scores,holdings){
   const p=[],{classes}=scores,bondPct=classes["bond"]||0,commPct=classes["commodity"]||0,n=holdings.length;
@@ -542,11 +640,13 @@ function Sheet({children,onClose}){
 
 
 /* ─── PROJECTION SHEET ───────────────────────────────────────────────────────── */
-function ProjectionSheet({holdings,plans,currentScore,onClose}){
+function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
   const score1y = computeScores(projectPortfolio(holdings,plans,1)).total;
   const score5y = computeScores(projectPortfolio(holdings,plans,5)).total;
   const proj5y  = projectPortfolio(holdings,plans,5);
   const total5y = proj5y.reduce((s,h)=>s+h.amount,0);
+  const[showConfirm,setShowConfirm]=useState(false);
+  const[applied,setApplied]=useState(false);
 
   // DCA annual total
   const periodsPerYear={weekly:52,monthly:12,quarterly:4};
@@ -556,6 +656,9 @@ function ProjectionSheet({holdings,plans,currentScore,onClose}){
   },0);
 
   const g0=sc(currentScore), g1=sc(score1y), g5=sc(score5y);
+
+  // Compute optimization once
+  const optResult=useMemo(()=>optimizeDCA(holdings,plans,5),[]);
 
   const ScoreCol=({label,value,g,highlight})=>(
     <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:6,
@@ -645,11 +748,98 @@ function ProjectionSheet({holdings,plans,currentScore,onClose}){
           <div style={{fontSize:11,color:T.text4,marginTop:4}}>{(annualDCA*5).toLocaleString("fr-FR")} € versés sur 5 ans</div>
         </div>
 
-        {/* Phase 2 placeholder */}
-        <div style={{marginTop:16,padding:"14px 16px",borderRadius:14,border:`0.5px dashed ${T.borderFaint}`,display:"flex",alignItems:"center",gap:10,opacity:.5}}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke={T.text4} strokeWidth="1"/><path d="M7 4v3.5l2 2" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/></svg>
-          <span style={{fontSize:11,color:T.text4,fontStyle:"italic"}}>Optimisation DCA — bientôt disponible</span>
-        </div>
+        {/* Optimization section */}
+        {optResult&&!applied&&(
+          <div style={{marginTop:8}}>
+            <div style={{height:"0.5px",background:T.borderFaint,margin:"8px 0 20px"}}/>
+            <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>Scénario optimal à 5 ans</div>
+
+            {/* Score comparison */}
+            <div style={{display:"flex",gap:8,marginBottom:16}}>
+              <div style={{flex:1,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:12,padding:"12px",textAlign:"center"}}>
+                <div style={{fontSize:9,color:T.text5,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>DCA actuel</div>
+                <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:800,color:sc(optResult.score5yBefore).text,letterSpacing:-1}}>{optResult.score5yBefore.toFixed(1)}</div>
+                <div style={{fontSize:9,color:T.text5}}>/20</div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",color:T.accent,fontSize:16}}>→</div>
+              <div style={{flex:1,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.25)",borderRadius:12,padding:"12px",textAlign:"center"}}>
+                <div style={{fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>Optimisé</div>
+                <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:800,color:sc(optResult.score5yAfter).text,letterSpacing:-1}}>{optResult.score5yAfter.toFixed(1)}</div>
+                <div style={{fontSize:9,color:T.text5}}>/20</div>
+              </div>
+            </div>
+
+            {/* Per-ETF changes */}
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:16}}>
+              {holdings.map(h=>{
+                const before=plans[h.ticker];
+                const after=optResult.optimizedPlans[h.ticker];
+                const beforeAmt=before?.amount||0;
+                const afterAmt=after?.amount||0;
+                const freq=before?.freq||optResult.defaultFreq;
+                const freqLabel=FREQS.find(f=>f.id===freq)?.short||"/mois";
+                const changed=beforeAmt!==afterAmt;
+                const isNew=!before&&after;
+                const isStopped=before&&!after;
+                return(
+                  <div key={h.ticker} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,background:changed||isNew||isStopped?T.surfaceFaint:"transparent",border:`0.5px solid ${changed||isNew||isStopped?T.borderSubtle:"transparent"}`}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12,color:T.text,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.name}</div>
+                      <div style={{fontSize:10,color:T.text5,marginTop:1}}>{freqLabel}</div>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+                      <span style={{fontSize:12,color:T.text4}}>{beforeAmt>0?`${beforeAmt} €`:"—"}</span>
+                      {(changed||isNew||isStopped)&&<span style={{fontSize:10,color:T.text5}}>→</span>}
+                      {(changed||isNew||isStopped)&&(
+                        <span style={{fontSize:12,fontWeight:700,color:afterAmt>beforeAmt?T.accent:afterAmt===0?"#ff4d4d":"#ff9500"}}>
+                          {afterAmt>0?`${afterAmt} €`:"0 €"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Disclaimer */}
+            <div style={{fontSize:11,color:T.text5,lineHeight:1.6,marginBottom:16,padding:"10px 12px",background:T.surfaceFaint,borderRadius:10}}>
+              Simulation indicative basée sur votre portefeuille actuel. Vos positions existantes ne sont pas modifiées — seuls les versements futurs changent. Pensez à relancer une simulation dans 2 ans.
+            </div>
+
+            {/* CTA */}
+            {!showConfirm?(
+              <button onClick={()=>setShowConfirm(true)} style={{width:"100%",background:T.accent,border:"none",borderRadius:14,padding:"14px",color:"#000",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:T.fontDisplay}}>
+                Appliquer ce scénario
+              </button>
+            ):(
+              <div style={{background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.25)",borderRadius:14,padding:"16px"}}>
+                <div style={{fontSize:13,fontWeight:600,color:"#ff9500",marginBottom:8}}>Confirmer la mise à jour</div>
+                <div style={{fontSize:12,color:T.text4,lineHeight:1.6,marginBottom:14}}>Les montants de vos versements programmés vont être mis à jour. Vos positions actuelles ne sont pas modifiées.</div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>setShowConfirm(false)} style={{flex:1,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:10,padding:"11px",color:T.text3,fontSize:13,fontWeight:500,cursor:"pointer"}}>
+                    Annuler
+                  </button>
+                  <button onClick={()=>{
+                    onPlansUpdate(optResult.optimizedPlans);
+                    localStorage.setItem("etf-dca-sim-date",new Date().toISOString());
+                    setApplied(true);setShowConfirm(false);
+                  }} style={{flex:2,background:T.accent,border:"none",borderRadius:10,padding:"11px",color:"#000",fontSize:13,fontWeight:700,cursor:"pointer"}}>
+                    Mettre à jour mes ordres
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {applied&&(
+          <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:10}}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#0ecb81" strokeWidth="1"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:T.accent}}>Scénario appliqué</div>
+              <div style={{fontSize:11,color:T.text4,marginTop:2}}>Pensez à relancer une simulation dans 2 ans.</div>
+            </div>
+          </div>
+        )}
       </div>
     </Sheet>
   );
@@ -1940,7 +2130,13 @@ export default function App(){
 
       <Splash visible={splash}/>
       {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)}/>}
-      {showProjection&&<ProjectionSheet holdings={holdings} plans={plans} currentScore={scores.total} onClose={()=>setShowProjection(false)}/> }
+      {showProjection&&<ProjectionSheet
+        holdings={holdings}
+        plans={plans}
+        currentScore={scores.total}
+        onPlansUpdate={newPlans=>{setPlans(p=>({...p,...newPlans}));}}
+        onClose={()=>setShowProjection(false)}
+      />}
       {showWelcome&&<WelcomeScreen etfCount={holdings.length} onDone={()=>setShowWelcome(false)}/> }
       {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={(hasEtfs)=>{if(hasEtfs){setOnboarding(false);setTab("scores");setShowWelcome(true);}else{setOnboarding(false);setTab("scores");}}} onToast={msg=>{if(toastTimer.current)clearTimeout(toastTimer.current);setToast({msg,visible:true,position:"top"});toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);}}/>}
 
