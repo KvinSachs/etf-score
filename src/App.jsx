@@ -2079,8 +2079,9 @@ export default function App(){
                     </div>
                     <div style={{fontSize:11,color:g.text,marginTop:6,fontWeight:600,letterSpacing:.3}}>{g.label}</div>
                     {Object.keys(plans).length>0&&(
-                      <button onClick={()=>setShowProjection(true)} style={{marginTop:12,display:"flex",alignItems:"center",gap:5,background:"none",border:"none",padding:0,cursor:"pointer",color:T.accent,fontSize:12,fontWeight:600}}>
-                        <span>→</span><span style={{borderBottom:"1px solid rgba(14,203,129,0.35)"}}>Voir la projection DCA</span>
+                      <button onClick={()=>setShowProjection(true)} style={{marginTop:14,display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"rgba(255,255,255,0.06)",border:`0.5px solid ${T.borderSubtle}`,borderRadius:20,padding:"6px 14px",cursor:"pointer",color:T.textSub,fontSize:11,fontWeight:500}}>
+                        <span>Projection DCA</span>
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M5.5 2.5L8 5l-2.5 2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
                     )}
                   </div>
