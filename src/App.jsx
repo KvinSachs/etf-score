@@ -962,9 +962,8 @@ function SwipeToDelete({children,onDelete,disabled,playHint,onHintPlayed}){
 
 
 /* ─── WELCOME SCREEN ─────────────────────────────────────────────────────────── */
-function WelcomeScreen({score,onDone}){
+function WelcomeScreen({etfCount,onDone}){
   const canvasRef=useRef(null);
-  const[displayScore,setDisplayScore]=useState(0);
   const[phase,setPhase]=useState("in"); // in → hold → out
 
   // Confetti
@@ -1011,21 +1010,6 @@ function WelcomeScreen({score,onDone}){
     return()=>{clearTimeout(t);cancelAnimationFrame(frame);};
   },[]);
 
-  // Score count-up
-  useEffect(()=>{
-    let start=null;
-    const duration=1000;
-    const step=ts=>{
-      if(!start)start=ts;
-      const p=Math.min((ts-start)/duration,1);
-      const ease=1-Math.pow(1-p,3);
-      setDisplayScore(Math.round(ease*score*10)/10);
-      if(p<1)requestAnimationFrame(step);
-    };
-    const t=setTimeout(()=>requestAnimationFrame(step),400);
-    return()=>clearTimeout(t);
-  },[score]);
-
   // Auto dismiss after 2.8s
   useEffect(()=>{
     const t=setTimeout(()=>{setPhase("out");},2200);
@@ -1054,13 +1038,10 @@ function WelcomeScreen({score,onDone}){
             Portefeuille créé !
           </div>
           <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,animation:"up .5s cubic-bezier(.16,1,.3,1) .35s both"}}>
-            <div style={{fontFamily:T.fontDisplay,fontSize:56,fontWeight:800,color:T.accent,lineHeight:1,letterSpacing:-2}}>
-              {displayScore.toFixed(1)}
+            <div style={{fontFamily:T.fontDisplay,fontSize:64,fontWeight:800,color:T.accent,lineHeight:1,letterSpacing:-2}}>
+              {etfCount}
             </div>
-            <div style={{fontSize:12,color:T.text4,letterSpacing:2,textTransform:"uppercase",fontWeight:600}}>/20</div>
-          </div>
-          <div style={{fontSize:13,color:T.text4,animation:"up .5s cubic-bezier(.16,1,.3,1) .45s both"}}>
-            Score de diversification
+            <div style={{fontSize:13,color:T.text4,letterSpacing:.3}}>ETF {etfCount>1?"ajoutés":"ajouté"}</div>
           </div>
         </div>
       </div>
@@ -1827,7 +1808,7 @@ export default function App(){
 
       <Splash visible={splash}/>
       {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)}/>}
-      {showWelcome&&<WelcomeScreen score={scores.total} onDone={()=>setShowWelcome(false)}/> }
+      {showWelcome&&<WelcomeScreen etfCount={holdings.length} onDone={()=>setShowWelcome(false)}/> }
       {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={(hasEtfs)=>{if(hasEtfs){setOnboarding(false);setTab("scores");setShowWelcome(true);}else{setOnboarding(false);setTab("scores");}}} onToast={msg=>{if(toastTimer.current)clearTimeout(toastTimer.current);setToast({msg,visible:true,position:"top"});toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);}}/>}
 
       {/* Ambient */}
