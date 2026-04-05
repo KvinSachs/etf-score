@@ -799,7 +799,17 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
         </div>
 
         {/* Optimization section */}
-        {optResult&&!applied&&(
+        {optResult&&!applied&&(optResult.score5yAfter-optResult.score5yBefore<0.5?(
+          <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:12}}>
+            <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(14,203,129,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#0ecb81" strokeWidth="1"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </div>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:T.accent,fontFamily:T.fontDisplay}}>Votre plan est bien équilibré</div>
+              <div style={{fontSize:11,color:T.text4,marginTop:3,lineHeight:1.5,fontFamily:T.fontText}}>La répartition actuelle de vos versements est déjà optimale à 5 ans. Rien à modifier.</div>
+            </div>
+          </div>
+        ):(
           <div style={{marginTop:8}}>
             <div style={{height:"0.5px",background:T.borderFaint,margin:"8px 0 20px"}}/>
             <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>Scénario optimal à 5 ans</div>
@@ -887,7 +897,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               document.body
             )}
           </div>
-        )}
+        ))}
         {applied&&(
           <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:10}}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#0ecb81" strokeWidth="1"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
