@@ -212,6 +212,22 @@ function computeScores(holdings){
   return{total:Math.round(composite*200)/10,geo:Math.round(s1*200)/10,sector:Math.round(s2*200)/10,overlap:Math.round(s3*200)/10,assetClass:Math.round(s4*200)/10,currency:Math.round(s5*200)/10,geoMap,secMap,classes,currencies:curs};
 }
 
+
+/* ─── DCA PROJECTION ─────────────────────────────────────────────────────────── */
+function projectPortfolio(holdings, plans, yearsAhead){
+  // Simulate DCA contributions over yearsAhead and return projected holdings
+  const projected = holdings.map(h => ({...h, amount: h.baseAmount ?? h.amount}));
+  const periodsPerYear = {weekly:52, monthly:12, quarterly:4};
+  for(const h of projected){
+    const plan = plans[h.ticker];
+    if(!plan?.amount || !plan?.startDate) continue;
+    const ppy = periodsPerYear[plan.freq] || 12;
+    const contributions = Math.round(ppy * yearsAhead);
+    h.amount = h.amount + contributions * plan.amount;
+  }
+  return projected;
+}
+
 /* ─── RECS & POSITIVE (identical logic) ─────────────────────────────────────── */
 function buildPositive(scores,holdings){
   const p=[],{classes}=scores,bondPct=classes["bond"]||0,commPct=classes["commodity"]||0,n=holdings.length;
@@ -522,6 +538,121 @@ function Sheet({children,onClose}){
       </div>
     </div>
   , document.body);
+}
+
+
+/* ─── PROJECTION SHEET ───────────────────────────────────────────────────────── */
+function ProjectionSheet({holdings,plans,currentScore,onClose}){
+  const score1y = computeScores(projectPortfolio(holdings,plans,1)).total;
+  const score5y = computeScores(projectPortfolio(holdings,plans,5)).total;
+  const proj5y  = projectPortfolio(holdings,plans,5);
+  const total5y = proj5y.reduce((s,h)=>s+h.amount,0);
+
+  // DCA annual total
+  const periodsPerYear={weekly:52,monthly:12,quarterly:4};
+  const annualDCA = Object.entries(plans).reduce((sum,[ticker,plan])=>{
+    if(!plan?.amount)return sum;
+    return sum + plan.amount*(periodsPerYear[plan.freq]||12);
+  },0);
+
+  const g0=sc(currentScore), g1=sc(score1y), g5=sc(score5y);
+
+  const ScoreCol=({label,value,g,highlight})=>(
+    <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:6,
+      padding:"16px 8px",borderRadius:14,
+      background:highlight?"rgba(14,203,129,0.06)":"transparent",
+      border:highlight?`0.5px solid rgba(14,203,129,0.2)`:`0.5px solid ${T.borderFaint}`,
+    }}>
+      <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:600,textAlign:"center"}}>{label}</div>
+      <div style={{display:"flex",alignItems:"baseline",gap:2}}>
+        <span style={{fontFamily:T.fontDisplay,fontSize:36,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-1}}>{value.toFixed(1)}</span>
+        <span style={{fontSize:13,color:T.text5,fontWeight:300}}>/20</span>
+      </div>
+      <div style={{fontSize:10,color:g.text,fontWeight:600,letterSpacing:.3}}>{g.label}</div>
+    </div>
+  );
+
+  return(
+    <Sheet onClose={onClose}>
+      <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
+        <div style={{marginBottom:24}}>
+          <div style={{fontFamily:T.fontDisplay,fontSize:16,fontWeight:700,color:T.text,marginBottom:4}}>Projection DCA</div>
+          <div style={{fontSize:13,color:T.text4,lineHeight:1.6}}>
+            Évolution de votre score si vous maintenez vos versements programmés.
+          </div>
+        </div>
+
+        {/* Score progression */}
+        <div style={{display:"flex",gap:8,marginBottom:24}}>
+          <ScoreCol label="Aujourd'hui" value={currentScore} g={g0}/>
+          <ScoreCol label="Dans 1 an" value={score1y} g={g1}/>
+          <ScoreCol label="Dans 5 ans" value={score5y} g={g5} highlight/>
+        </div>
+
+        {/* Delta indicator */}
+        {score5y>currentScore&&(
+          <div style={{background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",borderRadius:14,padding:"14px 16px",marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(14,203,129,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 11V3M3.5 6.5L7 3l3.5 3.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </div>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:T.accent}}>+{(score5y-currentScore).toFixed(1)} points en 5 ans</div>
+              <div style={{fontSize:11,color:T.text4,marginTop:2}}>Votre DCA améliore progressivement l'équilibre.</div>
+            </div>
+          </div>
+        )}
+        {score5y<=currentScore&&(
+          <div style={{background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.2)",borderRadius:14,padding:"14px 16px",marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,149,0,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 3v8M3.5 7.5L7 11l3.5-3.5" stroke="#ff9500" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </div>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:"#ff9500"}}>Score stable ou en baisse</div>
+              <div style={{fontSize:11,color:T.text4,marginTop:2}}>Votre DCA accentue les concentrations existantes.</div>
+            </div>
+          </div>
+        )}
+
+        {/* Per-ETF projection */}
+        <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>Composition dans 5 ans</div>
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
+          {proj5y.map(h=>{
+            const pct = total5y>0?h.amount/total5y*100:0;
+            const plan = plans[h.ticker];
+            return(
+              <div key={h.ticker} style={{display:"flex",alignItems:"center",gap:10}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                    <span style={{fontSize:12,color:T.text,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{h.name}</span>
+                    <span style={{fontSize:12,color:T.text4,fontWeight:600,flexShrink:0,marginLeft:8}}>{pct.toFixed(1)}%</span>
+                  </div>
+                  <div style={{height:3,borderRadius:2,background:T.surfaceFaint,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${pct}%`,borderRadius:2,background:plan?T.accent:T.text4,transition:"width .4s"}}/>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Annual DCA summary */}
+        <div style={{background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:14,padding:"14px 16px"}}>
+          <div style={{fontSize:11,color:T.text5,marginBottom:8,letterSpacing:.3}}>Versements programmés</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+            <span style={{fontSize:22,fontWeight:800,color:T.text,letterSpacing:-.5}}>{annualDCA.toLocaleString("fr-FR")} €</span>
+            <span style={{fontSize:11,color:T.text5}}>/ an</span>
+          </div>
+          <div style={{fontSize:11,color:T.text4,marginTop:4}}>{(annualDCA*5).toLocaleString("fr-FR")} € versés sur 5 ans</div>
+        </div>
+
+        {/* Phase 2 placeholder */}
+        <div style={{marginTop:16,padding:"14px 16px",borderRadius:14,border:`0.5px dashed ${T.borderFaint}`,display:"flex",alignItems:"center",gap:10,opacity:.5}}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke={T.text4} strokeWidth="1"/><path d="M7 4v3.5l2 2" stroke={T.text4} strokeWidth="1" strokeLinecap="round"/></svg>
+          <span style={{fontSize:11,color:T.text4,fontStyle:"italic"}}>Optimisation DCA — bientôt disponible</span>
+        </div>
+      </div>
+    </Sheet>
+  );
 }
 
 /* ─── SUGGESTION SHEET ───────────────────────────────────────────────────────── */
@@ -1684,6 +1815,7 @@ export default function App(){
   const[swipeHintSeen,setSwipeHintSeen]=useState(true); // true = no hint by default
   const[onboarding,setOnboarding]=useState(false);
   const[showWelcome,setShowWelcome]=useState(false);
+  const[showProjection,setShowProjection]=useState(false);
   const[darkMode,setDarkMode]=useState(()=>localStorage.getItem('etf-theme')!=='light');
   const[lightGag,setLightGag]=useState(false);
   const[onboardStep,setOnboardStep]=useState(0);
@@ -1808,6 +1940,7 @@ export default function App(){
 
       <Splash visible={splash}/>
       {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)}/>}
+      {showProjection&&<ProjectionSheet holdings={holdings} plans={plans} currentScore={scores.total} onClose={()=>setShowProjection(false)}/> }
       {showWelcome&&<WelcomeScreen etfCount={holdings.length} onDone={()=>setShowWelcome(false)}/> }
       {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={(hasEtfs)=>{if(hasEtfs){setOnboarding(false);setTab("scores");setShowWelcome(true);}else{setOnboarding(false);setTab("scores");}}} onToast={msg=>{if(toastTimer.current)clearTimeout(toastTimer.current);setToast({msg,visible:true,position:"top"});toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);}}/>}
 
@@ -1945,6 +2078,11 @@ export default function App(){
                       <span style={{fontSize:20,color:T.text5,fontWeight:300}}>/20</span>
                     </div>
                     <div style={{fontSize:11,color:g.text,marginTop:6,fontWeight:600,letterSpacing:.3}}>{g.label}</div>
+                    {Object.keys(plans).length>0&&(
+                      <button onClick={()=>setShowProjection(true)} style={{marginTop:12,display:"flex",alignItems:"center",gap:5,background:"none",border:"none",padding:0,cursor:"pointer",color:T.accent,fontSize:12,fontWeight:600}}>
+                        <span>→</span><span style={{borderBottom:"1px solid rgba(14,203,129,0.35)"}}>Voir la projection DCA</span>
+                      </button>
+                    )}
                   </div>
                   <div style={{textAlign:"right"}}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4,marginBottom:10}}>
