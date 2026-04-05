@@ -628,7 +628,7 @@ function Sheet({children,onClose}){
   return createPortal(
     <div onClick={onClose} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
       <div ref={ref} onClick={e=>e.stopPropagation()} onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
-        style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,height:"calc(100vh - env(safe-area-inset-top, 0px) - 12px)",display:"flex",flexDirection:"column",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
+        style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,height:"calc(100dvh - env(safe-area-inset-top, 0px) - 20px)",display:"flex",flexDirection:"column",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
         <div style={{display:"flex",justifyContent:"center",padding:"12px 0 12px",cursor:"grab"}}>
           <div style={{width:36,height:4,borderRadius:2,background:T.surfaceStrong}}/>
         </div>
@@ -818,7 +818,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
                       <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 7v5M10 14.5v.5" stroke="#ff9500" strokeWidth="1.8" strokeLinecap="round"/><path d="M8.5 3.2L2 15a1.7 1.7 0 0 0 1.5 2.5h13A1.7 1.7 0 0 0 18 15L11.5 3.2a1.7 1.7 0 0 0-3 0Z" stroke="#ff9500" strokeWidth="1.5" strokeLinejoin="round"/></svg>
                     </div>
                     <div style={{fontFamily:T.fontDisplay,fontSize:17,fontWeight:700,color:T.text,marginBottom:8}}>Mettre à jour vos ordres ?</div>
-                    <div style={{fontSize:13,color:T.text4,lineHeight:1.65}}>Les montants de vos versements programmés vont être mis à jour selon le scénario optimal.<br/><br/>Vos <strong style={{color:T.text3}}>positions actuelles ne sont pas modifiées</strong> — seuls les versements futurs changent.</div>
+                    <div style={{fontSize:13,color:T.text4,lineHeight:1.65,fontFamily:T.fontText}}>Les montants de vos versements programmés vont être mis à jour selon le scénario optimal.<br/><br/>Vos <strong style={{color:T.text3}}>positions actuelles ne sont pas modifiées</strong> — seuls les versements futurs changent.</div>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     <button onClick={()=>{
@@ -828,7 +828,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
                     }} style={{width:"100%",background:T.accent,border:"none",borderRadius:12,padding:"14px",color:"#000",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:T.fontDisplay}}>
                       Confirmer la mise à jour
                     </button>
-                    <button onClick={()=>setShowConfirm(false)} style={{width:"100%",background:"none",border:"none",borderRadius:12,padding:"12px",color:T.text4,fontSize:13,fontWeight:500,cursor:"pointer"}}>
+                    <button onClick={()=>setShowConfirm(false)} style={{width:"100%",background:"none",border:"none",borderRadius:12,padding:"12px",color:T.text4,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:T.fontText}}>
                       Annuler
                     </button>
                   </div>
