@@ -663,10 +663,19 @@ function Sheet({children,onClose}){
     }
     curY.current=0;dragging.current=false;
   };
-  // Prevent pull-to-refresh on the overlay
-  const onOverlayTouchMove=e=>{if(dragging.current)e.preventDefault();};
+  // Block pull-to-refresh for the entire duration the sheet is open
+  useEffect(()=>{
+    const prevent=e=>{
+      // Allow scroll inside the sheet content
+      const scrollEl=ref.current?.querySelector("[data-sheet-scroll]");
+      if(scrollEl&&scrollEl.contains(e.target)&&scrollEl.scrollTop>0)return;
+      e.preventDefault();
+    };
+    document.addEventListener("touchmove",prevent,{passive:false});
+    return()=>document.removeEventListener("touchmove",prevent,{passive:false});
+  },[]);
   return createPortal(
-    <div onClick={onClose} onTouchMove={onOverlayTouchMove} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
       <div ref={ref} onClick={e=>e.stopPropagation()} onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
         style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,height:"calc(100dvh - env(safe-area-inset-top, 0px) - 20px)",display:"flex",flexDirection:"column",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
         <div style={{display:"flex",justifyContent:"center",padding:"12px 0 12px",cursor:"grab"}}>
