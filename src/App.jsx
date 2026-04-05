@@ -645,9 +645,28 @@ function Sheet({children,onClose}){
       ref.current.style.transform=`translateY(${dy}px)`;
     }
   };
-  const onTE=()=>{if(curY.current>80)onClose();else if(ref.current)ref.current.style.transform="translateY(0)";curY.current=0;dragging.current=false;};
+  const onTE=()=>{
+    if(curY.current>80){
+      // Animate sheet sliding down before calling onClose
+      if(ref.current){
+        ref.current.style.transition="transform .25s cubic-bezier(.16,1,.3,1)";
+        ref.current.style.transform=`translateY(100%)`;
+        setTimeout(()=>onClose(),240);
+      } else {
+        onClose();
+      }
+    } else {
+      if(ref.current){
+        ref.current.style.transition="transform .25s cubic-bezier(.16,1,.3,1)";
+        ref.current.style.transform="translateY(0)";
+      }
+    }
+    curY.current=0;dragging.current=false;
+  };
+  // Prevent pull-to-refresh on the overlay
+  const onOverlayTouchMove=e=>{if(dragging.current)e.preventDefault();};
   return createPortal(
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
+    <div onClick={onClose} onTouchMove={onOverlayTouchMove} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
       <div ref={ref} onClick={e=>e.stopPropagation()} onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
         style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,height:"calc(100dvh - env(safe-area-inset-top, 0px) - 20px)",display:"flex",flexDirection:"column",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
         <div style={{display:"flex",justifyContent:"center",padding:"12px 0 12px",cursor:"grab"}}>
