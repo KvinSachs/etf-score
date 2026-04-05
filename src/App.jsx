@@ -631,7 +631,7 @@ function Sheet({children,onClose}){
   const onTM=e=>{
     const dy=e.touches[0].clientY-startY.current;
     // Check if the scrollable content is scrolled down — if so, don't drag to close
-    const scrollEl=ref.current?.querySelector(\'[data-sheet-scroll]\');
+    const scrollEl=ref.current?.querySelector("[data-sheet-scroll]");
     if(scrollEl&&scrollEl.scrollTop>0)return;
     // Only drag if moving downward and has committed to drag direction
     if(!dragging.current){
