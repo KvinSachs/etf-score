@@ -515,7 +515,7 @@ function Sheet({children,onClose}){
     <div onClick={onClose} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
       <div ref={ref} onClick={e=>e.stopPropagation()} onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
         style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,height:"calc(100vh - env(safe-area-inset-top, 0px) - 12px)",display:"flex",flexDirection:"column",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
-        <div style={{display:"flex",justifyContent:"center",padding:"12px 0 4px",cursor:"grab"}}>
+        <div style={{display:"flex",justifyContent:"center",padding:"12px 0 12px",cursor:"grab"}}>
           <div style={{width:36,height:4,borderRadius:2,background:T.surfaceStrong}}/>
         </div>
         {children}
