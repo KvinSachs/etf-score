@@ -807,27 +807,34 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
             </div>
 
             {/* CTA */}
-            {!showConfirm?(
-              <button onClick={()=>setShowConfirm(true)} style={{width:"100%",background:T.accent,border:"none",borderRadius:14,padding:"14px",color:"#000",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:T.fontDisplay}}>
+            <button onClick={()=>setShowConfirm(true)} style={{width:"100%",background:T.accent,border:"none",borderRadius:14,padding:"14px",color:"#000",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:T.fontDisplay}}>
                 Appliquer ce scénario
               </button>
-            ):(
-              <div style={{background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.25)",borderRadius:14,padding:"16px"}}>
-                <div style={{fontSize:13,fontWeight:600,color:"#ff9500",marginBottom:8}}>Confirmer la mise à jour</div>
-                <div style={{fontSize:12,color:T.text4,lineHeight:1.6,marginBottom:14}}>Les montants de vos versements programmés vont être mis à jour. Vos positions actuelles ne sont pas modifiées.</div>
-                <div style={{display:"flex",gap:8}}>
-                  <button onClick={()=>setShowConfirm(false)} style={{flex:1,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:10,padding:"11px",color:T.text3,fontSize:13,fontWeight:500,cursor:"pointer"}}>
-                    Annuler
-                  </button>
-                  <button onClick={()=>{
-                    onPlansUpdate(optResult.optimizedPlans);
-                    localStorage.setItem("etf-dca-sim-date",new Date().toISOString());
-                    setApplied(true);setShowConfirm(false);
-                  }} style={{flex:2,background:T.accent,border:"none",borderRadius:10,padding:"11px",color:"#000",fontSize:13,fontWeight:700,cursor:"pointer"}}>
-                    Mettre à jour mes ordres
-                  </button>
+            {showConfirm&&createPortal(
+              <div onClick={()=>setShowConfirm(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999999,padding:"0 24px"}}>
+                <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:380,background:T.bgElevated,border:`0.5px solid ${T.border}`,borderRadius:20,padding:"28px 24px",animation:"popIn .25s cubic-bezier(.16,1,.3,1)"}}>
+                  <div style={{textAlign:"center",marginBottom:20}}>
+                    <div style={{width:48,height:48,borderRadius:"50%",background:"rgba(255,149,0,0.12)",border:"0.5px solid rgba(255,149,0,0.3)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 7v5M10 14.5v.5" stroke="#ff9500" strokeWidth="1.8" strokeLinecap="round"/><path d="M8.5 3.2L2 15a1.7 1.7 0 0 0 1.5 2.5h13A1.7 1.7 0 0 0 18 15L11.5 3.2a1.7 1.7 0 0 0-3 0Z" stroke="#ff9500" strokeWidth="1.5" strokeLinejoin="round"/></svg>
+                    </div>
+                    <div style={{fontFamily:T.fontDisplay,fontSize:17,fontWeight:700,color:T.text,marginBottom:8}}>Mettre à jour vos ordres ?</div>
+                    <div style={{fontSize:13,color:T.text4,lineHeight:1.65}}>Les montants de vos versements programmés vont être mis à jour selon le scénario optimal.<br/><br/>Vos <strong style={{color:T.text3}}>positions actuelles ne sont pas modifiées</strong> — seuls les versements futurs changent.</div>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    <button onClick={()=>{
+                      onPlansUpdate(optResult.optimizedPlans);
+                      localStorage.setItem("etf-dca-sim-date",new Date().toISOString());
+                      setApplied(true);setShowConfirm(false);
+                    }} style={{width:"100%",background:T.accent,border:"none",borderRadius:12,padding:"14px",color:"#000",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:T.fontDisplay}}>
+                      Confirmer la mise à jour
+                    </button>
+                    <button onClick={()=>setShowConfirm(false)} style={{width:"100%",background:"none",border:"none",borderRadius:12,padding:"12px",color:T.text4,fontSize:13,fontWeight:500,cursor:"pointer"}}>
+                      Annuler
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
           </div>
         )}
