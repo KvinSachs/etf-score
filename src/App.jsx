@@ -663,12 +663,13 @@ function Sheet({children,onClose}){
     }
     curY.current=0;dragging.current=false;
   };
-  // Block pull-to-refresh for the entire duration the sheet is open
+  // Block pull-to-refresh but allow scroll inside sheet content
   useEffect(()=>{
     const prevent=e=>{
-      // Allow scroll inside the sheet content
       const scrollEl=ref.current?.querySelector("[data-sheet-scroll]");
-      if(scrollEl&&scrollEl.contains(e.target)&&scrollEl.scrollTop>0)return;
+      // If touch is inside the scrollable area — always allow
+      if(scrollEl&&scrollEl.contains(e.target))return;
+      // Otherwise block (drag bar area, backdrop, etc.)
       e.preventDefault();
     };
     document.addEventListener("touchmove",prevent,{passive:false});
