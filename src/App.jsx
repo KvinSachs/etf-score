@@ -263,6 +263,53 @@ function optimizeDCA(holdings, plans, yearsAhead=5){
     }
   });
 
+  // ── Allocation constraints (based on projected portfolio at yearsAhead) ──────
+  // Returns true if the weight distribution violates allocation caps
+  const CAPS={
+    // Asset class caps (max % of projected portfolio value)
+    equity:    0.90, // max 90% equities
+    bond:      0.50, // max 50% bonds
+    commodity: 0.15, // max 15% gold/commodities
+    real_estate:0.20,// max 20% real estate
+  };
+  const GEO_CAPS={
+    // Geographic concentration caps (emerging markets, single region)
+    emerging:  0.25, // max 25% emerging markets (MSCI ACWI weight ~12%, allow up to 25% for diversification premium)
+    us:        0.75, // max 75% North America
+  };
+  const EMERGING_TICKERS=new Set(["PAEEM","EIMI","PAEMF","XMEM","LYMEM","SPYM"]);
+  const US_TICKERS=new Set(["SPY","VOO","CSP1","500","ESE","QQQ","PANX","CSPX","PCPUS","PUST","RS2K"]);
+
+  const violatesConstraints=(w)=>{
+    // Build projected portfolio with these weights
+    const simPlans2={};
+    allTickers.forEach(t=>{
+      const freq=plans[t]?.freq||defaultFreq;
+      const ppy=periodsPerYear[freq]||12;
+      const monthlyAmt=w[t]*totalMonthlyBudget;
+      const perPeriod=monthlyAmt/(ppy/12);
+      if(perPeriod>=5) simPlans2[t]={freq,amount:perPeriod,startDate:plans[t]?.startDate||new Date().toISOString().split("T")[0]};
+    });
+    const proj=projectPortfolio(holdings,simPlans2,yearsAhead);
+    const projTotal=proj.reduce((s,h)=>s+h.amount,0);
+    if(!projTotal) return false;
+
+    // Check asset class caps
+    const classTotals={};
+    proj.forEach(h=>{const cls=DB[h.ticker]?.assetClass;if(cls)classTotals[cls]=(classTotals[cls]||0)+h.amount;});
+    for(const[cls,cap] of Object.entries(CAPS)){
+      if((classTotals[cls]||0)/projTotal>cap) return true;
+    }
+
+    // Check geographic caps
+    const emTotal=proj.filter(h=>EMERGING_TICKERS.has(h.ticker)).reduce((s,h)=>s+h.amount,0);
+    if(emTotal/projTotal>GEO_CAPS.emerging) return true;
+    const usTotal=proj.filter(h=>US_TICKERS.has(h.ticker)).reduce((s,h)=>s+h.amount,0);
+    if(usTotal/projTotal>GEO_CAPS.us) return true;
+
+    return false;
+  };
+
   // Helper: build plans from weights and simulate portfolio at yearsAhead
   const simulate=(w)=>{
     const simPlans={};
@@ -278,25 +325,24 @@ function optimizeDCA(holdings, plans, yearsAhead=5){
     return computeScores(projectPortfolio(holdings,simPlans,yearsAhead)).total;
   };
 
-  // Simple gradient ascent — 80 iterations
+  // Simple gradient ascent — 80 iterations with constraint check
   const STEP=0.02;
-  const MIN_WEIGHT=0; // allow 0
   for(let iter=0;iter<80;iter++){
     let bestDelta=0,bestFrom=null,bestTo=null;
-    // Try transferring weight from each ticker to each other
     for(const from of allTickers){
       if(weights[from]<STEP) continue;
       for(const to of allTickers){
         if(to===from) continue;
-        // Try shifting STEP from → to
         const trial={...weights};
         trial[from]-=STEP;
         trial[to]+=STEP;
+        // Skip if trial violates allocation constraints
+        if(violatesConstraints(trial)) continue;
         const delta=simulate(trial)-simulate(weights);
         if(delta>bestDelta){bestDelta=delta;bestFrom=from;bestTo=to;}
       }
     }
-    if(!bestFrom) break; // converged
+    if(!bestFrom) break;
     weights[bestFrom]-=STEP;
     weights[bestTo]+=STEP;
   }
