@@ -669,43 +669,21 @@ function Sheet({children,onClose}){
   const ref=useRef(null);const startY=useRef(0);const curY=useRef(0);
   const dragging=useRef(false);const scrollableRef=useRef(null);
   useEffect(()=>{const f=e=>{if(e.key==="Escape")onClose();};document.addEventListener("keydown",f);return()=>document.removeEventListener("keydown",f);},[onClose]);
-  const onTS=e=>{
-    startY.current=e.touches[0].clientY;
-    curY.current=0;
-    dragging.current=false;
-  };
+
+  const onTS=e=>{startY.current=e.touches[0].clientY;curY.current=0;dragging.current=false;};
   const onTM=e=>{
     const dy=e.touches[0].clientY-startY.current;
-    // Check if the scrollable content is scrolled down — if so, don't drag to close
     const scrollEl=ref.current?.querySelector("[data-sheet-scroll]");
     if(scrollEl&&scrollEl.scrollTop>0)return;
-    // Only drag if moving downward and has committed to drag direction
-    if(!dragging.current){
-      if(Math.abs(dy)<6)return; // dead zone
-      if(dy<0)return; // scrolling up — let it scroll
-      dragging.current=true;
-    }
-    if(dy>0&&ref.current){
-      e.preventDefault();
-      curY.current=dy;
-      ref.current.style.transform=`translateY(${dy}px)`;
-    }
+    if(!dragging.current){if(Math.abs(dy)<6)return;if(dy<0)return;dragging.current=true;}
+    if(dy>0&&ref.current){e.preventDefault();curY.current=dy;ref.current.style.transition="none";ref.current.style.transform=`translateY(${dy}px)`;}
   };
   const onTE=()=>{
     if(curY.current>80){
-      // Animate sheet sliding down before calling onClose
-      if(ref.current){
-        ref.current.style.transition="transform .25s cubic-bezier(.16,1,.3,1)";
-        ref.current.style.transform=`translateY(100%)`;
-        setTimeout(()=>onClose(),240);
-      } else {
-        onClose();
-      }
+      if(ref.current){ref.current.style.transition="transform .25s cubic-bezier(.16,1,.3,1)";ref.current.style.transform="translateY(100%)";setTimeout(()=>onClose(),240);}
+      else onClose();
     } else {
-      if(ref.current){
-        ref.current.style.transition="transform .25s cubic-bezier(.16,1,.3,1)";
-        ref.current.style.transform="translateY(0)";
-      }
+      if(ref.current){ref.current.style.transition="transform .25s cubic-bezier(.16,1,.3,1)";ref.current.style.transform="translateY(0)";}
     }
     curY.current=0;dragging.current=false;
   };
@@ -725,8 +703,9 @@ function Sheet({children,onClose}){
     <div onClick={onClose} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}>
       <div ref={ref} onClick={e=>e.stopPropagation()} onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
         style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",width:"100%",maxWidth:430,height:"calc(100dvh - env(safe-area-inset-top, 0px) - 20px)",display:"flex",flexDirection:"column",transition:"transform .2s cubic-bezier(.16,1,.3,1)",animation:"up .3s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
-        <div style={{display:"flex",justifyContent:"center",padding:"12px 0 12px",cursor:"grab"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"12px 20px",position:"relative"}}>
           <div style={{width:36,height:4,borderRadius:2,background:T.surfaceStrong}}/>
+          <button onClick={onClose} style={{position:"absolute",right:20,background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         </div>
         {children}
       </div>
@@ -968,7 +947,7 @@ function SuggestionSheet({catalog,onSelect,onClose}){
             <span style={{fontSize:20}}>{catalog.emoji}</span>
             <span style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>{catalog.title}</span>
           </div>
-          <button onClick={onClose} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+          
         </div>
         <p style={{margin:"0 0 16px",fontSize:13,color:T.text4,lineHeight:1.65,fontFamily:T.fontText}}>{catalog.why}</p>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -1886,7 +1865,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
             <div style={{fontSize:15,fontWeight:700,color:T.text}}>Plan d'investissement</div>
             <div style={{fontSize:12,color:T.text4,marginTop:2}}>{etf?.name||ticker}</div>
           </div>
-          <button onClick={onClose} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+          
         </div>
 
         {/* Frequency selector */}
@@ -2686,7 +2665,7 @@ export default function App(){
                   <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
                       <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>Ajouter un ETF</div>
-                      <button onClick={()=>setShowAddSheet(false)} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+                      
                     </div>
                     <Search onAdd={(t,a)=>{addHolding(t,a);setShowAddSheet(false);setAddSheetTicker(null);}} suggestions={suggestions} initialTicker={addSheetTicker}/>
                   </div>
@@ -2699,7 +2678,7 @@ export default function App(){
                   <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
                       <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>Import / Export</div>
-                      <button onClick={()=>setShowImportSheet(false)} style={{background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+                      
                     </div>
                     <ImportExport holdings={holdings} holdingsWithPlan={holdingsWithPlan} onImport={(t,a)=>{addHolding(t,a);}}/>
                   </div>
