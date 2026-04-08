@@ -706,7 +706,7 @@ function Sheet({children,onClose}){
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"14px 20px",position:"relative"}}>
           <div style={{width:36,height:4,borderRadius:2,background:T.surfaceStrong}}/>
           {"ontouchstart" in window||navigator.maxTouchPoints>0?null:(
-            <button onClick={onClose} style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)",background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+            <button onClick={onClose} style={{position:"absolute",right:16,top:12,background:T.surfaceHover,border:"none",borderRadius:"50%",width:28,height:28,color:T.text3,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
           )}
         </div>
         {children}
@@ -754,7 +754,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
 
   return(
     <Sheet onClose={onClose}>
-      <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
+      <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",overscrollBehavior:"none",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
         <div style={{marginBottom:24}}>
           <div style={{fontFamily:T.fontDisplay,fontSize:16,fontWeight:700,color:T.text,marginBottom:4}}>Projection DCA</div>
           <div style={{fontSize:13,color:T.text4,lineHeight:1.6}}>
@@ -943,7 +943,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
 function SuggestionSheet({catalog,onSelect,onClose}){
   return(
     <Sheet onClose={onClose}>
-      <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
+      <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",overscrollBehavior:"none",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:20}}>{catalog.emoji}</span>
@@ -1861,7 +1861,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
 
   return(
     <Sheet onClose={onClose}>
-      <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
+      <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",overscrollBehavior:"none",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <div>
             <div style={{fontSize:15,fontWeight:700,color:T.text}}>Plan d'investissement</div>
@@ -2664,7 +2664,7 @@ export default function App(){
               {/* Add ETF sheet */}
               {showAddSheet&&(
                 <Sheet onClose={()=>setShowAddSheet(false)}>
-                  <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
+                  <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",overscrollBehavior:"none",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
                       <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>Ajouter un ETF</div>
                       
@@ -2677,7 +2677,7 @@ export default function App(){
               {/* Import/Export sheet */}
               {showImportSheet&&(
                 <Sheet onClose={()=>setShowImportSheet(false)}>
-                  <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
+                  <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",overscrollBehavior:"none",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
                       <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>Import / Export</div>
                       
