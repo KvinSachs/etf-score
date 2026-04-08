@@ -1080,6 +1080,7 @@ function Search({onAdd,suggestions=[],initialTicker=null}){
 
 /* ─── BOTTOM TAB BAR ─────────────────────────────────────────────────────────── */
 function Tabs({active,onChange,highlight=[]}){
+  const[pressedTab,setPressedTab]=useState(null);
   const tabs=[
     {id:"scores",label:"Scores",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" strokeWidth="1.4" strokeDasharray="3 1.5" strokeLinecap="round"/><circle cx="11" cy="11" r="2.5" fill="currentColor"/></svg>},
     {id:"geo",label:"Géo.",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" strokeWidth="1.4"/><ellipse cx="11" cy="11" rx="3.5" ry="7.5" stroke="currentColor" strokeWidth="1.4"/><line x1="3.5" y1="11" x2="18.5" y2="11" stroke="currentColor" strokeWidth="1.4"/></svg>},
@@ -1132,7 +1133,7 @@ function Tabs({active,onChange,highlight=[]}){
         {tabs.map(t=>{
           const isActive=active===t.id;
           return(
-            <button key={t.id} onClick={()=>onChange(t.id)}
+            <button key={t.id} onClick={()=>{onChange(t.id);setPressedTab(t.id);setTimeout(()=>setPressedTab(p=>p===t.id?null:p),600);}}
               style={{
                 flex:1,background:"none",border:"none",cursor:"pointer",
                 display:"flex",flexDirection:"column",alignItems:"center",gap:3,
@@ -1151,7 +1152,23 @@ function Tabs({active,onChange,highlight=[]}){
                 borderRadius:32,
                 border:`0.5px solid rgba(14,203,129,0.2)`,
               }}/>}
-              <div style={{position:"relative",zIndex:1}}>
+              {/* Iridescent glow burst on press */}
+              {pressedTab===t.id&&<div style={{
+                position:"absolute",
+                top:"50%",left:"50%",
+                transform:"translate(-50%,-60%)",
+                width:44,height:44,
+                borderRadius:"50%",
+                background:"conic-gradient(from 0deg, rgba(14,203,129,0.5), rgba(59,130,246,0.4), rgba(168,85,247,0.4), rgba(251,191,36,0.3), rgba(14,203,129,0.5))",
+                filter:"blur(8px)",
+                animation:"tabGlow .6s cubic-bezier(.16,1,.3,1) forwards",
+                pointerEvents:"none",
+                zIndex:0,
+              }}/>}
+              <div style={{
+                position:"relative",zIndex:1,
+                animation:pressedTab===t.id?"tabLens .5s cubic-bezier(.16,1,.3,1) forwards":"none",
+              }}>
                 {t.icon}
               </div>
               <span style={{fontSize:9,fontWeight:isActive?700:400,letterSpacing:.3,lineHeight:1,position:"relative",zIndex:1}}>{t.label}</span>
@@ -2226,6 +2243,18 @@ export default function App(){
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+        @keyframes tabLens{
+          0%{transform:scale(1);filter:brightness(1)}
+          25%{transform:scale(1.22);filter:brightness(1.3)}
+          50%{transform:scale(1.12);filter:brightness(1.1)}
+          75%{transform:scale(1.06)}
+          100%{transform:scale(1);filter:brightness(1)}
+        }
+        @keyframes tabGlow{
+          0%{opacity:0;transform:scale(0.6)}
+          30%{opacity:1;transform:scale(1.1)}
+          100%{opacity:0;transform:scale(1.6)}
+        }
         ::-webkit-scrollbar{display:none}
         .row{animation:up .35s cubic-bezier(.16,1,.3,1) both}
       `}</style>
