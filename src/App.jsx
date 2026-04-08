@@ -1124,8 +1124,6 @@ function Tabs({active,onChange,highlight=[]}){
         <div style={{
           position:"absolute",inset:0,borderRadius:40,
           background:"linear-gradient(105deg, rgba(14,203,129,0.08) 0%, rgba(59,130,246,0.07) 25%, rgba(168,85,247,0.06) 50%, rgba(251,191,36,0.05) 75%, rgba(14,203,129,0.07) 100%)",
-          backgroundSize:"300% 300%",
-          animation:"iridDrift 8s ease infinite",
           pointerEvents:"none",
         }}/>
         {/* Top sheen */}
@@ -1163,20 +1161,17 @@ function Tabs({active,onChange,highlight=[]}){
               {isActive&&<div style={{
                 position:"absolute",inset:0,borderRadius:32,
                 background:"linear-gradient(135deg, rgba(14,203,129,0.18) 0%, rgba(59,130,246,0.14) 25%, rgba(168,85,247,0.12) 50%, rgba(251,191,36,0.10) 75%, rgba(14,203,129,0.15) 100%)",
-                backgroundSize:"300% 300%",
-                animation:"iridDrift 5s ease infinite",
                 pointerEvents:"none",
               }}/>}
               {/* Organic iridescent burst on press */}
               {pressedTab===t.id&&<>
                 <div style={{
                   position:"absolute",
-                  top:"50%",left:"50%",
-                  transform:"translate(-50%,-60%)",
+                  top:"30%",left:"50%",
+                  transform:"translate(-50%,-50%)",
                   width:52,height:52,
                   borderRadius:"50%",
                   background:"conic-gradient(from 0deg, rgba(14,203,129,0.7), rgba(59,130,246,0.6), rgba(168,85,247,0.6), rgba(251,191,36,0.5), rgba(236,72,153,0.5), rgba(14,203,129,0.7))",
-                  backgroundSize:"200% 200%",
                   filter:"blur(10px)",
                   animation:"tabGlow .7s cubic-bezier(.16,1,.3,1) forwards",
                   pointerEvents:"none",
@@ -1184,8 +1179,8 @@ function Tabs({active,onChange,highlight=[]}){
                 }}/>
                 <div style={{
                   position:"absolute",
-                  top:"50%",left:"50%",
-                  transform:"translate(-50%,-60%)",
+                  top:"30%",left:"50%",
+                  transform:"translate(-50%,-50%)",
                   width:28,height:28,
                   borderRadius:"50%",
                   background:"radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%)",
