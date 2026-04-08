@@ -1152,10 +1152,10 @@ function Tabs({active,onChange,highlight=[]}){
                 backdropFilter:"blur(20px) saturate(180%)",
                 WebkitBackdropFilter:"blur(20px) saturate(180%)",
                 borderRadius:32,
-                border:"0.5px solid rgba(255,255,255,0.25)",
+                border:"none",
                 boxShadow:isDark
-                  ?"inset 0 0.5px 0 rgba(255,255,255,0.2), inset 0 -0.5px 0 rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.2)"
-                  :"inset 0 0.5px 0 rgba(255,255,255,0.9), inset 0 -0.5px 0 rgba(255,255,255,0.3), 0 2px 8px rgba(0,0,0,0.06)",
+                  ?"inset 0 0.5px 0 rgba(255,255,255,0.28), inset 0 -0.5px 0 rgba(255,255,255,0.08), inset 0.5px 0 rgba(255,255,255,0.06), inset -0.5px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2)"
+                  :"inset 0 0.5px 0 rgba(255,255,255,0.95), inset 0 -0.5px 0 rgba(255,255,255,0.4), inset 0.5px 0 rgba(255,255,255,0.15), inset -0.5px 0 rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.06)",
               }}/>}
               {/* Prismatic sheen on active */}
               {isActive&&<div style={{
