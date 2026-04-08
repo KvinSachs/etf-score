@@ -1145,12 +1145,23 @@ function Tabs({active,onChange,highlight=[]}){
                 fontFamily:"-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
                 borderRadius:32,
               }}>
-              {/* Active pill background */}
+              {/* Active liquid glass pill */}
               {isActive&&<div style={{
                 position:"absolute",inset:0,
-                background:isDark?"rgba(14,203,129,0.12)":"rgba(14,203,129,0.1)",
+                background:isDark?"rgba(255,255,255,0.07)":"rgba(255,255,255,0.6)",
+                backdropFilter:"blur(20px) saturate(180%)",
+                WebkitBackdropFilter:"blur(20px) saturate(180%)",
                 borderRadius:32,
-                border:`0.5px solid rgba(14,203,129,0.2)`,
+                border:"0.5px solid rgba(255,255,255,0.25)",
+                boxShadow:isDark
+                  ?"inset 0 0.5px 0 rgba(255,255,255,0.2), inset 0 -0.5px 0 rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.2)"
+                  :"inset 0 0.5px 0 rgba(255,255,255,0.9), inset 0 -0.5px 0 rgba(255,255,255,0.3), 0 2px 8px rgba(0,0,0,0.06)",
+              }}/>}
+              {/* Prismatic sheen on active */}
+              {isActive&&<div style={{
+                position:"absolute",inset:0,borderRadius:32,
+                background:"linear-gradient(135deg, rgba(14,203,129,0.12) 0%, rgba(59,130,246,0.08) 50%, rgba(168,85,247,0.06) 100%)",
+                pointerEvents:"none",
               }}/>}
               {/* Iridescent glow burst on press */}
               {pressedTab===t.id&&<div style={{
