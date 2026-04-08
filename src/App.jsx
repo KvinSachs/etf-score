@@ -1103,24 +1103,32 @@ function Tabs({active,onChange,highlight=[]}){
       zIndex:50,
       pointerEvents:"none",
     }}>
-      {/* Gélule flottante */}
+      {/* Liquid glass gélule */}
       <div style={{
         display:"flex",
-        background:isDark?"rgba(28,28,30,0.82)":"rgba(255,255,255,0.82)",
-        backdropFilter:"blur(40px) saturate(200%)",
-        WebkitBackdropFilter:"blur(40px) saturate(200%)",
+        background:isDark?"rgba(18,18,20,0.55)":"rgba(255,255,255,0.55)",
+        backdropFilter:"blur(48px) saturate(180%)",
+        WebkitBackdropFilter:"blur(48px) saturate(180%)",
         borderRadius:40,
-        border:`0.5px solid ${isDark?"rgba(255,255,255,0.12)":"rgba(0,0,0,0.08)"}`,
+        border:`0.5px solid ${isDark?"rgba(255,255,255,0.10)":"rgba(255,255,255,0.7)"}`,
         boxShadow:isDark
-          ?"0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 0.5px 0 rgba(255,255,255,0.08)"
-          :"0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06), inset 0 0.5px 0 rgba(255,255,255,0.8)",
+          ?"0 8px 32px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.06) inset"
+          :"0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset",
         padding:"6px 8px",
         pointerEvents:"auto",
         position:"relative",
         overflow:"hidden",
       }}>
+        {/* Iridescent prismatic layer */}
+        <div style={{
+          position:"absolute",inset:0,borderRadius:40,
+          background:"linear-gradient(105deg, rgba(14,203,129,0.07) 0%, rgba(59,130,246,0.06) 30%, rgba(168,85,247,0.05) 60%, rgba(251,191,36,0.04) 100%)",
+          pointerEvents:"none",
+        }}/>
         {/* Top sheen */}
-        <div style={{position:"absolute",top:0,left:"10%",right:"10%",height:"0.5px",background:isDark?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.9)",borderRadius:"0 0 2px 2px",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",top:0,left:"8%",right:"8%",height:"0.5px",background:isDark?"rgba(255,255,255,0.18)":"rgba(255,255,255,0.95)",borderRadius:"0 0 2px 2px",pointerEvents:"none"}}/>
+        {/* Bottom subtle glow */}
+        <div style={{position:"absolute",bottom:0,left:"20%",right:"20%",height:"0.5px",background:isDark?"rgba(14,203,129,0.15)":"rgba(14,203,129,0.1)",pointerEvents:"none"}}/>
         {tabs.map(t=>{
           const isActive=active===t.id;
           return(
