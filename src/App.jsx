@@ -1123,7 +1123,9 @@ function Tabs({active,onChange,highlight=[]}){
         {/* Iridescent prismatic layer */}
         <div style={{
           position:"absolute",inset:0,borderRadius:40,
-          background:"linear-gradient(105deg, rgba(14,203,129,0.07) 0%, rgba(59,130,246,0.06) 30%, rgba(168,85,247,0.05) 60%, rgba(251,191,36,0.04) 100%)",
+          background:"linear-gradient(105deg, rgba(14,203,129,0.08) 0%, rgba(59,130,246,0.07) 25%, rgba(168,85,247,0.06) 50%, rgba(251,191,36,0.05) 75%, rgba(14,203,129,0.07) 100%)",
+          backgroundSize:"300% 300%",
+          animation:"iridDrift 8s ease infinite",
           pointerEvents:"none",
         }}/>
         {/* Top sheen */}
@@ -1157,25 +1159,42 @@ function Tabs({active,onChange,highlight=[]}){
                   ?"inset 0 0.5px 0 rgba(255,255,255,0.28), inset 0 -0.5px 0 rgba(255,255,255,0.08), inset 0.5px 0 rgba(255,255,255,0.06), inset -0.5px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2)"
                   :"inset 0 0.5px 0 rgba(255,255,255,0.95), inset 0 -0.5px 0 rgba(255,255,255,0.4), inset 0.5px 0 rgba(255,255,255,0.15), inset -0.5px 0 rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.06)",
               }}/>}
-              {/* Prismatic sheen on active */}
+              {/* Organic iridescent sheen on active */}
               {isActive&&<div style={{
                 position:"absolute",inset:0,borderRadius:32,
-                background:"linear-gradient(135deg, rgba(14,203,129,0.12) 0%, rgba(59,130,246,0.08) 50%, rgba(168,85,247,0.06) 100%)",
+                background:"linear-gradient(135deg, rgba(14,203,129,0.18) 0%, rgba(59,130,246,0.14) 25%, rgba(168,85,247,0.12) 50%, rgba(251,191,36,0.10) 75%, rgba(14,203,129,0.15) 100%)",
+                backgroundSize:"300% 300%",
+                animation:"iridDrift 5s ease infinite",
                 pointerEvents:"none",
               }}/>}
-              {/* Iridescent glow burst on press */}
-              {pressedTab===t.id&&<div style={{
-                position:"absolute",
-                top:"50%",left:"50%",
-                transform:"translate(-50%,-60%)",
-                width:44,height:44,
-                borderRadius:"50%",
-                background:"conic-gradient(from 0deg, rgba(14,203,129,0.5), rgba(59,130,246,0.4), rgba(168,85,247,0.4), rgba(251,191,36,0.3), rgba(14,203,129,0.5))",
-                filter:"blur(8px)",
-                animation:"tabGlow .6s cubic-bezier(.16,1,.3,1) forwards",
-                pointerEvents:"none",
-                zIndex:0,
-              }}/>}
+              {/* Organic iridescent burst on press */}
+              {pressedTab===t.id&&<>
+                <div style={{
+                  position:"absolute",
+                  top:"50%",left:"50%",
+                  transform:"translate(-50%,-60%)",
+                  width:52,height:52,
+                  borderRadius:"50%",
+                  background:"conic-gradient(from 0deg, rgba(14,203,129,0.7), rgba(59,130,246,0.6), rgba(168,85,247,0.6), rgba(251,191,36,0.5), rgba(236,72,153,0.5), rgba(14,203,129,0.7))",
+                  backgroundSize:"200% 200%",
+                  filter:"blur(10px)",
+                  animation:"tabGlow .7s cubic-bezier(.16,1,.3,1) forwards",
+                  pointerEvents:"none",
+                  zIndex:0,
+                }}/>
+                <div style={{
+                  position:"absolute",
+                  top:"50%",left:"50%",
+                  transform:"translate(-50%,-60%)",
+                  width:28,height:28,
+                  borderRadius:"50%",
+                  background:"radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%)",
+                  filter:"blur(4px)",
+                  animation:"tabGlow .5s cubic-bezier(.16,1,.3,1) forwards",
+                  pointerEvents:"none",
+                  zIndex:0,
+                }}/>
+              </>}
               <div style={{
                 position:"relative",zIndex:1,
                 animation:pressedTab===t.id?"tabLens .5s cubic-bezier(.16,1,.3,1) forwards":"none",
@@ -2260,6 +2279,13 @@ export default function App(){
           50%{transform:scale(1.12);filter:brightness(1.1)}
           75%{transform:scale(1.06)}
           100%{transform:scale(1);filter:brightness(1)}
+        }
+        @keyframes iridDrift{
+          0%{background-position:0% 50%;opacity:0.8}
+          25%{background-position:100% 0%;opacity:1}
+          50%{background-position:100% 100%;opacity:0.7}
+          75%{background-position:0% 100%;opacity:1}
+          100%{background-position:0% 50%;opacity:0.8}
         }
         @keyframes tabGlow{
           0%{opacity:0;transform:scale(0.6)}
