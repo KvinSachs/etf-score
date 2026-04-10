@@ -536,10 +536,10 @@ function ScoreArc({value,label,size=150}){
           <defs>
             {/* Main arc gradient: dark start → bright mid → dark end */}
             <linearGradient id={idGrad} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={g.stroke} stopOpacity="0.5"/>
-              <stop offset="45%" stopColor={g.stroke}/>
-              <stop offset="55%" stopColor={lighten(g.stroke,60)}/>
-              <stop offset="100%" stopColor={g.stroke} stopOpacity="0.7"/>
+              <stop offset="0%" stopColor={g.stroke} stopOpacity="0.15"/>
+              <stop offset="40%" stopColor={g.stroke} stopOpacity="0.9"/>
+              <stop offset="55%" stopColor={lighten(g.stroke,70)}/>
+              <stop offset="100%" stopColor={g.stroke} stopOpacity="0.4"/>
             </linearGradient>
             {/* Gloss sheen: white highlight on top of arc */}
             <linearGradient id={idSheen} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -601,8 +601,9 @@ function Donut({data,palette,size=200}){
   const entries=Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const total=entries.reduce((s,[,v])=>s+v,0);
   if(!total)return null;
-  const GAP=0.025; // radians gap between segments
-  const cx=size/2,cy=size/2,r=size/2-14,inner=r-34; // thicker ring
+  const GAP=0.03;
+  const THICKNESS=44; // thick ring like reference
+  const cx=size/2,cy=size/2,r=size/2-10,inner=r-THICKNESS;
   let angle=-Math.PI/2;
   const slices=entries.map(([k,v],i)=>{
     const pct=v/total;
@@ -643,37 +644,51 @@ function Donut({data,palette,size=200}){
                 </linearGradient>
               );
             })}
-            {/* Sheen overlay gradient — white gloss top */}
-            <radialGradient id="sheen" cx="50%" cy="30%" r="60%">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.22)"/>
+            {/* Dark gradients for non-dominant segments */}
+            {slices.map((s,i)=>i===0?null:(
+              <linearGradient key={`gd${s.i}`} id={`gd${s.i}`}
+                x1={cx+r*Math.cos(s.mid-0.3)} y1={cy+r*Math.sin(s.mid-0.3)}
+                x2={cx+r*Math.cos(s.mid+0.3)} y2={cy+r*Math.sin(s.mid+0.3)}
+                gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="rgba(45,45,50,1)"/>
+                <stop offset="40%" stopColor="rgba(70,70,78,1)"/>
+                <stop offset="100%" stopColor="rgba(35,35,40,1)"/>
+              </linearGradient>
+            ))}
+            {/* Sheen overlay */}
+            <radialGradient id="sheen" cx="50%" cy="25%" r="55%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.18)"/>
+              <stop offset="60%" stopColor="rgba(255,255,255,0.04)"/>
               <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
             </radialGradient>
-            {/* Inner shadow */}
+            {/* Inner edge shadow for depth */}
             <radialGradient id="innerShadow" cx="50%" cy="50%" r="50%">
-              <stop offset="70%" stopColor="rgba(0,0,0,0)"/>
-              <stop offset="100%" stopColor="rgba(0,0,0,0.4)"/>
+              <stop offset="65%" stopColor="rgba(0,0,0,0)"/>
+              <stop offset="100%" stopColor="rgba(0,0,0,0.55)"/>
             </radialGradient>
           </defs>
 
-          {/* Segments with gradient fill */}
-          {slices.map((s)=>(
-            <path key={s.k} d={s.path} fill={`url(#g${s.i})`}
-              style={{filter:`drop-shadow(0 2px 8px ${s.color}66)`,transition:"opacity .2s",opacity:.95}}
-              onMouseEnter={e=>e.currentTarget.style.opacity="1"}
-              onMouseLeave={e=>e.currentTarget.style.opacity=".95"}/>
+          {/* Non-dominant segments — dark 3D style */}
+          {slices.map((s,i)=>i===0?null:(
+            <path key={`dark${s.k}`} d={s.path}
+              fill={`url(#gd${s.i})`}
+              style={{filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.5))"}}/>
           ))}
-
-          {/* Gloss sheen overlay on ring */}
+          {/* Dominant segment — full color with glow */}
+          {slices[0]&&(
+            <path d={slices[0].path} fill={`url(#g0)`}
+              style={{filter:`drop-shadow(0 0 12px ${slices[0].color}99) drop-shadow(0 0 4px ${slices[0].color})`}}/>
+          )}
+          {/* Gloss sheen on all */}
           {slices.map((s)=>(
             <path key={`sh${s.k}`} d={s.path} fill="url(#sheen)" style={{pointerEvents:"none"}}/>
           ))}
-
-          {/* Inner shadow ring */}
-          <circle cx={cx} cy={cy} r={(r+inner)/2} fill="none"
-            stroke="url(#innerShadow)" strokeWidth={r-inner+2} style={{pointerEvents:"none"}}/>
-
+          {/* Inner edge shadow */}
+          {slices.map((s)=>(
+            <path key={`is${s.k}`} d={s.path} fill="url(#innerShadow)" style={{pointerEvents:"none"}}/>
+          ))}
           {/* Inner circle */}
-          <circle cx={cx} cy={cy} r={inner-3} fill={T.bg}/>
+          <circle cx={cx} cy={cy} r={inner-2} fill={T.bg}/>
           {/* Center label */}
           <text x={cx} y={cy-8} textAnchor="middle" fill="rgba(255,255,255,0.9)" fontSize="22" fontWeight="800" fontFamily="-apple-system,system-ui">{top?.pct>=0.01?(top.v).toFixed(0):""}</text>
           <text x={cx} y={cy+10} textAnchor="middle" fill="rgba(255,255,255,0.25)" fontSize="9" fontFamily="-apple-system,system-ui">%</text>
@@ -2665,6 +2680,9 @@ export default function App(){
                     </div>
                   </Glass>
                   {/* Detail bars */}
+                  <div style={{display:"flex",justifyContent:"center",padding:"8px 0"}}>
+                    <Donut data={scores.geoMap} palette={BARS} size={220}/>
+                  </div>
                   <ColorBars data={scores.geoMap} title="Détail par zone" infoMap={GEO_INFO}/>
                 </>
               ):<div style={{textAlign:"center",padding:"48px 0",color:T.text5,fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}
@@ -2691,6 +2709,9 @@ export default function App(){
                     </div>
                   </Glass>
                   {/* Detail bars */}
+                  <div style={{display:"flex",justifyContent:"center",padding:"8px 0"}}>
+                    <Donut data={scores.secMap} palette={BARS} size={220}/>
+                  </div>
                   <ColorBars data={scores.secMap} title="Détail par secteur" infoMap={SECTOR_INFO}/>
                 </>
               ):<div style={{textAlign:"center",padding:"48px 0",color:T.text5,fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}
