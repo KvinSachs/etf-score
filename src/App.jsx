@@ -522,17 +522,43 @@ function Glass({children,style={},onClick}){
 
 /* ─── SCORE ARC ──────────────────────────────────────────────────────────────── */
 function ScoreArc({value,label,size=150}){
-  const r=size/2-12,circ=2*Math.PI*r,g=sc(value),id=`a${label.replace(/\W/g,"")}`;
+  const SW=14; // stroke width — thicker for 3D effect
+  const r=size/2-SW/2-4,circ=2*Math.PI*r,g=sc(value);
+  const idGrad=`ag${label.replace(/\W/g,"")}`;
+  const idSheen=`as${label.replace(/\W/g,"")}`;
+  const idGlow=`agw${label.replace(/\W/g,"")}`;
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,flex:1}}>
       <div style={{position:"relative",width:size,height:size}}>
-        <div style={{position:"absolute",inset:0,borderRadius:"50%",background:`radial-gradient(circle at center,${g.glow} 0%,transparent 65%)`,pointerEvents:"none"}}/>
+        {/* Ambient glow */}
+        <div style={{position:"absolute",inset:0,borderRadius:"50%",background:`radial-gradient(circle at center,${g.glow} 0%,transparent 60%)`,pointerEvents:"none"}}/>
         <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"relative"}}>
-          <defs><linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor={g.stroke} stopOpacity="0.4"/><stop offset="100%" stopColor={g.stroke}/></linearGradient></defs>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={T.arcTrack} strokeWidth="6"/>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`url(#${id})`} strokeWidth="6"
+          <defs>
+            {/* Main arc gradient: dark start → bright mid → dark end */}
+            <linearGradient id={idGrad} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor={g.stroke} stopOpacity="0.5"/>
+              <stop offset="45%" stopColor={g.stroke}/>
+              <stop offset="55%" stopColor={lighten(g.stroke,60)}/>
+              <stop offset="100%" stopColor={g.stroke} stopOpacity="0.7"/>
+            </linearGradient>
+            {/* Gloss sheen: white highlight on top of arc */}
+            <linearGradient id={idSheen} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0)"/>
+              <stop offset="40%" stopColor="rgba(255,255,255,0.25)"/>
+              <stop offset="60%" stopColor="rgba(255,255,255,0.35)"/>
+              <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+            </linearGradient>
+          </defs>
+          {/* Track */}
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={T.arcTrack} strokeWidth={SW}/>
+          {/* Main arc */}
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`url(#${idGrad})`} strokeWidth={SW}
             strokeDasharray={`${(value/20)*circ} ${(1-value/20)*circ}`} strokeLinecap="round"
-            style={{transition:"stroke-dasharray 1s cubic-bezier(.16,1,.3,1)",filter:`drop-shadow(0 0 6px ${g.stroke})`}}/>
+            style={{transition:"stroke-dasharray 1s cubic-bezier(.16,1,.3,1)",filter:`drop-shadow(0 0 8px ${g.stroke}88) drop-shadow(0 0 3px ${g.stroke})`}}/>
+          {/* Gloss sheen overlay */}
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`url(#${idSheen})`} strokeWidth={SW*0.5}
+            strokeDasharray={`${(value/20)*circ} ${(1-value/20)*circ}`} strokeLinecap="round"
+            style={{pointerEvents:"none"}}/>
         </svg>
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:0}}>
           <span style={{fontFamily:T.fontDisplay,fontSize:34,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-1}}>{value.toFixed(1)}</span>
