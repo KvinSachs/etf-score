@@ -2243,7 +2243,7 @@ export default function App(){
         input::placeholder{color:${T.text5}}
         input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         .btn-primary{position:relative;overflow:hidden}
-        .btn-primary::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 35%, transparent 70%);border-radius:inherit;pointer-events:none}
+        .btn-primary::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 40%, transparent 100%);border-radius:inherit;pointer-events:none}
         button{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;transition:transform .12s cubic-bezier(.16,1,.3,1),opacity .12s}
         button:active{transform:scale(0.96);opacity:0.75}
         button:disabled:active{transform:none;opacity:1}
