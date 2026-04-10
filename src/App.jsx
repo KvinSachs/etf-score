@@ -1165,27 +1165,29 @@ function Tabs({active,onChange,highlight=[]}){
               }}/>}
               {/* Organic iridescent burst on press */}
               {pressedTab===t.id&&<>
+                {/* Elliptic iridescent halo — hugs the tab shape */}
                 <div style={{
                   position:"absolute",
-                  top:"30%",left:"50%",
-                  transform:"translate(-50%,-50%)",
-                  width:52,height:52,
+                  bottom:6,left:"50%",
+                  transform:"translateX(-50%)",
+                  width:"85%",height:18,
                   borderRadius:"50%",
-                  background:"conic-gradient(from 0deg, rgba(14,203,129,0.7), rgba(59,130,246,0.6), rgba(168,85,247,0.6), rgba(251,191,36,0.5), rgba(236,72,153,0.5), rgba(14,203,129,0.7))",
-                  filter:"blur(10px)",
-                  animation:"tabGlow .7s cubic-bezier(.16,1,.3,1) forwards",
+                  background:"conic-gradient(from 0deg, rgba(14,203,129,0.8), rgba(59,130,246,0.7), rgba(168,85,247,0.7), rgba(251,191,36,0.6), rgba(236,72,153,0.6), rgba(14,203,129,0.8))",
+                  filter:"blur(7px)",
+                  animation:"tabGlow .65s cubic-bezier(.16,1,.3,1) forwards",
                   pointerEvents:"none",
                   zIndex:0,
                 }}/>
+                {/* Soft white core */}
                 <div style={{
                   position:"absolute",
-                  top:"30%",left:"50%",
-                  transform:"translate(-50%,-50%)",
-                  width:28,height:28,
+                  bottom:8,left:"50%",
+                  transform:"translateX(-50%)",
+                  width:"50%",height:10,
                   borderRadius:"50%",
-                  background:"radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%)",
-                  filter:"blur(4px)",
-                  animation:"tabGlow .5s cubic-bezier(.16,1,.3,1) forwards",
+                  background:"radial-gradient(ellipse, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 100%)",
+                  filter:"blur(3px)",
+                  animation:"tabGlow .45s cubic-bezier(.16,1,.3,1) forwards",
                   pointerEvents:"none",
                   zIndex:0,
                 }}/>
