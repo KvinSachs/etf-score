@@ -522,8 +522,8 @@ function Glass({children,style={},onClick}){
 
 /* ─── SCORE ARC ──────────────────────────────────────────────────────────────── */
 function ScoreArc({value,label,size=150}){
-  const SW=14; // stroke width — thicker for 3D effect
-  const r=size/2-SW/2-4,circ=2*Math.PI*r,g=sc(value);
+  const SW=10; // stroke width
+  const r=size/2-SW/2-8,circ=2*Math.PI*r,g=sc(value);
   const idGrad=`ag${label.replace(/\W/g,"")}`;
   const idSheen=`as${label.replace(/\W/g,"")}`;
   const idGlow=`agw${label.replace(/\W/g,"")}`;
@@ -532,7 +532,7 @@ function ScoreArc({value,label,size=150}){
       <div style={{position:"relative",width:size,height:size}}>
         {/* Ambient glow */}
         <div style={{position:"absolute",inset:0,borderRadius:"50%",background:`radial-gradient(circle at center,${g.glow} 0%,transparent 60%)`,pointerEvents:"none"}}/>
-        <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"relative"}}>
+        <svg width={size} height={size} style={{transform:"rotate(-90deg)",position:"relative",overflow:"visible"}}>
           <defs>
             {/* Main arc gradient: dark start → bright mid → dark end */}
             <linearGradient id={idGrad} x1="0%" y1="0%" x2="100%" y2="0%">
