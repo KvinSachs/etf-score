@@ -644,15 +644,15 @@ function Donut({data,palette,size=200}){
                 </linearGradient>
               );
             })}
-            {/* Dark gradients for non-dominant segments */}
+            {/* Dimmed color gradients for non-dominant segments */}
             {slices.map((s,i)=>i===0?null:(
               <linearGradient key={`gd${s.i}`} id={`gd${s.i}`}
                 x1={cx+r*Math.cos(s.mid-0.3)} y1={cy+r*Math.sin(s.mid-0.3)}
                 x2={cx+r*Math.cos(s.mid+0.3)} y2={cy+r*Math.sin(s.mid+0.3)}
                 gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="rgba(45,45,50,1)"/>
-                <stop offset="40%" stopColor="rgba(70,70,78,1)"/>
-                <stop offset="100%" stopColor="rgba(35,35,40,1)"/>
+                <stop offset="0%" stopColor={s.color} stopOpacity="0.6"/>
+                <stop offset="40%" stopColor={lighten(s.color,30)} stopOpacity="0.7"/>
+                <stop offset="100%" stopColor={s.color} stopOpacity="0.5"/>
               </linearGradient>
             ))}
             {/* Sheen overlay */}
@@ -668,11 +668,11 @@ function Donut({data,palette,size=200}){
             </radialGradient>
           </defs>
 
-          {/* Non-dominant segments — dark 3D style */}
+          {/* Non-dominant segments — dimmed color */}
           {slices.map((s,i)=>i===0?null:(
             <path key={`dark${s.k}`} d={s.path}
               fill={`url(#gd${s.i})`}
-              style={{filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.5))"}}/>
+              style={{filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.4))",opacity:0.55}}/>
           ))}
           {/* Dominant segment — full color with glow */}
           {slices[0]&&(
