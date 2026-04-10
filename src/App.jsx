@@ -1168,12 +1168,12 @@ function Tabs({active,onChange,highlight=[]}){
                 {/* Elliptic iridescent halo — hugs the tab shape */}
                 <div style={{
                   position:"absolute",
-                  bottom:6,left:"50%",
+                  bottom:6,left:"44%",
                   transform:"translateX(-50%)",
-                  width:"85%",height:18,
+                  width:"75%",height:16,
                   borderRadius:"50%",
-                  background:"conic-gradient(from 0deg, rgba(14,203,129,0.8), rgba(59,130,246,0.7), rgba(168,85,247,0.7), rgba(251,191,36,0.6), rgba(236,72,153,0.6), rgba(14,203,129,0.8))",
-                  filter:"blur(7px)",
+                  background:"conic-gradient(from 0deg, rgba(14,203,129,0.5), rgba(59,130,246,0.45), rgba(168,85,247,0.45), rgba(251,191,36,0.35), rgba(236,72,153,0.35), rgba(14,203,129,0.5))",
+                  filter:"blur(8px)",
                   animation:"tabGlow .65s cubic-bezier(.16,1,.3,1) forwards",
                   pointerEvents:"none",
                   zIndex:0,
@@ -1181,9 +1181,9 @@ function Tabs({active,onChange,highlight=[]}){
                 {/* Soft white core */}
                 <div style={{
                   position:"absolute",
-                  bottom:8,left:"50%",
+                  bottom:8,left:"44%",
                   transform:"translateX(-50%)",
-                  width:"50%",height:10,
+                  width:"40%",height:8,
                   borderRadius:"50%",
                   background:"radial-gradient(ellipse, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 100%)",
                   filter:"blur(3px)",
