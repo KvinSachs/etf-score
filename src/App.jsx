@@ -1138,7 +1138,7 @@ function Tabs({active,onChange,highlight=[]}){
                 flex:1,background:"none",border:"none",cursor:"pointer",
                 display:"flex",flexDirection:"column",alignItems:"center",gap:3,
                 padding:"8px 4px",
-                color:isActive?"rgba(255,255,255,0.95)":T.text4,
+                color:isActive?(isDark?"rgba(255,255,255,0.95)":"rgba(0,0,0,0.85)"):T.text4,
                 WebkitTapHighlightColor:"transparent",
                 transition:"color .2s",
                 position:"relative",
@@ -1148,14 +1148,14 @@ function Tabs({active,onChange,highlight=[]}){
               {/* Active liquid glass pill */}
               {isActive&&<div style={{
                 position:"absolute",inset:0,
-                background:isDark?"rgba(255,255,255,0.07)":"rgba(255,255,255,0.6)",
-                backdropFilter:"blur(20px) saturate(180%)",
-                WebkitBackdropFilter:"blur(20px) saturate(180%)",
+                background:isDark?"rgba(255,255,255,0.11)":"rgba(255,255,255,0.72)",
+                backdropFilter:"blur(24px) saturate(200%)",
+                WebkitBackdropFilter:"blur(24px) saturate(200%)",
                 borderRadius:32,
                 border:"none",
                 boxShadow:isDark
-                  ?"inset 0 0.5px 0 rgba(255,255,255,0.28), inset 0 -0.5px 0 rgba(255,255,255,0.08), inset 0.5px 0 rgba(255,255,255,0.06), inset -0.5px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2)"
-                  :"inset 0 0.5px 0 rgba(255,255,255,0.95), inset 0 -0.5px 0 rgba(255,255,255,0.4), inset 0.5px 0 rgba(255,255,255,0.15), inset -0.5px 0 rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.06)",
+                  ?"inset 0 0.5px 0 rgba(255,255,255,0.35), inset 0 -0.5px 0 rgba(255,255,255,0.10), inset 0.5px 0 rgba(255,255,255,0.08), inset -0.5px 0 rgba(255,255,255,0.08), 0 2px 12px rgba(0,0,0,0.25)"
+                  :"inset 0 0.5px 0 rgba(255,255,255,1), inset 0 -0.5px 0 rgba(255,255,255,0.5), inset 0.5px 0 rgba(255,255,255,0.2), inset -0.5px 0 rgba(255,255,255,0.2), 0 2px 10px rgba(0,0,0,0.08)",
               }}/>}
               {/* Organic iridescent sheen on active */}
               {isActive&&<div style={{
@@ -1170,7 +1170,7 @@ function Tabs({active,onChange,highlight=[]}){
                   inset:0,
                   borderRadius:32,
                   background:"transparent",
-                  boxShadow:"inset 0 -8px 16px -4px rgba(14,203,129,0.4), inset 0 -6px 12px -4px rgba(59,130,246,0.3), inset 0 -4px 8px -4px rgba(168,85,247,0.2)",
+                  boxShadow:"inset 0 -6px 10px -5px rgba(14,203,129,0.3), inset 0 -4px 8px -5px rgba(59,130,246,0.22), inset 0 -3px 6px -5px rgba(168,85,247,0.15)",
                   animation:"tabGlow .55s cubic-bezier(.16,1,.3,1) forwards",
                   pointerEvents:"none",
                   zIndex:0,
