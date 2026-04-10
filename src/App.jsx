@@ -563,40 +563,91 @@ function MiniBar({label,value,weight}){
 }
 
 /* ─── DONUT CHART ────────────────────────────────────────────────────────────── */
+function lighten(hex,amt=40){
+  const n=parseInt(hex.replace("#",""),16);
+  const r=Math.min(255,(n>>16)+amt);
+  const g=Math.min(255,((n>>8)&0xff)+amt);
+  const b=Math.min(255,(n&0xff)+amt);
+  return`#${r.toString(16).padStart(2,"0")}${g.toString(16).padStart(2,"0")}${b.toString(16).padStart(2,"0")}`;
+}
+
 function Donut({data,palette,size=200}){
   const entries=Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const total=entries.reduce((s,[,v])=>s+v,0);
   if(!total)return null;
-  const cx=size/2,cy=size/2,r=size/2-18,inner=r-28;
+  const GAP=0.025; // radians gap between segments
+  const cx=size/2,cy=size/2,r=size/2-14,inner=r-34; // thicker ring
   let angle=-Math.PI/2;
   const slices=entries.map(([k,v],i)=>{
     const pct=v/total;
-    const start=angle;
+    const start=angle+GAP/2;
     angle+=pct*Math.PI*2;
-    const end=angle;
+    const end=angle-GAP/2;
     const x1=cx+r*Math.cos(start),y1=cy+r*Math.sin(start);
     const x2=cx+r*Math.cos(end),y2=cy+r*Math.sin(end);
     const xi1=cx+inner*Math.cos(start),yi1=cy+inner*Math.sin(start);
     const xi2=cx+inner*Math.cos(end),yi2=cy+inner*Math.sin(end);
     const large=pct>0.5?1:0;
     const path=`M${xi1} ${yi1} L${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} L${xi2} ${yi2} A${inner} ${inner} 0 ${large} 0 ${xi1} ${yi1} Z`;
-    return{k,v,pct,path,color:palette[i%palette.length],mid:(start+end)/2};
+    const mid=(start+end)/2;
+    return{k,v,pct,path,color:palette[i%palette.length],mid,start,end,i};
   });
   const top=slices[0];
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:20}}>
       <div style={{position:"relative",width:size,height:size}}>
         {/* Ambient glow */}
-        <div style={{position:"absolute",inset:0,borderRadius:"50%",background:`radial-gradient(circle,${slices[0]?.color}18 0%,transparent 65%)`,pointerEvents:"none"}}/>
+        <div style={{position:"absolute",inset:0,borderRadius:"50%",background:`radial-gradient(circle,${slices[0]?.color}22 0%,transparent 65%)`,pointerEvents:"none"}}/>
         <svg width={size} height={size} style={{position:"relative",zIndex:1}}>
-          {slices.map((s,i)=>(
-            <path key={s.k} d={s.path} fill={s.color}
-              style={{filter:`drop-shadow(0 0 6px ${s.color}55)`,transition:"opacity .2s",opacity:.9}}
+          <defs>
+            {slices.map((s)=>{
+              // Gradient along the arc — light entry point at mid-top, dark at edges
+              const gx1=cx+r*Math.cos(s.mid-0.4);
+              const gy1=cy+r*Math.sin(s.mid-0.4);
+              const gx2=cx+r*Math.cos(s.mid+0.4);
+              const gy2=cy+r*Math.sin(s.mid+0.4);
+              const light=lighten(s.color,55);
+              return(
+                <linearGradient key={`g${s.i}`} id={`g${s.i}`}
+                  x1={gx1} y1={gy1} x2={gx2} y2={gy2}
+                  gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor={s.color}/>
+                  <stop offset="40%" stopColor={light}/>
+                  <stop offset="100%" stopColor={s.color}/>
+                </linearGradient>
+              );
+            })}
+            {/* Sheen overlay gradient — white gloss top */}
+            <radialGradient id="sheen" cx="50%" cy="30%" r="60%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.22)"/>
+              <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+            </radialGradient>
+            {/* Inner shadow */}
+            <radialGradient id="innerShadow" cx="50%" cy="50%" r="50%">
+              <stop offset="70%" stopColor="rgba(0,0,0,0)"/>
+              <stop offset="100%" stopColor="rgba(0,0,0,0.4)"/>
+            </radialGradient>
+          </defs>
+
+          {/* Segments with gradient fill */}
+          {slices.map((s)=>(
+            <path key={s.k} d={s.path} fill={`url(#g${s.i})`}
+              style={{filter:`drop-shadow(0 2px 8px ${s.color}66)`,transition:"opacity .2s",opacity:.95}}
               onMouseEnter={e=>e.currentTarget.style.opacity="1"}
-              onMouseLeave={e=>e.currentTarget.style.opacity=".9"}/>
+              onMouseLeave={e=>e.currentTarget.style.opacity=".95"}/>
           ))}
+
+          {/* Gloss sheen overlay on ring */}
+          {slices.map((s)=>(
+            <path key={`sh${s.k}`} d={s.path} fill="url(#sheen)" style={{pointerEvents:"none"}}/>
+          ))}
+
+          {/* Inner shadow ring */}
+          <circle cx={cx} cy={cy} r={(r+inner)/2} fill="none"
+            stroke="url(#innerShadow)" strokeWidth={r-inner+2} style={{pointerEvents:"none"}}/>
+
           {/* Inner circle */}
-          <circle cx={cx} cy={cy} r={inner-4} fill="#050506"/>
+          <circle cx={cx} cy={cy} r={inner-3} fill={T.bg}/>
           {/* Center label */}
           <text x={cx} y={cy-8} textAnchor="middle" fill="rgba(255,255,255,0.9)" fontSize="22" fontWeight="800" fontFamily="-apple-system,system-ui">{top?.pct>=0.01?(top.v).toFixed(0):""}</text>
           <text x={cx} y={cy+10} textAnchor="middle" fill="rgba(255,255,255,0.25)" fontSize="9" fontFamily="-apple-system,system-ui">%</text>
