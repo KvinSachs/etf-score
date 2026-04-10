@@ -1120,6 +1120,7 @@ function Search({onAdd,suggestions=[],initialTicker=null}){
 /* ─── BOTTOM TAB BAR ─────────────────────────────────────────────────────────── */
 function Tabs({active,onChange,highlight=[]}){
   const[pressedTab,setPressedTab]=useState(null);
+  const isDark=T.bg==="#050506";
   const tabs=[
     {id:"scores",label:"Scores",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" strokeWidth="1.4" strokeDasharray="3 1.5" strokeLinecap="round"/><circle cx="11" cy="11" r="2.5" fill="currentColor"/></svg>},
     {id:"geo",label:"Géo.",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" strokeWidth="1.4"/><ellipse cx="11" cy="11" rx="3.5" ry="7.5" stroke="currentColor" strokeWidth="1.4"/><line x1="3.5" y1="11" x2="18.5" y2="11" stroke="currentColor" strokeWidth="1.4"/></svg>},
@@ -1127,98 +1128,85 @@ function Tabs({active,onChange,highlight=[]}){
     {id:"ptf",label:"Mes ETF",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M2 15C5 15 5.5 9 9 9C12.5 9 12.5 13 16 11.5C18.5 10.5 19.5 5 21 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>},
     {id:"about",label:"À propos",icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.4"/><line x1="11" y1="10" x2="11" y2="16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="11" cy="7" r="1" fill="currentColor"/></svg>},
   ];
-  const isDark=T.bg==="#050506";
+
   return(
-    <div style={{
-      position:"fixed",
-      bottom:0,
-      left:"50%",
-      transform:"translateX(-50%)",
-      width:"100%",
-      maxWidth:430,
-      paddingBottom:"env(safe-area-inset-bottom, 16px)",
-      paddingLeft:16,
-      paddingRight:16,
-      paddingTop:10,
-      zIndex:50,
-      pointerEvents:"none",
-    }}>
-      {/* Liquid glass gélule */}
+    <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,paddingBottom:"env(safe-area-inset-bottom, 16px)",paddingLeft:16,paddingRight:16,paddingTop:10,zIndex:50,pointerEvents:"none"}}>
+
+      {/* SVG filter for glass distortion — applied to the pill */}
+      <svg width="0" height="0" style={{position:"absolute"}}>
+        <defs>
+          <filter id="glassDistort" x="-5%" y="-5%" width="110%" height="110%" colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.015 0.025" numOctaves="2" seed="8" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" result="distorted"/>
+            <feGaussianBlur in="distorted" stdDeviation="0.4" result="softened"/>
+            <feComposite in="softened" in2="SourceGraphic" operator="in"/>
+          </filter>
+        </defs>
+      </svg>
+
+      {/* Outer glow behind pill */}
+      <div style={{
+        position:"absolute",bottom:"env(safe-area-inset-bottom, 16px)",left:16,right:16,
+        height:64,borderRadius:40,
+        background:isDark
+          ?"radial-gradient(ellipse at 50% 100%, rgba(14,203,129,0.08) 0%, rgba(59,130,246,0.06) 40%, transparent 70%)"
+          :"radial-gradient(ellipse at 50% 100%, rgba(14,203,129,0.06) 0%, transparent 60%)",
+        filter:"blur(12px)",
+        pointerEvents:"none",
+      }}/>
+
+      {/* Main pill */}
       <div style={{
         display:"flex",
-        background:isDark?"rgba(18,18,20,0.55)":"rgba(255,255,255,0.55)",
-        backdropFilter:"blur(48px) saturate(180%)",
-        WebkitBackdropFilter:"blur(48px) saturate(180%)",
+        background:isDark?"rgba(12,12,14,0.45)":"rgba(255,255,255,0.5)",
+        backdropFilter:"blur(60px) saturate(200%) brightness(1.06)",
+        WebkitBackdropFilter:"blur(60px) saturate(200%) brightness(1.06)",
         borderRadius:40,
-        border:`0.5px solid ${isDark?"rgba(255,255,255,0.10)":"rgba(255,255,255,0.7)"}`,
+        border:"none",
         boxShadow:isDark
-          ?"0 8px 32px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.06) inset"
-          :"0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset",
+          ?"0 0 0 0.5px rgba(255,255,255,0.09), 0 8px 40px rgba(0,0,0,0.5), inset 0 0.5px 0 rgba(255,255,255,0.16), inset 0 -0.5px 0 rgba(0,0,0,0.3)"
+          :"0 0 0 0.5px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.1), inset 0 0.5px 0 rgba(255,255,255,1), inset 0 -0.5px 0 rgba(0,0,0,0.04)",
         padding:"6px 8px",
         pointerEvents:"auto",
         position:"relative",
         overflow:"hidden",
+        filter:"url(#glassDistort)",
       }}>
-        {/* Iridescent prismatic layer */}
-        <div style={{
-          position:"absolute",inset:0,borderRadius:40,
-          background:"linear-gradient(105deg, rgba(14,203,129,0.08) 0%, rgba(59,130,246,0.07) 25%, rgba(168,85,247,0.06) 50%, rgba(251,191,36,0.05) 75%, rgba(14,203,129,0.07) 100%)",
-          pointerEvents:"none",
-        }}/>
-        {/* Top sheen */}
-        <div style={{position:"absolute",top:0,left:"8%",right:"8%",height:"0.5px",background:isDark?"rgba(255,255,255,0.18)":"rgba(255,255,255,0.95)",borderRadius:"0 0 2px 2px",pointerEvents:"none"}}/>
-        {/* Bottom subtle glow */}
-        <div style={{position:"absolute",bottom:0,left:"20%",right:"20%",height:"0.5px",background:isDark?"rgba(14,203,129,0.15)":"rgba(14,203,129,0.1)",pointerEvents:"none"}}/>
+        {/* Prismatic iridescent tint */}
+        <div style={{position:"absolute",inset:0,borderRadius:40,background:"linear-gradient(120deg,rgba(14,203,129,0.06) 0%,rgba(59,130,246,0.05) 33%,rgba(168,85,247,0.04) 66%,rgba(251,191,36,0.04) 100%)",pointerEvents:"none"}}/>
+        {/* Top specular rim */}
+        <div style={{position:"absolute",top:0,left:"5%",right:"5%",height:1,background:isDark?"linear-gradient(90deg,transparent,rgba(255,255,255,0.22) 30%,rgba(255,255,255,0.32) 50%,rgba(255,255,255,0.22) 70%,transparent)":"linear-gradient(90deg,transparent,rgba(255,255,255,0.8) 30%,rgba(255,255,255,1) 50%,rgba(255,255,255,0.8) 70%,transparent)",pointerEvents:"none"}}/>
+        {/* Bottom depth rim */}
+        <div style={{position:"absolute",bottom:0,left:"8%",right:"8%",height:"0.5px",background:isDark?"rgba(0,0,0,0.4)":"rgba(0,0,0,0.05)",pointerEvents:"none"}}/>
+
         {tabs.map(t=>{
           const isActive=active===t.id;
           return(
             <button key={t.id} onClick={()=>{onChange(t.id);setPressedTab(t.id);setTimeout(()=>setPressedTab(p=>p===t.id?null:p),600);}}
-              style={{
-                flex:1,background:"none",border:"none",cursor:"pointer",
-                display:"flex",flexDirection:"column",alignItems:"center",gap:3,
-                padding:"8px 4px",
-                color:isActive?(isDark?"rgba(255,255,255,0.95)":"rgba(0,0,0,0.85)"):T.text4,
-                WebkitTapHighlightColor:"transparent",
-                transition:"color .2s",
-                position:"relative",
-                fontFamily:"-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
-                borderRadius:32,
-              }}>
-              {/* Active liquid glass pill */}
+              style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",color:isActive?(isDark?"rgba(255,255,255,0.95)":"rgba(0,0,0,0.85)"):T.text4,WebkitTapHighlightColor:"transparent",transition:"color .2s",position:"relative",fontFamily:"-apple-system,BlinkMacSystemFont,system-ui,sans-serif",borderRadius:32}}>
+
+              {/* Active glass pill — inner material */}
               {isActive&&<div style={{
                 position:"absolute",inset:0,
-                background:isDark?"rgba(255,255,255,0.11)":"rgba(255,255,255,0.72)",
-                backdropFilter:"blur(24px) saturate(200%)",
-                WebkitBackdropFilter:"blur(24px) saturate(200%)",
+                background:isDark?"rgba(255,255,255,0.09)":"rgba(255,255,255,0.68)",
+                backdropFilter:"blur(20px) saturate(180%)",
+                WebkitBackdropFilter:"blur(20px) saturate(180%)",
                 borderRadius:32,
-                border:"none",
                 boxShadow:isDark
-                  ?"inset 0 0.5px 0 rgba(255,255,255,0.35), inset 0 -0.5px 0 rgba(255,255,255,0.10), inset 0.5px 0 rgba(255,255,255,0.08), inset -0.5px 0 rgba(255,255,255,0.08), 0 2px 12px rgba(0,0,0,0.25)"
-                  :"inset 0 0.5px 0 rgba(255,255,255,1), inset 0 -0.5px 0 rgba(255,255,255,0.5), inset 0.5px 0 rgba(255,255,255,0.2), inset -0.5px 0 rgba(255,255,255,0.2), 0 2px 10px rgba(0,0,0,0.08)",
+                  ?"inset 0 0.5px 0 rgba(255,255,255,0.30), inset 0 -0.5px 0 rgba(255,255,255,0.08), inset 0.5px 0 rgba(255,255,255,0.06), inset -0.5px 0 rgba(255,255,255,0.06)"
+                  :"inset 0 0.5px 0 rgba(255,255,255,1), inset 0 -0.5px 0 rgba(255,255,255,0.4), inset 0.5px 0 rgba(255,255,255,0.18), inset -0.5px 0 rgba(255,255,255,0.18)",
               }}/>}
-              {/* Organic iridescent sheen on active */}
-              {isActive&&<div style={{
-                position:"absolute",inset:0,borderRadius:32,
-                background:"linear-gradient(135deg, rgba(14,203,129,0.18) 0%, rgba(59,130,246,0.14) 25%, rgba(168,85,247,0.12) 50%, rgba(251,191,36,0.10) 75%, rgba(14,203,129,0.15) 100%)",
-                pointerEvents:"none",
-              }}/>}
-              {/* Organic iridescent burst on press */}
+
+              {/* Prismatic sheen on active */}
+              {isActive&&<div style={{position:"absolute",inset:0,borderRadius:32,background:"linear-gradient(135deg,rgba(14,203,129,0.14) 0%,rgba(59,130,246,0.10) 50%,rgba(168,85,247,0.08) 100%)",pointerEvents:"none"}}/>}
+
+              {/* Arc iridescent glow on press */}
               {pressedTab===t.id&&(
-                <div style={{
-                  position:"absolute",
-                  inset:0,
-                  borderRadius:32,
-                  background:"transparent",
-                  boxShadow:"inset 0 -6px 10px -5px rgba(14,203,129,0.3), inset 0 -4px 8px -5px rgba(59,130,246,0.22), inset 0 -3px 6px -5px rgba(168,85,247,0.15)",
-                  animation:"tabGlow .55s cubic-bezier(.16,1,.3,1) forwards",
-                  pointerEvents:"none",
-                  zIndex:0,
-                }}/>
+                <div style={{position:"absolute",inset:0,borderRadius:32,background:"transparent",boxShadow:"inset 0 -6px 10px -5px rgba(14,203,129,0.3), inset 0 -4px 8px -5px rgba(59,130,246,0.22), inset 0 -3px 6px -5px rgba(168,85,247,0.15)",animation:"tabGlow .55s cubic-bezier(.16,1,.3,1) forwards",pointerEvents:"none",zIndex:0}}/>
               )}
-              <div style={{
-                position:"relative",zIndex:1,
-                animation:pressedTab===t.id?"tabLens .5s cubic-bezier(.16,1,.3,1) forwards":"none",
-              }}>
+
+              {/* Icon — lens zoom on press */}
+              <div style={{position:"relative",zIndex:1,animation:pressedTab===t.id?"tabLens .5s cubic-bezier(.16,1,.3,1) forwards":"none"}}>
                 {t.icon}
               </div>
               <span style={{fontSize:9,fontWeight:isActive?600:400,letterSpacing:.3,lineHeight:1,position:"relative",zIndex:1}}>{t.label}</span>
@@ -1230,6 +1218,7 @@ function Tabs({active,onChange,highlight=[]}){
     </div>
   );
 }
+
 
 /* ─── DISCLAIMER ─────────────────────────────────────────────────────────────── */
 function Disclaimer({onAccept}){
