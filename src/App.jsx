@@ -623,8 +623,7 @@ function Donut({data,palette,size=200}){
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:20}}>
       <div style={{position:"relative",width:size,height:size}}>
-        {/* Ambient glow */}
-        <div style={{position:"absolute",inset:0,borderRadius:"50%",background:`radial-gradient(circle,${slices[0]?.color}22 0%,transparent 65%)`,pointerEvents:"none"}}/>
+
         <svg width={size} height={size} style={{position:"relative",zIndex:1}}>
           <defs>
             {slices.map((s)=>{
@@ -644,49 +643,54 @@ function Donut({data,palette,size=200}){
                 </linearGradient>
               );
             })}
-            {/* Dimmed color gradients for non-dominant segments */}
-            {slices.map((s,i)=>i===0?null:(
+            {/* Color gradients — all segments equal */}
+            {slices.map((s)=>(
               <linearGradient key={`gd${s.i}`} id={`gd${s.i}`}
                 x1={cx+r*Math.cos(s.mid-0.3)} y1={cy+r*Math.sin(s.mid-0.3)}
                 x2={cx+r*Math.cos(s.mid+0.3)} y2={cy+r*Math.sin(s.mid+0.3)}
                 gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor={s.color} stopOpacity="0.6"/>
-                <stop offset="40%" stopColor={lighten(s.color,30)} stopOpacity="0.7"/>
-                <stop offset="100%" stopColor={s.color} stopOpacity="0.5"/>
+                <stop offset="0%" stopColor={s.color} stopOpacity="0.75"/>
+                <stop offset="40%" stopColor={lighten(s.color,45)}/>
+                <stop offset="100%" stopColor={s.color} stopOpacity="0.75"/>
               </linearGradient>
             ))}
+            {/* Glass blur filter */}
+            <filter id="glassBlur" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+            </filter>
             {/* Sheen overlay */}
             <radialGradient id="sheen" cx="50%" cy="25%" r="55%">
               <stop offset="0%" stopColor="rgba(255,255,255,0.18)"/>
               <stop offset="60%" stopColor="rgba(255,255,255,0.04)"/>
               <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
             </radialGradient>
-            {/* Inner edge shadow for depth */}
-            <radialGradient id="innerShadow" cx="50%" cy="50%" r="50%">
-              <stop offset="65%" stopColor="rgba(0,0,0,0)"/>
-              <stop offset="100%" stopColor="rgba(0,0,0,0.55)"/>
-            </radialGradient>
+
           </defs>
 
-          {/* Non-dominant segments — dimmed color */}
-          {slices.map((s,i)=>i===0?null:(
-            <path key={`dark${s.k}`} d={s.path}
-              fill={`url(#gd${s.i})`}
-              style={{filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.4))",opacity:0.55}}/>
-          ))}
-          {/* Dominant segment — full color with glow */}
-          {slices[0]&&(
-            <path d={slices[0].path} fill={`url(#g0)`}
-              style={{filter:`drop-shadow(0 0 12px ${slices[0].color}99) drop-shadow(0 0 4px ${slices[0].color})`}}/>
-          )}
-          {/* Gloss sheen on all */}
+          {/* Glass frosted base layer */}
           {slices.map((s)=>(
-            <path key={`sh${s.k}`} d={s.path} fill="url(#sheen)" style={{pointerEvents:"none"}}/>
+            <path key={`base${s.k}`} d={s.path}
+              fill={s.color} fillOpacity="0.10"
+              filter="url(#glassBlur)"/>
           ))}
-          {/* Inner edge shadow */}
+          {/* Color gradient */}
           {slices.map((s)=>(
-            <path key={`is${s.k}`} d={s.path} fill="url(#innerShadow)" style={{pointerEvents:"none"}}/>
+            <path key={s.k} d={s.path}
+              fill={`url(#gd${s.i})`} fillOpacity="0.78"
+              style={{filter:`drop-shadow(0 0 6px ${s.color}44)`}}/>
           ))}
+          {/* White rim border */}
+          {slices.map((s)=>(
+            <path key={`rim${s.k}`} d={s.path}
+              fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"
+              style={{pointerEvents:"none"}}/>
+          ))}
+          {/* Specular sheen */}
+          {slices.map((s)=>(
+            <path key={`sh${s.k}`} d={s.path} fill="url(#sheen)" fillOpacity="0.55" style={{pointerEvents:"none"}}/>
+          ))}
+
           {/* Inner circle */}
           <circle cx={cx} cy={cy} r={inner-2} fill={T.bg}/>
           {/* Center label */}
@@ -2663,7 +2667,10 @@ export default function App(){
             <div style={{display:"flex",flexDirection:"column",overflowX:"hidden",width:"100%",gap:14,animation:"fadeIn .3s ease"}}>
               {Object.keys(scores.geoMap).length>0?(
                 <>
-                  {/* Context stats */}
+                  <div style={{display:"flex",justifyContent:"center",padding:"8px 0"}}>
+                    <Donut data={scores.geoMap} palette={BARS} size={220}/>
+                  </div>
+                  {/* Context stats below */}
                   <Glass style={{padding:"18px 18px"}}>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
                       {[
@@ -2679,10 +2686,6 @@ export default function App(){
                       ))}
                     </div>
                   </Glass>
-                  {/* Detail bars */}
-                  <div style={{display:"flex",justifyContent:"center",padding:"8px 0"}}>
-                    <Donut data={scores.geoMap} palette={BARS} size={220}/>
-                  </div>
                   <ColorBars data={scores.geoMap} title="Détail par zone" infoMap={GEO_INFO}/>
                 </>
               ):<div style={{textAlign:"center",padding:"48px 0",color:T.text5,fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}
@@ -2692,7 +2695,10 @@ export default function App(){
             <div style={{display:"flex",flexDirection:"column",overflowX:"hidden",width:"100%",gap:14,animation:"fadeIn .3s ease"}}>
               {Object.keys(scores.secMap).length>0?(
                 <>
-                  {/* Context stats */}
+                  <div style={{display:"flex",justifyContent:"center",padding:"8px 0"}}>
+                    <Donut data={scores.secMap} palette={BARS} size={220}/>
+                  </div>
+                  {/* Context stats below */}
                   <Glass style={{padding:"18px 18px"}}>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
                       {[
@@ -2708,10 +2714,6 @@ export default function App(){
                       ))}
                     </div>
                   </Glass>
-                  {/* Detail bars */}
-                  <div style={{display:"flex",justifyContent:"center",padding:"8px 0"}}>
-                    <Donut data={scores.secMap} palette={BARS} size={220}/>
-                  </div>
                   <ColorBars data={scores.secMap} title="Détail par secteur" infoMap={SECTOR_INFO}/>
                 </>
               ):<div style={{textAlign:"center",padding:"48px 0",color:T.text5,fontSize:13}}>Ajoutez des ETF pour voir la répartition</div>}
