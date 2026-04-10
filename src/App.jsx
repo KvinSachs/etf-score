@@ -670,12 +670,7 @@ function Donut({data,palette,size=200}){
               <feBlend in="SourceGraphic" in2="brightened" mode="screen" result="blended"/>
               <feComposite in="blended" in2="SourceGraphic" operator="in"/>
             </filter>
-            {/* Sheen overlay */}
-            <radialGradient id="sheen" cx="50%" cy="20%" r="60%">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.28)"/>
-              <stop offset="50%" stopColor="rgba(255,255,255,0.06)"/>
-              <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
-            </radialGradient>
+
             {/* Bottom edge shadow */}
             <radialGradient id="edgeShadow" cx="50%" cy="50%" r="50%">
               <stop offset="72%" stopColor="rgba(0,0,0,0)"/>
@@ -707,10 +702,7 @@ function Donut({data,palette,size=200}){
               stroke="rgba(255,255,255,0.22)" strokeWidth="0.75"
               style={{pointerEvents:"none"}}/>
           ))}
-          {/* Specular top sheen */}
-          {slices.map((s)=>(
-            <path key={`sh${s.k}`} d={s.path} fill="url(#sheen)" style={{pointerEvents:"none"}}/>
-          ))}
+
 
           {/* Inner circle */}
           <circle cx={cx} cy={cy} r={inner-2} fill={T.bg}/>
