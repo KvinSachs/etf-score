@@ -654,41 +654,62 @@ function Donut({data,palette,size=200}){
                 <stop offset="100%" stopColor={s.color} stopOpacity="0.75"/>
               </linearGradient>
             ))}
-            {/* Glass blur filter */}
-            <filter id="glassBlur" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="blur"/>
-              <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+            {/* Liquid glass filter — refraction + frost */}
+            <filter id="liquidGlass" x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+              {/* Frosted blur on background */}
+              <feGaussianBlur stdDeviation="2.5" result="frost"/>
+              {/* Subtle turbulence for organic distortion */}
+              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="2" seed="4" result="noise"/>
+              <feDisplacementMap in="frost" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" result="distorted"/>
+              {/* Lighten slightly — glass amplifies light */}
+              <feColorMatrix in="distorted" type="matrix"
+                values="1 0 0 0 0.04
+                        0 1 0 0 0.04
+                        0 0 1 0 0.06
+                        0 0 0 1 0" result="brightened"/>
+              <feBlend in="SourceGraphic" in2="brightened" mode="screen" result="blended"/>
+              <feComposite in="blended" in2="SourceGraphic" operator="in"/>
             </filter>
             {/* Sheen overlay */}
-            <radialGradient id="sheen" cx="50%" cy="25%" r="55%">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.18)"/>
-              <stop offset="60%" stopColor="rgba(255,255,255,0.04)"/>
+            <radialGradient id="sheen" cx="50%" cy="20%" r="60%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.28)"/>
+              <stop offset="50%" stopColor="rgba(255,255,255,0.06)"/>
               <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+            </radialGradient>
+            {/* Bottom edge shadow */}
+            <radialGradient id="edgeShadow" cx="50%" cy="50%" r="50%">
+              <stop offset="72%" stopColor="rgba(0,0,0,0)"/>
+              <stop offset="100%" stopColor="rgba(0,0,0,0.3)"/>
             </radialGradient>
 
           </defs>
 
-          {/* Glass frosted base layer */}
+          {/* Liquid glass base — frosted + distorted */}
           {slices.map((s)=>(
-            <path key={`base${s.k}`} d={s.path}
-              fill={s.color} fillOpacity="0.10"
-              filter="url(#glassBlur)"/>
+            <path key={`glass${s.k}`} d={s.path}
+              fill={s.color} fillOpacity="0.18"
+              filter="url(#liquidGlass)"/>
           ))}
-          {/* Color gradient */}
+          {/* Color gradient layer */}
           {slices.map((s)=>(
             <path key={s.k} d={s.path}
-              fill={`url(#gd${s.i})`} fillOpacity="0.78"
-              style={{filter:`drop-shadow(0 0 6px ${s.color}44)`}}/>
+              fill={`url(#gd${s.i})`} fillOpacity="0.72"/>
           ))}
-          {/* White rim border */}
+          {/* Edge shadow for depth */}
+          {slices.map((s)=>(
+            <path key={`edge${s.k}`} d={s.path}
+              fill="url(#edgeShadow)" style={{pointerEvents:"none"}}/>
+          ))}
+          {/* White rim — glass border */}
           {slices.map((s)=>(
             <path key={`rim${s.k}`} d={s.path}
-              fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"
+              fill="none"
+              stroke="rgba(255,255,255,0.22)" strokeWidth="0.75"
               style={{pointerEvents:"none"}}/>
           ))}
-          {/* Specular sheen */}
+          {/* Specular top sheen */}
           {slices.map((s)=>(
-            <path key={`sh${s.k}`} d={s.path} fill="url(#sheen)" fillOpacity="0.55" style={{pointerEvents:"none"}}/>
+            <path key={`sh${s.k}`} d={s.path} fill="url(#sheen)" style={{pointerEvents:"none"}}/>
           ))}
 
           {/* Inner circle */}
