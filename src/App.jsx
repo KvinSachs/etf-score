@@ -714,10 +714,11 @@ function Donut({data,palette,size=200}){
 
           {/* Inner circle */}
           <circle cx={cx} cy={cy} r={inner-2} fill={T.bg}/>
-          {/* Center label — value + % inline */}
-          <text x={cx-2} y={cy+6} textAnchor="end" fill="rgba(255,255,255,0.9)" fontSize="24" fontWeight="800" fontFamily="-apple-system,system-ui">{top?.pct>=0.01?(top.v).toFixed(0):""}</text>
-          <text x={cx+2} y={cy+2} textAnchor="start" fill="rgba(255,255,255,0.35)" fontSize="11" fontWeight="600" fontFamily="-apple-system,system-ui">%</text>
-          <text x={cx} y={cy+20} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="9" fontFamily="-apple-system,system-ui" fontWeight="500">{top?.k?.length>12?top.k.slice(0,12)+"…":top?.k}</text>
+          {/* Center label — value + % same baseline */}
+          <text x={cx} y={cy+7} textAnchor="middle" fill="rgba(255,255,255,0.9)" fontSize="24" fontWeight="800" fontFamily="-apple-system,system-ui" letterSpacing="-0.5">
+            <tspan>{top?.pct>=0.01?(top.v).toFixed(0):""}</tspan><tspan fill="rgba(255,255,255,0.4)" fontSize="12" fontWeight="500" dx="2" dy="0">%</tspan>
+          </text>
+          <text x={cx} y={cy+22} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="9" fontFamily="-apple-system,system-ui" fontWeight="500">{top?.k}</text>
         </svg>
       </div>
       {/* Legend */}
