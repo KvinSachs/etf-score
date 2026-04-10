@@ -1138,7 +1138,7 @@ function Tabs({active,onChange,highlight=[]}){
                 flex:1,background:"none",border:"none",cursor:"pointer",
                 display:"flex",flexDirection:"column",alignItems:"center",gap:3,
                 padding:"8px 4px",
-                color:isActive?T.accent:T.text4,
+                color:isActive?"rgba(255,255,255,0.95)":T.text4,
                 WebkitTapHighlightColor:"transparent",
                 transition:"color .2s",
                 position:"relative",
@@ -1182,7 +1182,7 @@ function Tabs({active,onChange,highlight=[]}){
               }}>
                 {t.icon}
               </div>
-              <span style={{fontSize:9,fontWeight:isActive?700:400,letterSpacing:.3,lineHeight:1,position:"relative",zIndex:1}}>{t.label}</span>
+              <span style={{fontSize:9,fontWeight:isActive?600:400,letterSpacing:.3,lineHeight:1,position:"relative",zIndex:1}}>{t.label}</span>
               {highlight.includes(t.id)&&!isActive&&<div style={{position:"absolute",top:6,right:"18%",width:5,height:5,borderRadius:"50%",background:T.accent,boxShadow:`0 0 6px ${T.accent}`,animation:"pulse 2s infinite"}}/>}
             </button>
           );
@@ -2269,9 +2269,9 @@ export default function App(){
           100%{background-position:0% 50%;opacity:0.8}
         }
         @keyframes tabGlow{
-          0%{opacity:0;transform:scale(1.4)}
-          20%{opacity:1;transform:scale(1.0)}
-          100%{opacity:0;transform:scale(0.5)}
+          0%{opacity:0;transform:scale(0.6)}
+          30%{opacity:1;transform:scale(1.1)}
+          100%{opacity:0;transform:scale(1.6)}
         }
         ::-webkit-scrollbar{display:none}
         .row{animation:up .35s cubic-bezier(.16,1,.3,1) both}
