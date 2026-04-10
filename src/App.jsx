@@ -602,7 +602,7 @@ function Donut({data,palette,size=200}){
   const total=entries.reduce((s,[,v])=>s+v,0);
   if(!total)return null;
   const GAP=0.03;
-  const THICKNESS=44; // thick ring like reference
+  const THICKNESS=32; // thinner ring
   const cx=size/2,cy=size/2,r=size/2-10,inner=r-THICKNESS;
   let angle=-Math.PI/2;
   const slices=entries.map(([k,v],i)=>{
@@ -714,10 +714,10 @@ function Donut({data,palette,size=200}){
 
           {/* Inner circle */}
           <circle cx={cx} cy={cy} r={inner-2} fill={T.bg}/>
-          {/* Center label */}
-          <text x={cx} y={cy-8} textAnchor="middle" fill="rgba(255,255,255,0.9)" fontSize="22" fontWeight="800" fontFamily="-apple-system,system-ui">{top?.pct>=0.01?(top.v).toFixed(0):""}</text>
-          <text x={cx} y={cy+10} textAnchor="middle" fill="rgba(255,255,255,0.25)" fontSize="9" fontFamily="-apple-system,system-ui">%</text>
-          <text x={cx} y={cy+26} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="9" fontFamily="-apple-system,system-ui" fontWeight="500">{top?.k?.length>12?top.k.slice(0,12)+"…":top?.k}</text>
+          {/* Center label — value + % inline */}
+          <text x={cx-2} y={cy+6} textAnchor="end" fill="rgba(255,255,255,0.9)" fontSize="24" fontWeight="800" fontFamily="-apple-system,system-ui">{top?.pct>=0.01?(top.v).toFixed(0):""}</text>
+          <text x={cx+2} y={cy+2} textAnchor="start" fill="rgba(255,255,255,0.35)" fontSize="11" fontWeight="600" fontFamily="-apple-system,system-ui">%</text>
+          <text x={cx} y={cy+20} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="9" fontFamily="-apple-system,system-ui" fontWeight="500">{top?.k?.length>12?top.k.slice(0,12)+"…":top?.k}</text>
         </svg>
       </div>
       {/* Legend */}
