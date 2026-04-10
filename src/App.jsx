@@ -625,82 +625,11 @@ function Donut({data,palette,size=200}){
       <div style={{position:"relative",width:size,height:size}}>
 
         <svg width={size} height={size} style={{position:"relative",zIndex:1}}>
-          <defs>
-            {slices.map((s)=>{
-              // Gradient along the arc — light entry point at mid-top, dark at edges
-              const gx1=cx+r*Math.cos(s.mid-0.4);
-              const gy1=cy+r*Math.sin(s.mid-0.4);
-              const gx2=cx+r*Math.cos(s.mid+0.4);
-              const gy2=cy+r*Math.sin(s.mid+0.4);
-              const light=lighten(s.color,55);
-              return(
-                <linearGradient key={`g${s.i}`} id={`g${s.i}`}
-                  x1={gx1} y1={gy1} x2={gx2} y2={gy2}
-                  gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor={s.color}/>
-                  <stop offset="40%" stopColor={light}/>
-                  <stop offset="100%" stopColor={s.color}/>
-                </linearGradient>
-              );
-            })}
-            {/* Color gradients — all segments equal */}
-            {slices.map((s)=>(
-              <linearGradient key={`gd${s.i}`} id={`gd${s.i}`}
-                x1={cx+r*Math.cos(s.mid-0.3)} y1={cy+r*Math.sin(s.mid-0.3)}
-                x2={cx+r*Math.cos(s.mid+0.3)} y2={cy+r*Math.sin(s.mid+0.3)}
-                gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor={s.color} stopOpacity="0.75"/>
-                <stop offset="40%" stopColor={lighten(s.color,45)}/>
-                <stop offset="100%" stopColor={s.color} stopOpacity="0.75"/>
-              </linearGradient>
-            ))}
-            {/* Liquid glass filter — refraction + frost */}
-            <filter id="liquidGlass" x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
-              {/* Frosted blur on background */}
-              <feGaussianBlur stdDeviation="2.5" result="frost"/>
-              {/* Subtle turbulence for organic distortion */}
-              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="2" seed="4" result="noise"/>
-              <feDisplacementMap in="frost" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" result="distorted"/>
-              {/* Lighten slightly — glass amplifies light */}
-              <feColorMatrix in="distorted" type="matrix"
-                values="1 0 0 0 0.04
-                        0 1 0 0 0.04
-                        0 0 1 0 0.06
-                        0 0 0 1 0" result="brightened"/>
-              <feBlend in="SourceGraphic" in2="brightened" mode="screen" result="blended"/>
-              <feComposite in="blended" in2="SourceGraphic" operator="in"/>
-            </filter>
 
-            {/* Bottom edge shadow */}
-            <radialGradient id="edgeShadow" cx="50%" cy="50%" r="50%">
-              <stop offset="72%" stopColor="rgba(0,0,0,0)"/>
-              <stop offset="100%" stopColor="rgba(0,0,0,0.3)"/>
-            </radialGradient>
 
-          </defs>
-
-          {/* Liquid glass base — frosted + distorted */}
+          {/* Solid color segments */}
           {slices.map((s)=>(
-            <path key={`glass${s.k}`} d={s.path}
-              fill={s.color} fillOpacity="0.18"
-              filter="url(#liquidGlass)"/>
-          ))}
-          {/* Color gradient layer */}
-          {slices.map((s)=>(
-            <path key={s.k} d={s.path}
-              fill={`url(#gd${s.i})`} fillOpacity="0.72"/>
-          ))}
-          {/* Edge shadow for depth */}
-          {slices.map((s)=>(
-            <path key={`edge${s.k}`} d={s.path}
-              fill="url(#edgeShadow)" style={{pointerEvents:"none"}}/>
-          ))}
-          {/* White rim — glass border */}
-          {slices.map((s)=>(
-            <path key={`rim${s.k}`} d={s.path}
-              fill="none"
-              stroke="rgba(255,255,255,0.22)" strokeWidth="0.75"
-              style={{pointerEvents:"none"}}/>
+            <path key={s.k} d={s.path} fill={s.color}/>
           ))}
 
 
