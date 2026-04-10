@@ -1164,34 +1164,18 @@ function Tabs({active,onChange,highlight=[]}){
                 pointerEvents:"none",
               }}/>}
               {/* Organic iridescent burst on press */}
-              {pressedTab===t.id&&<>
-                {/* Elliptic iridescent halo — hugs the tab shape */}
+              {pressedTab===t.id&&(
                 <div style={{
                   position:"absolute",
-                  bottom:6,left:"44%",
-                  transform:"translateX(-50%)",
-                  width:"75%",height:16,
-                  borderRadius:"50%",
-                  background:"conic-gradient(from 0deg, rgba(14,203,129,0.5), rgba(59,130,246,0.45), rgba(168,85,247,0.45), rgba(251,191,36,0.35), rgba(236,72,153,0.35), rgba(14,203,129,0.5))",
-                  filter:"blur(8px)",
-                  animation:"tabGlow .65s cubic-bezier(.16,1,.3,1) forwards",
+                  inset:0,
+                  borderRadius:32,
+                  background:"transparent",
+                  boxShadow:"inset 0 -8px 16px -4px rgba(14,203,129,0.4), inset 0 -6px 12px -4px rgba(59,130,246,0.3), inset 0 -4px 8px -4px rgba(168,85,247,0.2)",
+                  animation:"tabGlow .55s cubic-bezier(.16,1,.3,1) forwards",
                   pointerEvents:"none",
                   zIndex:0,
                 }}/>
-                {/* Soft white core */}
-                <div style={{
-                  position:"absolute",
-                  bottom:8,left:"44%",
-                  transform:"translateX(-50%)",
-                  width:"40%",height:8,
-                  borderRadius:"50%",
-                  background:"radial-gradient(ellipse, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 100%)",
-                  filter:"blur(3px)",
-                  animation:"tabGlow .45s cubic-bezier(.16,1,.3,1) forwards",
-                  pointerEvents:"none",
-                  zIndex:0,
-                }}/>
-              </>}
+              )}
               <div style={{
                 position:"relative",zIndex:1,
                 animation:pressedTab===t.id?"tabLens .5s cubic-bezier(.16,1,.3,1) forwards":"none",
