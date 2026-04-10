@@ -2269,9 +2269,9 @@ export default function App(){
           100%{background-position:0% 50%;opacity:0.8}
         }
         @keyframes tabGlow{
-          0%{opacity:0;transform:scale(0.6)}
-          30%{opacity:1;transform:scale(1.1)}
-          100%{opacity:0;transform:scale(1.6)}
+          0%{opacity:0;transform:scale(1.4)}
+          20%{opacity:1;transform:scale(1.0)}
+          100%{opacity:0;transform:scale(0.5)}
         }
         ::-webkit-scrollbar{display:none}
         .row{animation:up .35s cubic-bezier(.16,1,.3,1) both}
