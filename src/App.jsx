@@ -235,9 +235,9 @@ function optimizeDCA(holdings, plans, yearsAhead=5){
   const monthlyEquiv={weekly:52/12,monthly:1,quarterly:1/3};
 
   // 1. Compute total monthly budget across all existing plans
-  const existingTickers=Object.keys(plans).filter(t=>plans[t]?.amount>0);
-  const totalMonthlyBudget=existingTickers.reduce((sum,t)=>{
-    const p=plans[t];
+  const existingTickers=Object.keys(plans).filter(tk=>plans[tk]?.amount>0);
+  const totalMonthlyBudget=existingTickers.reduce((sum,tk)=>{
+    const p=plans[tk];
     return sum+(p.amount*(monthlyEquiv[p.freq]||1));
   },0);
 
@@ -255,7 +255,7 @@ function optimizeDCA(holdings, plans, yearsAhead=5){
   // Initialize weights: existing plans keep their weight, new ones start at 0
   let weights={};
   allTickers.forEach(t=>{
-    const p=plans[t];
+    const p=plans[tk];
     if(p?.amount>0){
       weights[t]=(p.amount*(monthlyEquiv[p.freq]||1))/totalMonthlyBudget;
     } else {
@@ -520,7 +520,7 @@ const TRANSLATIONS = {
     ptf_deleted: "supprimé",
     ptf_added: "ajouté",
     ptf_undo: "Annuler",
-    ptf_no_export: t.toast_no_export,
+    ptf_no_export: tr.toast_no_export,
     // DCA / Plan
     plan_title: "Plan d'investissement",
     plan_freq: "Fréquence",
@@ -539,16 +539,16 @@ const TRANSLATIONS = {
     proj_optimal_title: "Scénario optimal à 5 ans",
     proj_current: "DCA actuel", proj_optimized: "Optimisé",
     proj_apply: "Appliquer ce scénario",
-    proj_confirm_title: "{t.proj_confirm_title}",
+    proj_confirm_title: "{tr.proj_confirm_title}",
     proj_confirm_body: "Les montants de vos versements programmés vont être mis à jour selon le scénario optimal.",
     proj_confirm_note: "positions actuelles ne sont pas modifiées",
     proj_confirm_btn: "Confirmer la mise à jour",
     proj_cancel: "Annuler",
     proj_applied_title: "Scénario appliqué",
-    proj_applied_sub: "{t.proj_applied_sub}",
+    proj_applied_sub: "{tr.proj_applied_sub}",
     proj_balanced: "Votre plan est bien équilibré",
-    proj_balanced_sub: "{t.proj_balanced_sub}",
-    proj_disclaimer: "{t.proj_disclaimer}",
+    proj_balanced_sub: "{tr.proj_balanced_sub}",
+    proj_disclaimer: "{tr.proj_disclaimer}",
     // About
     about_version: "Version",
     about_settings: "Paramètres",
@@ -560,12 +560,12 @@ const TRANSLATIONS = {
     about_data: "Données",
     about_data_body: "Les compositions d'ETF sont approximatives et basées sur les données disponibles à la date de mise à jour. Elles peuvent différer des compositions réelles actuelles. Les apports renseignés ne tiennent pas compte des variations de marché.",
     about_legal_body: "ETF Score est un outil d'analyse personnel. Les scores, indicateurs et suggestions affichés ne constituent pas un conseil en investissement au sens de la réglementation AMF.",
-    about_risk: "{t.about_risk}",
+    about_risk: "{tr.about_risk}",
     // Disclaimer
     disc_title: "À titre informatif uniquement",
     disc_body1: "ETF Score est un outil d'analyse personnel. Les scores et suggestions ne constituent pas un conseil en investissement au sens de la réglementation AMF.",
     disc_body2: "Tout investissement comporte un risque de perte en capital.",
-    disc_cta: "{t.disc_cta}",
+    disc_cta: "{tr.disc_cta}",
     // Onboarding
     ob_skip: "Passer",
     ob_next: "Suivant",
@@ -574,7 +574,7 @@ const TRANSLATIONS = {
     // Misc
     misc_no_etf: "Aucun ETF renseigné",
     misc_add_etfs: "Allez dans l'onglet Mes ETF pour ajouter vos positions.",
-    misc_suggestions: "{t.misc_suggestions}",
+    misc_suggestions: "{tr.misc_suggestions}",
     misc_saved: "Enregistré",
     // Plan inline
     plan_invested_label: "versés à ce jour",
@@ -960,7 +960,7 @@ function Sheet({children,onClose}){
 
 
 /* ─── PROJECTION SHEET ───────────────────────────────────────────────────────── */
-function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose,t=TRANSLATIONS.fr}){
+function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose,tr=TRANSLATIONS.fr}){
   const score1y = computeScores(projectPortfolio(holdings,plans,1)).total;
   const score5y = computeScores(projectPortfolio(holdings,plans,5)).total;
   const proj5y  = projectPortfolio(holdings,plans,5);
@@ -999,7 +999,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose,t=TR
     <Sheet onClose={onClose}>
       <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",overscrollBehavior:"none",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
         <div style={{marginBottom:24}}>
-          <div style={{fontFamily:T.fontDisplay,fontSize:16,fontWeight:700,color:T.text,marginBottom:4}}>{t.proj_cta}</div>
+          <div style={{fontFamily:T.fontDisplay,fontSize:16,fontWeight:700,color:T.text,marginBottom:4}}>{tr.proj_cta}</div>
           <div style={{fontSize:13,color:T.text4,lineHeight:1.6}}>
             Évolution de votre score si vous maintenez vos versements programmés.
           </div>
@@ -1065,7 +1065,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose,t=TR
             <span style={{fontSize:22,fontWeight:800,color:T.text,letterSpacing:-.5}}>{annualDCA.toLocaleString("fr-FR")} €</span>
             <span style={{fontSize:11,color:T.text5}}>/ an</span>
           </div>
-          <div style={{fontSize:11,color:T.text4,marginTop:4}}>{(annualDCA*5).toLocaleString("fr-FR")} € {t.plan_5y_total}</div>
+          <div style={{fontSize:11,color:T.text4,marginTop:4}}>{(annualDCA*5).toLocaleString("fr-FR")} € {tr.plan_5y_total}</div>
         </div>
 
         {/* Optimization section */}
@@ -1075,25 +1075,25 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose,t=TR
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#0ecb81" strokeWidth="1"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
             <div>
-              <div style={{fontSize:13,fontWeight:600,color:T.accent,fontFamily:T.fontDisplay}}>{t.proj_balanced}</div>
+              <div style={{fontSize:13,fontWeight:600,color:T.accent,fontFamily:T.fontDisplay}}>{tr.proj_balanced}</div>
               <div style={{fontSize:11,color:T.text4,marginTop:3,lineHeight:1.5,fontFamily:T.fontText}}>La répartition actuelle de vos versements est déjà optimale à 5 ans. Rien à modifier.</div>
             </div>
           </div>
         ):(
           <div style={{marginTop:8}}>
             <div style={{height:"0.5px",background:T.borderFaint,margin:"8px 0 20px"}}/>
-            <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>{t.proj_optimal_title}</div>
+            <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>{tr.proj_optimal_title}</div>
 
             {/* Score comparison */}
             <div style={{display:"flex",gap:8,marginBottom:16}}>
               <div style={{flex:1,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:12,padding:"12px",textAlign:"center"}}>
-                <div style={{fontSize:9,color:T.text5,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{t.proj_current}</div>
+                <div style={{fontSize:9,color:T.text5,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{tr.proj_current}</div>
                 <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:800,color:sc(optResult.score5yBefore).text,letterSpacing:-1}}>{optResult.score5yBefore.toFixed(1)}</div>
                 <div style={{fontSize:9,color:T.text5}}>/20</div>
               </div>
               <div style={{display:"flex",alignItems:"center",color:T.accent,fontSize:16}}>→</div>
               <div style={{flex:1,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.25)",borderRadius:12,padding:"12px",textAlign:"center"}}>
-                <div style={{fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{t.proj_optimized}</div>
+                <div style={{fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{tr.proj_optimized}</div>
                 <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:800,color:sc(optResult.score5yAfter).text,letterSpacing:-1}}>{optResult.score5yAfter.toFixed(1)}</div>
                 <div style={{fontSize:9,color:T.text5}}>/20</div>
               </div>
@@ -1172,7 +1172,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose,t=TR
           <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:10}}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#0ecb81" strokeWidth="1"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <div>
-              <div style={{fontSize:13,fontWeight:600,color:T.accent}}>{t.proj_applied_title}</div>
+              <div style={{fontSize:13,fontWeight:600,color:T.accent}}>{tr.proj_applied_title}</div>
               <div style={{fontSize:11,color:T.text4,marginTop:2}}>Pensez à relancer une simulation dans 2 ans.</div>
             </div>
           </div>
@@ -1234,7 +1234,7 @@ function SuggestionSheet({catalog,onSelect,onClose}){
 }
 
 /* ─── SEARCH ─────────────────────────────────────────────────────────────────── */
-function Search({onAdd,suggestions=[],initialTicker=null,t=TRANSLATIONS.fr}){
+function Search({onAdd,suggestions=[],initialTicker=null,tr=TRANSLATIONS.fr}){
   const[q,setQ]=useState(initialTicker?DB[initialTicker]?.name||initialTicker:""),[amt,setAmt]=useState(""),[open,setOpen]=useState(false);
   const[hi,setHi]=useState(0),[err,setErr]=useState(""),[activeSug,setActiveSug]=useState(null);
   const[selectedTicker,setSelectedTicker]=useState(initialTicker);
@@ -1265,7 +1265,7 @@ function Search({onAdd,suggestions=[],initialTicker=null,t=TRANSLATIONS.fr}){
         <input value={q} onChange={e=>{setQ(e.target.value);setSelectedTicker(null);setErr("");setHi(0);setOpen(true);}}
           onFocus={e=>{if(!selectedTicker)setOpen(true);e.target.style.borderColor=T.accentGlow;e.target.style.boxShadow=`0 0 0 3px ${T.accentBg}`;}}
           onBlur={e=>{e.target.style.borderColor=T.border;e.target.style.boxShadow="none";}}
-          onKeyDown={onKey} placeholder={t.ptf_search_placeholder} style={inp}/>
+          onKeyDown={onKey} placeholder={tr.ptf_search_placeholder} style={inp}/>
         {selectedTicker&&<button onMouseDown={()=>{setQ("");setSelectedTicker(null);setOpen(false);}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:T.surfaceHover,border:"none",borderRadius:"50%",width:22,height:22,color:T.text3,fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>}
         {open&&results.length>0&&(
           <div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,zIndex:300,background:T.bgDropdown,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:16,overflow:"hidden",boxShadow:T.shadowDropdown}}>
@@ -1322,14 +1322,14 @@ function Search({onAdd,suggestions=[],initialTicker=null,t=TRANSLATIONS.fr}){
 }
 
 /* ─── BOTTOM TAB BAR ─────────────────────────────────────────────────────────── */
-function Tabs({active,onChange,highlight=[],t=TRANSLATIONS.fr}){
+function Tabs({active,onChange,highlight=[],tr=TRANSLATIONS.fr}){
   const[pressedTab,setPressedTab]=useState(null);
   const tabs=[
-    {id:"scores",label:t.nav_scores,icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" strokeWidth="1.4" strokeDasharray="3 1.5" strokeLinecap="round"/><circle cx="11" cy="11" r="2.5" fill="currentColor"/></svg>},
-    {id:"geo",label:t.nav_geo,icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" strokeWidth="1.4"/><ellipse cx="11" cy="11" rx="3.5" ry="7.5" stroke="currentColor" strokeWidth="1.4"/><line x1="3.5" y1="11" x2="18.5" y2="11" stroke="currentColor" strokeWidth="1.4"/></svg>},
-    {id:"sec",label:t.nav_sec,icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="12" width="4" height="8" rx="1" fill="currentColor" opacity=".4"/><rect x="9" y="7" width="4" height="13" rx="1" fill="currentColor" opacity=".7"/><rect x="16" y="2" width="4" height="18" rx="1" fill="currentColor"/></svg>},
-    {id:"ptf",label:t.nav_ptf,icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M2 15C5 15 5.5 9 9 9C12.5 9 12.5 13 16 11.5C18.5 10.5 19.5 5 21 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>},
-    {id:"about",label:t.nav_about,icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.4"/><line x1="11" y1="10" x2="11" y2="16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="11" cy="7" r="1" fill="currentColor"/></svg>},
+    {id:"scores",label:tr.nav_scores,icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" strokeWidth="1.4" strokeDasharray="3 1.5" strokeLinecap="round"/><circle cx="11" cy="11" r="2.5" fill="currentColor"/></svg>},
+    {id:"geo",label:tr.nav_geo,icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" strokeWidth="1.4"/><ellipse cx="11" cy="11" rx="3.5" ry="7.5" stroke="currentColor" strokeWidth="1.4"/><line x1="3.5" y1="11" x2="18.5" y2="11" stroke="currentColor" strokeWidth="1.4"/></svg>},
+    {id:"sec",label:tr.nav_sec,icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="12" width="4" height="8" rx="1" fill="currentColor" opacity=".4"/><rect x="9" y="7" width="4" height="13" rx="1" fill="currentColor" opacity=".7"/><rect x="16" y="2" width="4" height="18" rx="1" fill="currentColor"/></svg>},
+    {id:"ptf",label:tr.nav_ptf,icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M2 15C5 15 5.5 9 9 9C12.5 9 12.5 13 16 11.5C18.5 10.5 19.5 5 21 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>},
+    {id:"about",label:tr.nav_about,icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.4"/><line x1="11" y1="10" x2="11" y2="16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="11" cy="7" r="1" fill="currentColor"/></svg>},
   ];
   const isDark=T.bg==="#050506";
   return(
@@ -1373,10 +1373,10 @@ function Tabs({active,onChange,highlight=[],t=TRANSLATIONS.fr}){
         <div style={{position:"absolute",top:0,left:"8%",right:"8%",height:"0.5px",background:isDark?"rgba(255,255,255,0.18)":"rgba(255,255,255,0.95)",borderRadius:"0 0 2px 2px",pointerEvents:"none"}}/>
         {/* Bottom subtle glow */}
         <div style={{position:"absolute",bottom:0,left:"20%",right:"20%",height:"0.5px",background:isDark?"rgba(14,203,129,0.15)":"rgba(14,203,129,0.1)",pointerEvents:"none"}}/>
-        {tabs.map(t=>{
-          const isActive=active===t.id;
+        {tabs.map(tab=>{
+          const isActive=active===tab.id;
           return(
-            <button key={t.id} onClick={()=>{onChange(t.id);setPressedTab(t.id);setTimeout(()=>setPressedTab(p=>p===t.id?null:p),600);}}
+            <button key={tab.id} onClick={()=>{onChange(tab.id);setPressedTab(tab.id);setTimeout(()=>setPressedTab(p=>p===tab.id?null:p),600);}}
               style={{
                 flex:1,background:"none",border:"none",cursor:"pointer",
                 display:"flex",flexDirection:"column",alignItems:"center",gap:3,
@@ -1423,10 +1423,10 @@ function Tabs({active,onChange,highlight=[],t=TRANSLATIONS.fr}){
                 position:"relative",zIndex:1,
                 animation:pressedTab===t.id?"tabLens .5s cubic-bezier(.16,1,.3,1) forwards":"none",
               }}>
-                {t.icon}
+                {tab.icon}
               </div>
-              <span style={{fontSize:9,fontWeight:isActive?600:400,letterSpacing:.3,lineHeight:1,position:"relative",zIndex:1}}>{t.label}</span>
-              {highlight.includes(t.id)&&!isActive&&<div style={{position:"absolute",top:6,right:"18%",width:5,height:5,borderRadius:"50%",background:T.accent,boxShadow:`0 0 6px ${T.accent}`,animation:"pulse 2s infinite"}}/>}
+              <span style={{fontSize:9,fontWeight:isActive?600:400,letterSpacing:.3,lineHeight:1,position:"relative",zIndex:1}}>{tab.label}</span>
+              {highlight.includes(tab.id)&&!isActive&&<div style={{position:"absolute",top:6,right:"18%",width:5,height:5,borderRadius:"50%",background:T.accent,boxShadow:`0 0 6px ${T.accent}`,animation:"pulse 2s infinite"}}/>}
             </button>
           );
         })}
@@ -1436,7 +1436,7 @@ function Tabs({active,onChange,highlight=[],t=TRANSLATIONS.fr}){
 }
 
 /* ─── DISCLAIMER ─────────────────────────────────────────────────────────────── */
-function Disclaimer({onAccept,t=TRANSLATIONS.fr}){
+function Disclaimer({onAccept,tr=TRANSLATIONS.fr}){
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",backdropFilter:"blur(20px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:99999,padding:"20px 16px"}}>
       <Glass style={{padding:"32px 24px",width:"100%",maxWidth:400}}>
@@ -1452,7 +1452,7 @@ function Disclaimer({onAccept,t=TRANSLATIONS.fr}){
             <line x1="14" y1="18" x2="34" y2="18" stroke="url(#dl)" strokeWidth="2.5" strokeLinecap="round"/>
           </svg>
         </div>
-        <div style={{fontFamily:T.fontDisplay,fontSize:18,fontWeight:800,color:T.text,marginBottom:14,letterSpacing:-.3}}>{t.disc_title}</div>
+        <div style={{fontFamily:T.fontDisplay,fontSize:18,fontWeight:800,color:T.text,marginBottom:14,letterSpacing:-.3}}>{tr.disc_title}</div>
         <p style={{fontSize:13,color:T.text4,lineHeight:1.7,margin:"0 0 14px"}}>ETF Score est un outil d'analyse personnel. Les scores et suggestions <strong style={{color:T.text2}}>ne constituent pas un conseil en investissement</strong> au sens de la réglementation AMF.</p>
         <p style={{fontSize:13,color:T.text4,lineHeight:1.7,margin:"0 0 28px"}}>Tout investissement comporte un risque de perte en capital.</p>
         <button onClick={onAccept} style={{width:"100%",background:T.accent,border:"none",borderRadius:14,padding:"16px",color:"#000",fontSize:15,fontWeight:800,cursor:"pointer",fontFamily:T.fontDisplay,letterSpacing:.3,transition:"opacity .15s"}}
@@ -1474,7 +1474,7 @@ function Toast({msg,visible,onUndo,undoLabel,position="bottom"}){
     <div style={{position:"fixed",left:"50%",...posStyle,opacity:visible?1:0,transition:"all .3s cubic-bezier(.16,1,.3,1)",background:T.bgDropdown,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,padding:"11px 18px",zIndex:999999,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,0.5)",pointerEvents:visible?"auto":"none",whiteSpace:"nowrap"}}>
       <div style={{width:6,height:6,borderRadius:"50%",background:T.accent,boxShadow:"0 0 8px #0ecb81",flexShrink:0}}/>
       <span style={{fontSize:13,color:T.text,fontFamily:T.fontText}}>{msg}</span>
-      {onUndo&&<button onClick={onUndo} style={{background:"none",border:"none",color:T.accent,fontSize:13,fontWeight:700,cursor:"pointer",padding:"0 0 0 6px",fontFamily:T.fontText}}>{undoLabel||t.toast_undo}</button>}
+      {onUndo&&<button onClick={onUndo} style={{background:"none",border:"none",color:T.accent,fontSize:13,fontWeight:700,cursor:"pointer",padding:"0 0 0 6px",fontFamily:T.fontText}}>{undoLabel||tr.toast_undo}</button>}
     </div>
   );
 }
@@ -1796,7 +1796,7 @@ function Splash({visible}){
 }
 
 /* ─── ONBOARDING ─────────────────────────────────────────────────────────────── */
-function Onboarding({onAdd,onDone,onToast,t=TRANSLATIONS.fr}){
+function Onboarding({onAdd,onDone,onToast,tr=TRANSLATIONS.fr}){
   const[step,setStep]=useState(0);
   const[q,setQ]=useState("");
   const[amt,setAmt]=useState("");
@@ -1963,7 +1963,7 @@ function Onboarding({onAdd,onDone,onToast,t=TRANSLATIONS.fr}){
         <div style={{pointerEvents:"auto"}}>
           {step>0&&<button onClick={()=>setStep(s=>s-1)} style={{background:T.bgBlur,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,color:T.textSub,fontSize:20,cursor:"pointer",padding:"6px 14px",lineHeight:1}}>‹</button>}
         </div>
-        <button onClick={done} style={{pointerEvents:"auto",background:T.bgBlur,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,color:T.text4,fontSize:12,cursor:"pointer",padding:"6px 14px"}}>{t.ob_skip}</button>
+        <button onClick={done} style={{pointerEvents:"auto",background:T.bgBlur,backdropFilter:"blur(20px)",border:`0.5px solid ${T.border}`,borderRadius:20,color:T.text4,fontSize:12,cursor:"pointer",padding:"6px 14px"}}>{tr.ob_skip}</button>
       </div>
 
       {/* ── UNIFIED TRACK — all 3 slides ── */}
@@ -2073,14 +2073,14 @@ function Onboarding({onAdd,onDone,onToast,t=TRANSLATIONS.fr}){
               style={{width:"100%",background:T.surfaceMed,border:`0.5px solid ${T.border}`,borderRadius:16,padding:"17px",color:T.text2,fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .15s"}}
               onMouseEnter={e=>e.currentTarget.style.background=T.surfaceHover}
               onMouseLeave={e=>e.currentTarget.style.background=T.surfaceMed}>
-              {t.ob_next}
+              {tr.ob_next}
             </button>
           ):(
             <button onClick={done}
               style={{width:"100%",background:added.length>0?T.accent:T.surfaceMed,border:added.length>0?"none":`0.5px solid ${T.border}`,borderRadius:16,padding:"17px",color:added.length>0?"#000":T.text4,fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:.2,transition:"all .2s"}}
               onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              {added.length>0?`${t.ob_analyze} (${added.length} ETF) →`:t.ob_skip_step}
+              {added.length>0?`${tr.ob_analyze} (${added.length} ETF) →`:tr.ob_skip_step}
             </button>
           )}
         </div>
@@ -2150,7 +2150,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
         </div>
 
         {/* Frequency selector */}
-        <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>{t.plan_freq_label}</div>
+        <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>{tr.plan_freq_label}</div>
         <div style={{display:"flex",gap:8,marginBottom:20}}>
           {FREQS.map(f=>(
             <button key={f.id} onClick={()=>setFreq(f.id)}
@@ -2173,7 +2173,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
         </div>
 
         {/* Start date */}
-        <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>{t.plan_next_exec}</div>
+        <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:10}}>{tr.plan_next_exec}</div>
         <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
           min={new Date().toISOString().split("T")[0]}
           style={{width:"100%",background:T.surface,border:`0.5px solid ${T.border}`,borderRadius:14,padding:"14px 16px",color:T.text2,fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:20,colorScheme:T.bg==="#050506"?"dark":"light"}}/>
@@ -2186,7 +2186,7 @@ function PlanSheet({ticker,plan,onSave,onDelete,onClose}){
               <div style={{textAlign:"center",padding:"6px 0"}}>
                 <div style={{fontSize:9,color:T.text4,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Projection sur 10 ans</div>
                 <div style={{fontSize:28,fontWeight:800,color:T.accent,letterSpacing:-1}}>{preview.projection10y.toLocaleString("fr-FR")} €</div>
-                <div style={{fontSize:11,color:T.text4,marginTop:4}}>{t.plan_rhythm}</div>
+                <div style={{fontSize:11,color:T.text4,marginTop:4}}>{tr.plan_rhythm}</div>
               </div>
             ):(
               /* Après premier versement — 4 stats complètes */
@@ -2239,7 +2239,7 @@ function ImportExport({holdings,holdingsWithPlan,onImport}){
 
   // Download template CSV
   const downloadTemplate=()=>{
-    const rows=[["ISIN","Nom","Montant (€)"],...Object.keys(DB).map(t=>[DB[t].isin||"",DB[t].name,""])];
+    const rows=[["ISIN","Nom","Montant (€)"],...Object.keys(DB).map(tk=>[DB[tk].isin||"",DB[t].name,""])];
     const csv=rows.map(r=>`${r[0]},${r[1].replace(/,/g," ")},${r[2]}`).join("\n");
     const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
     const url=URL.createObjectURL(blob);
@@ -2381,7 +2381,7 @@ export default function App(){
   const[showProjection,setShowProjection]=useState(false);
   const[darkMode,setDarkMode]=useState(()=>localStorage.getItem('etf-theme')!=='light');
   const[lang,setLang]=useState(()=>localStorage.getItem('etf-lang')||(navigator.language?.startsWith('en')?'en':'fr'));
-  const t=TRANSLATIONS[lang]||TRANSLATIONS.fr;
+  const tr=TRANSLATIONS[lang]||TRANSLATIONS.fr;
   const switchLang=(l)=>{setLang(l);localStorage.setItem('etf-lang',l);};
   const[lightGag,setLightGag]=useState(false);
   const[onboardStep,setOnboardStep]=useState(0);
@@ -2424,8 +2424,8 @@ export default function App(){
   const addHolding=useCallback((ticker,amount)=>{
     setHoldings(prev=>{const ex=prev.find(h=>h.ticker===ticker);if(ex)return prev.map(h=>h.ticker===ticker?{...h,amount:h.amount+amount,baseAmount:(h.baseAmount??h.amount)+amount}:h);return[...prev,{ticker,name:DB[ticker].name,amount,baseAmount:amount}];});
     if(toastTimer.current)clearTimeout(toastTimer.current);
-    setToast({msg:`${DB[ticker]?.name||ticker} ${t.toast_added}`,visible:true,position:"bottom"});
-    toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);
+    setToast({msg:`${DB[ticker]?.name||ticker} ${tr.toast_added}`,visible:true,position:"bottom"});
+    toastTimer.current=setTimeout(()=>setToast(st=>({...st,visible:false})),2500);
   },[]);
   const removeHolding=useCallback(ticker=>{
     const snap=holdings.find(h=>h.ticker===ticker);
@@ -2434,10 +2434,10 @@ export default function App(){
     setHoldings(p=>p.filter(h=>h.ticker!==ticker));
     if(undoRef.current)clearTimeout(undoRef.current);
     if(toastTimer.current)clearTimeout(toastTimer.current);
-    setToast({msg:`${DB[ticker]?.name||ticker} ${t.toast_removed}`,visible:true,undo:true});
+    setToast({msg:`${DB[ticker]?.name||ticker} ${tr.toast_removed}`,visible:true,undo:true});
     undoRef.current=setTimeout(()=>{
       pendingDelete.current=null;
-      setToast(t=>({...t,visible:false,undo:false}));
+      setToast(st=>({...st,visible:false,undo:false}));
     },3000);
   },[holdings,plans]);
   const undoDelete=useCallback(()=>{
@@ -2447,7 +2447,7 @@ export default function App(){
     if(undoRef.current)clearTimeout(undoRef.current);
     setHoldings(p=>{if(p.find(h=>h.ticker===ticker))return p;return[...p,snap];});
     if(planSnap)setPlans(p=>({...p,[ticker]:planSnap}));
-    setToast(t=>({...t,visible:false,undo:false}));
+    setToast(st=>({...st,visible:false,undo:false}));
   },[]);
   const updateAmount=(ticker,val)=>{
     const a=parseFloat(val);
@@ -2524,17 +2524,17 @@ export default function App(){
       `}</style>
 
       <Splash visible={splash}/>
-      {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)} t={t}/>}
+      {!disclaimerSeen&&<Disclaimer onAccept={()=>setDisclaimerSeen(true)} tr={tr}/>}
       {showProjection&&<ProjectionSheet
         holdings={holdings}
         plans={plans}
         currentScore={scores.total}
         onPlansUpdate={newPlans=>{setPlans(p=>({...p,...newPlans}));}}
         onClose={()=>setShowProjection(false)}
-        t={t}
+        tr={tr}
       />}
       {showWelcome&&<WelcomeScreen etfCount={holdings.length} onDone={()=>setShowWelcome(false)}/> }
-      {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={(hasEtfs)=>{if(hasEtfs){setOnboarding(false);setTab("scores");setShowWelcome(true);}else{setOnboarding(false);setTab("scores");}}} onToast={msg=>{if(toastTimer.current)clearTimeout(toastTimer.current);setToast({msg,visible:true,position:"top"});toastTimer.current=setTimeout(()=>setToast(t=>({...t,visible:false})),2500);}} t={t}/>}
+      {disclaimerSeen&&onboarding&&<Onboarding onAdd={addHolding} onDone={(hasEtfs)=>{if(hasEtfs){setOnboarding(false);setTab("scores");setShowWelcome(true);}else{setOnboarding(false);setTab("scores");}}} onToast={msg=>{if(toastTimer.current)clearTimeout(toastTimer.current);setToast({msg,visible:true,position:"top"});toastTimer.current=setTimeout(()=>setToast(st=>({...st,visible:false})),2500);}} tr={tr}/>}
 
       {/* Ambient */}
       <div aria-hidden="true" style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
@@ -2664,7 +2664,7 @@ export default function App(){
                   }}/>}
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"20px 4px 24px",position:"relative",zIndex:1}}>
                   <div>
-                    <div style={{fontSize:9,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:10,fontWeight:600}}>{t.score_total}</div>
+                    <div style={{fontSize:9,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:10,fontWeight:600}}>{tr.score_total}</div>
                     <div style={{display:"flex",alignItems:"baseline",gap:4}}>
                       <span style={{fontSize:58,fontWeight:800,color:g.text,lineHeight:1,letterSpacing:-2}}>{scores.total.toFixed(1)}</span>
                       <span style={{fontSize:20,color:T.text5,fontWeight:300}}>/20</span>
@@ -2683,7 +2683,7 @@ export default function App(){
                 {Object.keys(plans).length>0&&(
                   <div style={{display:"flex",justifyContent:"center",paddingBottom:16,position:"relative",zIndex:1}}>
                     <button onClick={()=>setShowProjection(true)} style={{display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,0.06)",border:`0.5px solid ${T.borderSubtle}`,borderRadius:20,padding:"6px 14px",cursor:"pointer",color:T.textSub,fontSize:11,fontWeight:500}}>
-                      <span>{t.proj_title}</span>
+                      <span>{tr.proj_title}</span>
                       <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M5.5 2.5L8 5l-2.5 2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     </button>
                   </div>
@@ -2694,22 +2694,22 @@ export default function App(){
               {/* Score rings */}
               <Glass style={{padding:"28px 16px 24px"}}>
                 <div style={{display:"flex",justifyContent:"space-around",alignItems:"flex-start"}}>
-                  <ScoreArc value={scores.geo} label={t.score_geo}/>
+                  <ScoreArc value={scores.geo} label={tr.score_geo}/>
                   <div style={{width:"0.5px",background:T.surfaceMed,alignSelf:"stretch",margin:"10px 0"}}/>
-                  <ScoreArc value={scores.sector} label={t.score_sector}/>
+                  <ScoreArc value={scores.sector} label={tr.score_sector}/>
                 </div>
               </Glass>
 
               {/* Sub-scores */}
               {holdings.length>0&&(
                 <Glass style={{padding:"18px 18px"}}>
-                  <div style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{t.about_criteria}</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:9,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{tr.about_criteria}</div>
                   <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                    <MiniBar label={t.score_geo} value={scores.geo} weight="25%"/>
-                    <MiniBar label={t.score_sector} value={scores.sector} weight="25%"/>
-                    <MiniBar label={t.score_overlap} value={scores.overlap} weight="20%"/>
-                    <MiniBar label={t.score_asset} value={scores.assetClass} weight="15%"/>
-                    <MiniBar label={t.score_currency} value={scores.currency} weight="15%"/>
+                    <MiniBar label={tr.score_geo} value={scores.geo} weight="25%"/>
+                    <MiniBar label={tr.score_sector} value={scores.sector} weight="25%"/>
+                    <MiniBar label={tr.score_overlap} value={scores.overlap} weight="20%"/>
+                    <MiniBar label={tr.score_asset} value={scores.assetClass} weight="15%"/>
+                    <MiniBar label={tr.score_currency} value={scores.currency} weight="15%"/>
                   </div>
                   {Object.keys(scores.classes).length>0&&(
                     <div style={{marginTop:18,paddingTop:16,borderTop:`0.5px solid ${T.borderFaint}`}}>
@@ -2807,8 +2807,8 @@ export default function App(){
               {!holdings.length&&(
                 <Glass style={{padding:"52px 24px",textAlign:"center"}}>
                   <div style={{fontFamily:T.fontDisplay,fontSize:44,marginBottom:16,opacity:.3}}>◎</div>
-                  <div style={{fontFamily:T.fontDisplay,fontSize:16,fontWeight:800,color:T.text,marginBottom:10}}>{t.ptf_empty_title}</div>
-                  <div style={{fontSize:13,color:T.text4,lineHeight:1.7}}>{t.misc_add_etfs}</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:16,fontWeight:800,color:T.text,marginBottom:10}}>{tr.ptf_empty_title}</div>
+                  <div style={{fontSize:13,color:T.text4,lineHeight:1.7}}>{tr.misc_add_etfs}</div>
                 </Glass>
               )}
             </div>
@@ -2825,10 +2825,10 @@ export default function App(){
                   <Glass style={{padding:"18px 18px"}}>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
                       {[
-                        {label:t.geo_zones,value:Object.keys(scores.geoMap).length,unit:""},
-                        {label:t.geo_score,value:scores.geo.toFixed(1),unit:"/20",color:sc(scores.geo).text},
-                        {label:t.geo_dev,value:((scores.geoMap["Amér. du Nord"]||0)+(["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(scores.geoMap[k]||0),0))+(scores.geoMap["Japon"]||0)).toFixed(0),unit:"%"},
-                        {label:t.geo_em,value:(["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie","Afrique du Sud","Émirats Arabes","Autres EMEA"].reduce((s,k)=>s+(scores.geoMap[k]||0),0)).toFixed(0),unit:"%"},
+                        {label:tr.geo_zones,value:Object.keys(scores.geoMap).length,unit:""},
+                        {label:tr.geo_score,value:scores.geo.toFixed(1),unit:"/20",color:sc(scores.geo).text},
+                        {label:tr.geo_dev,value:((scores.geoMap["Amér. du Nord"]||0)+(["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(scores.geoMap[k]||0),0))+(scores.geoMap["Japon"]||0)).toFixed(0),unit:"%"},
+                        {label:tr.geo_em,value:(["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie","Afrique du Sud","Émirats Arabes","Autres EMEA"].reduce((s,k)=>s+(scores.geoMap[k]||0),0)).toFixed(0),unit:"%"},
                       ].map(({label,value,unit,color})=>(
                         <div key={label} style={{background:T.surfaceFaint,borderRadius:12,padding:"12px 14px"}}>
                           <div style={{fontSize:9,color:T.text5,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
@@ -2837,9 +2837,9 @@ export default function App(){
                       ))}
                     </div>
                   </Glass>
-                  <ColorBars data={scores.geoMap} title={t.geo_detail} infoMap={GEO_INFO}/>
+                  <ColorBars data={scores.geoMap} title={tr.geo_detail} infoMap={GEO_INFO}/>
                 </>
-              ):<div style={{textAlign:"center",padding:"48px 0",color:T.text5,fontSize:13}}>{t.geo_empty}</div>}
+              ):<div style={{textAlign:"center",padding:"48px 0",color:T.text5,fontSize:13}}>{tr.geo_empty}</div>}
             </div>
           )}
           {tab==="sec"&&(
@@ -2853,10 +2853,10 @@ export default function App(){
                   <Glass style={{padding:"18px 18px"}}>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
                       {[
-                        {label:t.sec_covered,value:Object.keys(scores.secMap).length,unit:""},
-                        {label:t.sec_score,value:scores.sector.toFixed(1),unit:"/20",color:sc(scores.sector).text},
-                        {label:t.sec_dominant,value:Object.entries(scores.secMap).sort((a,b)=>b[1]-a[1])[0]?.[1].toFixed(0)||0,unit:"%"},
-                        {label:t.sec_tech,value:(scores.secMap["Technologie"]||0).toFixed(0),unit:"%",color:(scores.secMap["Technologie"]||0)>35?"#ff4d4d":undefined},
+                        {label:tr.sec_covered,value:Object.keys(scores.secMap).length,unit:""},
+                        {label:tr.sec_score,value:scores.sector.toFixed(1),unit:"/20",color:sc(scores.sector).text},
+                        {label:tr.sec_dominant,value:Object.entries(scores.secMap).sort((a,b)=>b[1]-a[1])[0]?.[1].toFixed(0)||0,unit:"%"},
+                        {label:tr.sec_tech,value:(scores.secMap["Technologie"]||0).toFixed(0),unit:"%",color:(scores.secMap["Technologie"]||0)>35?"#ff4d4d":undefined},
                       ].map(({label,value,unit,color})=>(
                         <div key={label} style={{background:T.surfaceFaint,borderRadius:12,padding:"12px 14px"}}>
                           <div style={{fontSize:9,color:T.text5,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{label}</div>
@@ -2865,9 +2865,9 @@ export default function App(){
                       ))}
                     </div>
                   </Glass>
-                  <ColorBars data={scores.secMap} title={t.sec_detail} infoMap={SECTOR_INFO}/>
+                  <ColorBars data={scores.secMap} title={tr.sec_detail} infoMap={SECTOR_INFO}/>
                 </>
-              ):<div style={{textAlign:"center",padding:"48px 0",color:T.text5,fontSize:13}}>{t.sec_empty}</div>}
+              ):<div style={{textAlign:"center",padding:"48px 0",color:T.text5,fontSize:13}}>{tr.sec_empty}</div>}
             </div>
           )}
 
@@ -2942,13 +2942,13 @@ export default function App(){
                                   <svg width="10" height="10" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#0ecb81" strokeWidth="1"/><line x1="4" y1="1" x2="4" y2="3.5" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/><line x1="3" y1="6" x2="10" y2="6" stroke="#0ecb81" strokeWidth="1" strokeLinecap="round"/></svg>
                                   <span style={{fontSize:10,color:T.text4}}>{FREQS.find(f=>f.id===plans[h.ticker].freq)?.label} · {plans[h.ticker].amount} €</span>
                                 </div>
-                                <span style={{fontSize:10,color:T.text5}}>{t.plan_next_label} <span style={{color:T.text3,fontWeight:600}}>{s.daysUntilNext}j</span></span>
+                                <span style={{fontSize:10,color:T.text5}}>{tr.plan_next_label} <span style={{color:T.text3,fontWeight:600}}>{s.daysUntilNext}j</span></span>
                               </div>
                               {/* Ligne 2 — montant investi si versements passés */}
                               {s.totalInvested>0&&(
                                 <div style={{display:"flex",alignItems:"baseline",gap:4}}>
                                   <span style={{fontSize:15,fontWeight:700,color:T.accent}}>{s.totalInvested.toLocaleString("fr-FR")} €</span>
-                                  <span style={{fontSize:10,color:T.text4}}>{t.plan_invested_label}</span>
+                                  <span style={{fontSize:10,color:T.text4}}>{tr.plan_invested_label}</span>
                                 </div>
                               )}
                             </div>
@@ -2962,7 +2962,7 @@ export default function App(){
               ):(
                 <Glass style={{padding:"40px 24px",textAlign:"center"}}>
                   <div style={{fontSize:32,marginBottom:12,opacity:.3}}>◎</div>
-                  <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text,marginBottom:8}}>{t.about_no_position}</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text,marginBottom:8}}>{tr.about_no_position}</div>
                   <div style={{fontSize:13,color:T.text4,lineHeight:1.7}}>Ajoutez vos ETF pour analyser votre portefeuille.</div>
                 </Glass>
               )}
@@ -2975,7 +2975,7 @@ export default function App(){
                       <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text}}>Ajouter un ETF</div>
                       
                     </div>
-                    <Search onAdd={(ticker,a)=>{addHolding(ticker,a);setShowAddSheet(false);setAddSheetTicker(null);}} suggestions={suggestions} initialTicker={addSheetTicker} t={t}/>
+                    <Search onAdd={(ticker,a)=>{addHolding(ticker,a);setShowAddSheet(false);setAddSheetTicker(null);}} suggestions={suggestions} initialTicker={addSheetTicker} tr={tr}/>
                   </div>
                 </Sheet>
               )}
@@ -3031,9 +3031,9 @@ export default function App(){
 
               {/* Appearance */}
               <Glass style={{padding:"18px 20px"}}> 
-                <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>{t.about_settings}</div>
+                <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>{tr.about_settings}</div>
                 <div style={{display:"flex",gap:8}}>
-                  {[{id:true,label:t.about_theme_dark,icon:"🌙",badge:null},{id:false,label:t.about_theme_light,icon:"☀️",badge:"Alpha"}].map(opt=>(
+                  {[{id:true,label:tr.about_theme_dark,icon:"🌙",badge:null},{id:false,label:tr.about_theme_light,icon:"☀️",badge:"Alpha"}].map(opt=>(
                     <button key={String(opt.id)} onClick={()=>{
                       if(!opt.id&&darkMode){
                         setLightGag(true);
@@ -3062,7 +3062,7 @@ export default function App(){
 
               {/* Language switcher */}
               <Glass style={{padding:"18px 20px"}}>
-                <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>{t.about_lang}</div>
+                <div style={{fontSize:10,fontWeight:700,color:T.textDisabled,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>{tr.about_lang}</div>
                 <div style={{display:"flex",gap:8}}>
                   {[{id:"fr",flag:"🇫🇷",label:"Français"},{id:"en",flag:"🇬🇧",label:"English"}].map(opt=>(
                     <button key={opt.id} onClick={()=>switchLang(opt.id)}
@@ -3080,8 +3080,8 @@ export default function App(){
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
                     <div style={{width:36,height:36,borderRadius:10,background:T.surfaceHover,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18}}>👋</div>
                     <div>
-                      <div style={{fontSize:13,fontWeight:600,color:T.text,marginBottom:2}}>{t.ob_replay}</div>
-                      <div style={{fontSize:11,color:T.text4}}>{t.ob_replay_sub}</div>
+                      <div style={{fontSize:13,fontWeight:600,color:T.text,marginBottom:2}}>{tr.ob_replay}</div>
+                      <div style={{fontSize:11,color:T.text4}}>{tr.ob_replay_sub}</div>
                     </div>
                   </div>
                   <button onClick={()=>{localStorage.removeItem("etf-onboarding-seen");window.location.reload();}}
@@ -3094,9 +3094,9 @@ export default function App(){
               </Glass>
               {/* Legal */}
               <Glass style={{padding:"20px"}}>
-                <div style={{fontSize:10,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>{t.about_legal}</div>
+                <div style={{fontSize:10,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>{tr.about_legal}</div>
                 <p style={{margin:"0 0 14px",fontSize:13,color:T.text4,lineHeight:1.7}}>
-                  {t.about_legal_body}
+                  {tr.about_legal_body}
                 </p>
                 <p style={{margin:0,fontSize:13,color:T.text4,lineHeight:1.7}}>
                   Tout investissement comporte un risque de perte en capital. Consultez un conseiller financier agréé avant toute décision d'investissement.
@@ -3105,9 +3105,9 @@ export default function App(){
 
               {/* Data disclaimer */}
               <Glass style={{padding:"20px"}}>
-                <div style={{fontSize:10,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>{t.about_data}</div>
+                <div style={{fontSize:10,fontWeight:700,color:T.text5,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>{tr.about_data}</div>
                 <p style={{margin:0,fontSize:13,color:T.text4,lineHeight:1.7}}>
-                  {t.about_data_body}
+                  {tr.about_data_body}
                 </p>
               </Glass>
 
@@ -3126,7 +3126,7 @@ export default function App(){
         </div></div>
       )}
       {/* Toasts */}
-      <Toast msg={toast.msg} visible={toast.visible} onUndo={toast.undo?undoDelete:null} undoLabel={t.toast_undo} position={toast.position||"bottom"}/>
+      <Toast msg={toast.msg} visible={toast.visible} onUndo={toast.undo?undoDelete:null} undoLabel={tr.toast_undo} position={toast.position||"bottom"}/>
 
 
       {/* Rec action sheet */}
@@ -3142,14 +3142,14 @@ export default function App(){
       />}
 
       {/* Bottom Tab Bar */}
-      <Tabs active={tab} onChange={setTab} highlight={holdings.length===0?["ptf"]:[]} t={t}/>
+      <Tabs active={tab} onChange={setTab} highlight={holdings.length===0?["ptf"]:[]} tr={tr}/>
 
       {/* Reset */}
       {confirmReset&&(
         <Sheet onClose={()=>setConfirmReset(false)}>
           <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))",textAlign:"center"}}>
             <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:800,color:T.text,marginBottom:8}}>Effacer le portefeuille ?</div>
-            <div style={{fontSize:13,color:T.text4,marginBottom:24,lineHeight:1.65}}>{t.about_reset_confirm}</div>
+            <div style={{fontSize:13,color:T.text4,marginBottom:24,lineHeight:1.65}}>{tr.about_reset_confirm}</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <button onClick={()=>{setHoldings([]);setConfirmReset(false);}} style={{background:"rgba(255,77,77,0.1)",border:"0.5px solid rgba(255,77,77,0.2)",borderRadius:14,padding:"15px",color:"#ff4d4d",fontSize:15,fontWeight:600,cursor:"pointer",width:"100%",fontFamily:T.fontDisplay}}>Effacer tout</button>
               <button onClick={()=>setConfirmReset(false)} style={{background:T.surface4,border:`0.5px solid ${T.borderSubtle}`,borderRadius:14,padding:"15px",color:T.text3,fontSize:15,cursor:"pointer",width:"100%"}}>Annuler</button>
