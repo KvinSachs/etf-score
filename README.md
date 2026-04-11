@@ -2,6 +2,14 @@
 
 **ETF portfolio diversification analyzer with expert multi-criteria scoring and DCA optimization.**
 
+---
+
+## Built with AI — a designer's perspective
+
+This project is a showcase of what a product designer can ship end-to-end using AI-assisted development. No engineering background required — just design thinking, product sense, and the ability to iterate fast with the right tools.
+
+Every feature, interaction, and visual detail was designed and built iteratively through conversation with Claude (Anthropic). From the scoring algorithm to the DCA optimization engine, the goal was to explore how far a designer can push product quality without a traditional dev team.
+
 Built with Claude (Anthropic) — transparent about the process, fully functional in production.
 
 > ⚠️ For informational purposes only. Not investment advice.
