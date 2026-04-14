@@ -772,7 +772,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
   const g0=sc(currentScore), g1=sc(score1y), g5=sc(score5y);
 
   // Compute optimization once
-  const optResult=useMemo(()=>optimizeDCA(holdings,plans,5),[]);
+  const optResult=useMemo(()=>optimizeDCA(holdings,plans,5),[holdings,plans]);
 
   const ScoreCol=({label,value,g,highlight})=>(
     <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:6,
