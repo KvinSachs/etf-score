@@ -904,8 +904,14 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               </div>
             </div>
 
-            {/* Per-ETF changes */}
-            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:16}}>
+            {/* Per-ETF changes — side by side table */}
+            <div style={{marginBottom:16}}>
+              {/* Header */}
+              <div style={{display:"flex",alignItems:"center",gap:8,padding:"6px 12px",marginBottom:4}}>
+                <div style={{flex:1}}/>
+                <div style={{width:64,textAlign:"center",fontSize:9,color:T.text5,letterSpacing:1.5,textTransform:"uppercase",fontWeight:600}}>Actuel</div>
+                <div style={{width:64,textAlign:"center",fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",fontWeight:600}}>Optimisé</div>
+              </div>
               {holdings.map(h=>{
                 const before=plans[h.ticker];
                 const after=optResult.optimizedPlans[h.ticker];
@@ -916,20 +922,22 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
                 const changed=beforeAmt!==afterAmt;
                 const isNew=!before&&after;
                 const isStopped=before&&!after;
+                const highlight=changed||isNew||isStopped;
                 return(
-                  <div key={h.ticker} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,background:changed||isNew||isStopped?T.surfaceFaint:"transparent",border:`0.5px solid ${changed||isNew||isStopped?T.borderSubtle:"transparent"}`}}>
+                  <div key={h.ticker} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,background:highlight?T.surfaceFaint:"transparent",border:`0.5px solid ${highlight?T.borderSubtle:"transparent"}`,marginBottom:4}}>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:12,color:T.text,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.name}</div>
                       <div style={{fontSize:10,color:T.text5,marginTop:1}}>{freqLabel}</div>
                     </div>
-                    <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-                      <span style={{fontSize:12,color:T.text4}}>{beforeAmt>0?`${beforeAmt} €`:"—"}</span>
-                      {(changed||isNew||isStopped)&&<span style={{fontSize:10,color:T.text5}}>→</span>}
-                      {(changed||isNew||isStopped)&&(
-                        <span style={{fontSize:12,fontWeight:700,color:afterAmt>beforeAmt?T.accent:afterAmt===0?"#ff4d4d":"#ff9500"}}>
-                          {afterAmt>0?`${afterAmt} €`:"0 €"}
-                        </span>
-                      )}
+                    {/* Actuel */}
+                    <div style={{width:64,textAlign:"center",flexShrink:0}}>
+                      <span style={{fontSize:12,color:T.text4,fontWeight:500}}>{beforeAmt>0?`${beforeAmt} €`:"—"}</span>
+                    </div>
+                    {/* Optimisé */}
+                    <div style={{width:64,textAlign:"center",flexShrink:0}}>
+                      <span style={{fontSize:12,fontWeight:700,color:!highlight?T.text4:afterAmt>beforeAmt?T.accent:afterAmt===0?"#ff4d4d":"#ff9500"}}>
+                        {afterAmt>0?`${afterAmt} €`:"—"}
+                      </span>
                     </div>
                   </div>
                 );
