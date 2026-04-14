@@ -867,8 +867,9 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
           // Plan is good only if: optimizer can't improve much AND score doesn't drop vs today
           const noGainFromOptimizer = optResult.score5yAfter-optResult.score5yBefore<0.5;
           const scoreDegrading = score5y < currentScore - 0.5;
+          const heavyDegradation = currentScore - score5y > 2;
           const isBalanced = noGainFromOptimizer && !scoreDegrading;
-          const isAssumedConcentration = noGainFromOptimizer && scoreDegrading;
+          // Show rebalancing scenario if score degrades significantly, even if optimizer gain is small
           return isBalanced?(
           <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(14,203,129,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -879,20 +880,14 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               <div style={{fontSize:11,color:T.text4,marginTop:3,lineHeight:1.5,fontFamily:T.fontText}}>La répartition actuelle de vos versements est déjà optimale à 5 ans. Rien à modifier.</div>
             </div>
           </div>
-          ):isAssumedConcentration?(
-          <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.2)",display:"flex",alignItems:"center",gap:12}}>
-            <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,149,0,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3.5v5M8 10.5v1" stroke="#ff9500" strokeWidth="1.5" strokeLinecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#ff9500" strokeWidth="1"/></svg>
-            </div>
-            <div>
-              <div style={{fontSize:13,fontWeight:600,color:"#ff9500",fontFamily:T.fontDisplay}}>Concentration assumée</div>
-              <div style={{fontSize:11,color:T.text4,marginTop:3,lineHeight:1.5,fontFamily:T.fontText}}>Vos versements reflètent des choix délibérés. L'optimizer ne peut pas améliorer significativement sans remettre en question vos pondérations.</div>
-            </div>
-          </div>
           ):(
           <div style={{marginTop:8}}>
             <div style={{height:"0.5px",background:T.borderFaint,margin:"8px 0 20px"}}/>
-            <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>Scénario optimal à 5 ans</div>
+            {scoreDegrading&&<div style={{padding:"12px 14px",borderRadius:10,background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.15)",marginBottom:16}}>
+              <div style={{fontSize:12,fontWeight:600,color:"#ff9500",marginBottom:4}}>Votre score va baisser de {(currentScore-score5y).toFixed(1)} points</div>
+              <div style={{fontSize:11,color:T.text4,lineHeight:1.5}}>Voici ce que donnerait un rééquilibrage de vos versements pour limiter cette dégradation.</div>
+            </div>}
+            <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>Scénario de rééquilibrage</div>
 
             {/* Score comparison */}
             <div style={{display:"flex",gap:8,marginBottom:16}}>
