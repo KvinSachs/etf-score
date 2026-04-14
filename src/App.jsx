@@ -390,7 +390,7 @@ function buildPositive(scores,holdings){
 function buildRecs(scores,holdings,total){
   const recs=[],{geoMap,secMap,classes,currencies}=scores,tickers=new Set(holdings.map(h=>h.ticker));
   const bondPct=classes["bond"]||0,rePct=classes["real_estate"]||0,commPct=classes["commodity"]||0,equityPct=classes["equity"]||0;
-  const usW=geoMap["Amér. du Nord"]||0,emW=["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie"].reduce((s,k)=>s+(geoMap[k]||0),0);
+  const usW=geoMap["Amér. du Nord"]||0,emW=["Émergents","Chine","Inde","Corée du Sud","Taiwan","Brésil","Autres EM","Autres Asie","Afrique du Sud","Émirats Arabes","Égypte","Qatar","Koweït","Nigeria","Autres EMEA"].reduce((s,k)=>s+(geoMap[k]||0),0);
   const devW=usW+(["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(geoMap[k]||0),0))+(geoMap["Japon"]||0);
   const tW=secMap["Technologie"]||0,usdW=currencies["USD"]||0;
   const commPctR=commPct,rePctR=rePct,bondPctR=bondPct,equityPctR=equityPct;
@@ -467,7 +467,7 @@ const CAT={
 function buildSuggestions(scores,holdings){
   const keys=[],{classes,geoMap,currencies}=scores,tickers=new Set(holdings.map(h=>h.ticker));
   const bondPct=classes["bond"]||0,rePct=classes["real_estate"]||0,commPct=classes["commodity"]||0,equityPct=classes["equity"]||0;
-  const usW=geoMap["Amér. du Nord"]||0,emW=["Émergents","Chine","Inde","Corée du Sud","Taiwan","Autres EM","Autres Asie"].reduce((s,k)=>s+(geoMap[k]||0),0);
+  const usW=geoMap["Amér. du Nord"]||0,emW=["Émergents","Chine","Inde","Corée du Sud","Taiwan","Brésil","Autres EM","Autres Asie","Afrique du Sud","Émirats Arabes","Égypte","Qatar","Koweït","Nigeria","Autres EMEA"].reduce((s,k)=>s+(geoMap[k]||0),0);
   const euW=["Europe","Royaume-Uni","France","Suisse","Allemagne","Pays-Bas","Autres EU"].reduce((s,k)=>s+(geoMap[k]||0),0);
   const usdW=currencies["USD"]||0;
   if(!holdings.length){keys.push("world","bonds","gold");return keys.map(k=>({key:k,...CAT[k]}));}
