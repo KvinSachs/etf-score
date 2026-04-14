@@ -369,7 +369,26 @@ function optimizeDCA(holdings, plans, yearsAhead=5){
   const score5yBefore=computeScores(projectPortfolio(holdings,plans,yearsAhead)).total;
   const score5yAfter=computeScores(projectPortfolio(holdings,optimizedPlans,yearsAhead)).total;
 
-  return{optimizedPlans,score5yBefore,score5yAfter,totalMonthlyBudget,defaultFreq};
+  // 7. Detect overweights in the 5y projection with current plans
+  const proj5y=projectPortfolio(holdings,plans,yearsAhead);
+  const proj5yTotal=proj5y.reduce((s,h)=>s+h.amount,0);
+  const overweights=[];
+  if(proj5yTotal>0){
+    // Per-ETF concentration
+    proj5y.forEach(h=>{
+      const pct=h.amount/proj5yTotal;
+      if(pct>0.60) overweights.push({type:"etf",ticker:h.ticker,name:h.name,pct:Math.round(pct*100)});
+    });
+    // US concentration
+    const US_TICKERS_OW=new Set(["SPY","VOO","CSP1","500","ESE","QQQ","PANX","CSPX","PCPUS","PUST","RS2K","BNP","BNPP"]);
+    const usPct=proj5y.filter(h=>US_TICKERS_OW.has(h.ticker)||(DB[h.ticker]?.geo?.["Amér. du Nord"]||0)>80).reduce((s,h)=>s+h.amount,0)/proj5yTotal;
+    if(usPct>0.75) overweights.push({type:"geo",zone:"Amér. du Nord",pct:Math.round(usPct*100),threshold:75});
+    // Equity concentration
+    const eqPct=proj5y.filter(h=>DB[h.ticker]?.assetClass==="equity").reduce((s,h)=>s+h.amount,0)/proj5yTotal;
+    if(eqPct>0.90) overweights.push({type:"asset",cls:"Actions",pct:Math.round(eqPct*100),threshold:90});
+  }
+
+  return{optimizedPlans,score5yBefore,score5yAfter,totalMonthlyBudget,defaultFreq,overweights};
 }
 
 /* ─── RECS & POSITIVE (identical logic) ─────────────────────────────────────── */
@@ -861,6 +880,22 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
           </div>
           <div style={{fontSize:11,color:T.text4,marginTop:4}}>{(annualDCA*5).toLocaleString("fr-FR")} € versés sur 5 ans</div>
         </div>
+
+        {/* Overweight alerts */}
+        {optResult?.overweights?.length>0&&(
+          <div style={{marginBottom:8}}>
+            {optResult.overweights.map((ow,i)=>(
+              <div key={i} style={{padding:"12px 14px",borderRadius:12,background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.15)",marginBottom:8,display:"flex",alignItems:"flex-start",gap:10}}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{flexShrink:0,marginTop:1}}><path d="M8 3.5v5M8 10.5v1" stroke="#ff9500" strokeWidth="1.5" strokeLinecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#ff9500" strokeWidth="1"/></svg>
+                <div style={{fontSize:11,color:T.text4,lineHeight:1.5}}>
+                  {ow.type==="etf"&&<><strong style={{color:"#ff9500"}}>{ow.name}</strong> représentera <strong style={{color:"#ff9500"}}>{ow.pct}%</strong> de votre portefeuille dans 5 ans — réduisez ses versements pour rééquilibrer.</>}
+                  {ow.type==="geo"&&<>Votre exposition <strong style={{color:"#ff9500"}}>{ow.zone}</strong> atteindra <strong style={{color:"#ff9500"}}>{ow.pct}%</strong> dans 5 ans (seuil recommandé : {ow.threshold}%).</>}
+                  {ow.type==="asset"&&<>Votre exposition <strong style={{color:"#ff9500"}}>{ow.cls}</strong> atteindra <strong style={{color:"#ff9500"}}>{ow.pct}%</strong> dans 5 ans — envisagez d'ajouter obligations ou or.</>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Optimization section */}
         {optResult&&!applied&&(()=>{
