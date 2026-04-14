@@ -873,9 +873,12 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
           });
           const scoreDegrading = score5y < currentScore - 0.5;
           const heavyDegradation = currentScore - score5y > 2;
-          // scoreDegrading always takes priority — if score drops > 0.5pt, always show rebalancing
-          // Only show "balanced" if score is stable AND (no optimizer gain OR no plan changes)
+          // Three states:
+          // 1. isBalanced: score stable, nothing to do
+          // 2. isStuck: score degrades but optimizer can't change plans (user's deliberate concentration)
+          // 3. Otherwise: optimizer found improvements to propose
           const isBalanced = !scoreDegrading && (noGainFromOptimizer || noChangesInPlan);
+          const isStuck = scoreDegrading && noChangesInPlan;
           // Show rebalancing scenario if score degrades significantly, even if optimizer gain is small
           return isBalanced?(
           <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:12}}>
@@ -887,14 +890,26 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               <div style={{fontSize:11,color:T.text4,marginTop:3,lineHeight:1.5,fontFamily:T.fontText}}>La répartition actuelle de vos versements est déjà optimale à 5 ans. Rien à modifier.</div>
             </div>
           </div>
+          ):isStuck?(
+          <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.2)"}}>
+            <div style={{fontSize:13,fontWeight:600,color:"#ff9500",fontFamily:T.fontDisplay,marginBottom:8}}>
+              Votre score va baisser de {(currentScore-score5y).toFixed(1)} points
+            </div>
+            <div style={{fontSize:11,color:T.text4,lineHeight:1.6,fontFamily:T.fontText,marginBottom:12}}>
+              Vos versements actuels accentuent la concentration de votre portefeuille. L'optimizer ne peut pas rééquilibrer sans modifier vos choix de pondération.
+            </div>
+            <div style={{fontSize:11,color:T.text4,lineHeight:1.6,fontFamily:T.fontText}}>
+              Pour limiter cette dégradation, envisagez d'ajouter des versements sur des classes d'actifs absentes — <strong style={{color:T.text3}}>obligations, or ou immobilier</strong>.
+            </div>
+          </div>
           ):(
           <div style={{marginTop:8}}>
             <div style={{height:"0.5px",background:T.borderFaint,margin:"8px 0 20px"}}/>
             {scoreDegrading&&<div style={{padding:"12px 14px",borderRadius:10,background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.15)",marginBottom:16}}>
-              <div style={{fontSize:12,fontWeight:600,color:"#ff9500",marginBottom:4}}>Votre score va baisser de {(currentScore-score5y).toFixed(1)} points</div>
-              <div style={{fontSize:11,color:T.text4,lineHeight:1.5}}>Voici ce que donnerait un rééquilibrage de vos versements pour limiter cette dégradation.</div>
+              <div style={{fontSize:12,fontWeight:600,color:"#ff9500",marginBottom:4}}>Score en baisse de {(currentScore-score5y).toFixed(1)} points sans action</div>
+              <div style={{fontSize:11,color:T.text4,lineHeight:1.5}}>Ce scénario montre comment redistribuer vos versements pour <strong style={{color:T.text3}}>limiter cette dégradation</strong> — votre score passerait à {optResult.score5yAfter.toFixed(1)}/20 au lieu de {score5y.toFixed(1)}/20.</div>
             </div>}
-            <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>Scénario de rééquilibrage</div>
+            <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>{scoreDegrading?"Scénario de stabilisation":"Scénario optimal à 5 ans"}</div>
 
             {/* Score comparison */}
             <div style={{display:"flex",gap:8,marginBottom:16}}>
@@ -905,7 +920,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               </div>
               <div style={{display:"flex",alignItems:"center",color:T.accent,fontSize:16}}>→</div>
               <div style={{flex:1,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.25)",borderRadius:12,padding:"12px",textAlign:"center"}}>
-                <div style={{fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>Optimisé</div>
+                <div style={{fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{scoreDegrading?"Stabilisé":"Optimisé"}</div>
                 <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:800,color:sc(optResult.score5yAfter).text,letterSpacing:-1}}>{optResult.score5yAfter.toFixed(1)}</div>
                 <div style={{fontSize:9,color:T.text5}}>/20</div>
               </div>
@@ -917,7 +932,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               <div style={{display:"flex",alignItems:"center",gap:8,padding:"6px 12px",marginBottom:4}}>
                 <div style={{flex:1}}/>
                 <div style={{width:64,textAlign:"center",fontSize:9,color:T.text5,letterSpacing:1.5,textTransform:"uppercase",fontWeight:600}}>Actuel</div>
-                <div style={{width:64,textAlign:"center",fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",fontWeight:600}}>Optimisé</div>
+                <div style={{width:64,textAlign:"center",fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",fontWeight:600}}>{scoreDegrading?"Stabilisé":"Optimisé"}</div>
               </div>
               {holdings.map(h=>{
                 const before=plans[h.ticker];
@@ -958,7 +973,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
 
             {/* CTA */}
             <button onClick={()=>setShowConfirm(true)} style={{width:"100%",background:T.accent,border:"none",borderRadius:14,padding:"14px",color:"#000",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:T.fontDisplay}}>
-                Appliquer ce scénario
+                {scoreDegrading?"Appliquer le scénario de stabilisation":"Appliquer ce scénario"}
               </button>
             {showConfirm&&createPortal(
               <div onClick={()=>setShowConfirm(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999999,padding:"0 24px"}}>
