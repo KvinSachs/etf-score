@@ -873,9 +873,9 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
           });
           const scoreDegrading = score5y < currentScore - 0.5;
           const heavyDegradation = currentScore - score5y > 2;
-          // noChangesInPlan always shows balanced (no point showing identical scenario)
-          // noGainFromOptimizer shows balanced only if score not degrading
-          const isBalanced = noChangesInPlan || (noGainFromOptimizer && !scoreDegrading);
+          // scoreDegrading always takes priority — if score drops > 0.5pt, always show rebalancing
+          // Only show "balanced" if score is stable AND (no optimizer gain OR no plan changes)
+          const isBalanced = !scoreDegrading && (noGainFromOptimizer || noChangesInPlan);
           // Show rebalancing scenario if score degrades significantly, even if optimizer gain is small
           return isBalanced?(
           <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:12}}>
