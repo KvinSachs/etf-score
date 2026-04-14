@@ -662,16 +662,14 @@ const SECTOR_INFO={"Technologie":"Logiciels, semi-conducteurs, cloud.","Finance"
 const GEO_INFO={"Amér. du Nord":"États-Unis et Canada — marchés les plus profonds.","Europe":"UE + UK, Suisse — économies matures.","Japon":"3ème économie mondiale.","Asie-Pac.":"Australie, NZ, Singapour.","Émergents":"Chine, Inde, Brésil — fort potentiel.","Chine":"2ème économie, risque réglementaire.","Inde":"Fort potentiel de croissance.","Taiwan":"Leader semi-conducteurs (TSMC).","Corée du Sud":"Samsung, Hyundai.","Brésil":"Plus grande économie d'Amérique latine.","Autres EM":"Mexique, Indonésie, Thaïlande…","Royaume-Uni":"Finance, énergie post-Brexit.","France":"Luxe, énergie, aéronautique.","Suisse":"Pharma et luxe — très défensif.","Allemagne":"Industrie automobile.","Pays-Bas":"ASML, logistique.","Autres EU":"Espagne, Italie, Suède…","Australie":"Matières premières.","Singapour":"Hub financier asiatique.","Autres Asie":"Marchés émergents asiatiques.","Global":"Exposition mondiale.","Autres":"Autres régions.","Afrique du Sud":"Plus grande économie d'Afrique.","Émirats Arabes":"Hub financier du Moyen-Orient.","Égypte":"Marché émergent d'Afrique du Nord.","Qatar":"Énergie et finance.","Koweït":"Marché pétrolier du Golfe.","Nigeria":"Plus grande économie d'Afrique subsaharienne.","Autres EMEA":"Autres marchés émergents Europe-Afrique-Moyen-Orient."};
 
 function InfoModal({label,text,onClose}){
-  useEffect(()=>{const f=e=>{if(e.key==="Escape")onClose();};document.addEventListener("keydown",f);return()=>document.removeEventListener("keydown",f);},[onClose]);
-  return createPortal(
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:T.bgOverlay,backdropFilter:"blur(20px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999,padding:"0 16px 32px"}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:T.bgElevated,backdropFilter:"blur(40px)",border:`0.5px solid ${T.border}`,borderRadius:"24px 24px 0 0",padding:"12px 20px 24px",width:"100%",maxWidth:430,minHeight:"50vh",animation:"up .28s cubic-bezier(.16,1,.3,1)",fontFamily:T.fontText}}>
-        <div style={{display:"flex",justifyContent:"center",marginBottom:16}}><div style={{width:36,height:4,borderRadius:2,background:T.surfaceActive}}/></div>
+  return(
+    <Sheet onClose={onClose}>
+      <div data-sheet-scroll style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",overscrollBehavior:"none",padding:"8px 20px calc(40px + env(safe-area-inset-bottom, 0px))"}}>
         <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text,marginBottom:10}}>{label}</div>
         <p style={{margin:0,fontSize:13,color:T.text3,lineHeight:1.7}}>{text}</p>
       </div>
-    </div>
-  , document.body);
+    </Sheet>
+  );
 }
 function IBtn({label,text}){const[s,ss]=useState(false);return(<><button onClick={()=>ss(true)} style={{background:"none",border:"none",cursor:"pointer",padding:"0 0 0 5px",display:"inline-flex",alignItems:"center",opacity:.5}}><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" stroke={T.text3} strokeWidth="1"/><text x="6" y="9.5" textAnchor="middle" fill={T.text2} fontSize="7.5" fontFamily="system-ui" fontWeight="600">i</text></svg></button>{s&&<InfoModal label={label} text={text} onClose={()=>ss(false)}/>}</>);}
 
@@ -865,7 +863,12 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
         </div>
 
         {/* Optimization section */}
-        {optResult&&!applied&&(optResult.score5yAfter-optResult.score5yBefore<0.5?(
+        {optResult&&!applied&&(()=>{
+          // Plan is good only if: optimizer can't improve much AND score doesn't drop vs today
+          const noGainFromOptimizer = optResult.score5yAfter-optResult.score5yBefore<0.5;
+          const scoreDegrading = score5y < currentScore - 0.5;
+          const isBalanced = noGainFromOptimizer && !scoreDegrading;
+          return isBalanced?(
           <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(14,203,129,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#0ecb81" strokeWidth="1"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -875,7 +878,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               <div style={{fontSize:11,color:T.text4,marginTop:3,lineHeight:1.5,fontFamily:T.fontText}}>La répartition actuelle de vos versements est déjà optimale à 5 ans. Rien à modifier.</div>
             </div>
           </div>
-        ):(
+          ):(
           <div style={{marginTop:8}}>
             <div style={{height:"0.5px",background:T.borderFaint,margin:"8px 0 20px"}}/>
             <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>Scénario optimal à 5 ans</div>
@@ -963,7 +966,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               document.body
             )}
           </div>
-        ))}
+        )})()}
         {applied&&(
           <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:10}}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#0ecb81" strokeWidth="1"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -2472,7 +2475,7 @@ export default function App(){
                     <div style={{fontSize:11,color:T.text5,marginTop:6}}>{holdings.length} position{holdings.length>1?"s":""}</div>
                   </div>
                 </div>
-                {Object.keys(plans).length>0&&(
+                {Object.values(plans).some(p=>p?.amount>0)&&(
                   <div style={{display:"flex",justifyContent:"center",paddingBottom:16,position:"relative",zIndex:1}}>
                     <button onClick={()=>setShowProjection(true)} style={{display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,0.06)",border:`0.5px solid ${T.borderSubtle}`,borderRadius:20,padding:"6px 14px",cursor:"pointer",color:T.textSub,fontSize:11,fontWeight:500}}>
                       <span>Projection DCA</span>
