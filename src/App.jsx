@@ -1057,20 +1057,34 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
                 const isNew=!before&&after;
                 const isStopped=before&&!after;
                 const highlight=changed||isNew||isStopped;
+                // Contextual message explaining why
+                const msg = !highlight ? null
+                  : afterAmt===0 ? "Stoppez temporairement pour réduire la pondération"
+                  : beforeAmt===0 ? "Démarrez des versements pour rééquilibrer"
+                  : afterAmt<beforeAmt ? `Réduisez pour limiter la surpondération (-${beforeAmt-afterAmt} €)`
+                  : `Augmentez pour rééquilibrer (+${afterAmt-beforeAmt} €)`;
+
                 return(
-                  <div key={h.ticker} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,background:highlight?T.surfaceFaint:"transparent",border:`0.5px solid ${highlight?T.borderSubtle:"transparent"}`,marginBottom:4}}>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:12,color:T.text,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.name}</div>
-                      <div style={{fontSize:10,color:T.text5,marginTop:1}}>{freqLabel}</div>
+                  <div key={h.ticker} style={{marginBottom:4}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,padding:highlight?"10px 12px 6px 12px":"10px 12px",borderRadius:highlight?`10px 10px 0 0`:"10px",background:highlight?T.surfaceFaint:"transparent",border:`0.5px solid ${highlight?T.borderSubtle:"transparent"}`}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:12,color:T.text,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.name}</div>
+                        <div style={{fontSize:10,color:T.text5,marginTop:1}}>{freqLabel}</div>
+                      </div>
+                      <div style={{width:64,textAlign:"center",flexShrink:0}}>
+                        <span style={{fontSize:12,color:T.text4,fontWeight:500}}>{beforeAmt>0?`${beforeAmt} €`:"—"}</span>
+                      </div>
+                      <div style={{width:64,textAlign:"center",flexShrink:0}}>
+                        <span style={{fontSize:12,fontWeight:700,color:!highlight?T.text4:afterAmt>beforeAmt?T.accent:afterAmt===0?"#ff4d4d":"#ff9500"}}>
+                          {afterAmt>0?`${afterAmt} €`:"—"}
+                        </span>
+                      </div>
                     </div>
-                    <div style={{width:64,textAlign:"center",flexShrink:0}}>
-                      <span style={{fontSize:12,color:T.text4,fontWeight:500}}>{beforeAmt>0?`${beforeAmt} €`:"—"}</span>
-                    </div>
-                    <div style={{width:64,textAlign:"center",flexShrink:0}}>
-                      <span style={{fontSize:12,fontWeight:700,color:!highlight?T.text4:afterAmt>beforeAmt?T.accent:afterAmt===0?"#ff4d4d":"#ff9500"}}>
-                        {afterAmt>0?`${afterAmt} €`:"—"}
-                      </span>
-                    </div>
+                    {msg&&(
+                      <div style={{padding:"6px 12px 10px",background:T.surfaceFaint,borderRadius:"0 0 10px 10px",borderTop:`0.5px solid ${T.borderFaint}`,border:`0.5px solid ${T.borderSubtle}`,borderTopColor:"transparent"}}>
+                        <span style={{fontSize:10,color:T.text4,fontStyle:"italic",lineHeight:1.4}}>{msg}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
