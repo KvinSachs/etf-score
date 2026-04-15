@@ -879,9 +879,10 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
             const after=optResult.optimizedPlans[h.ticker]?.amount||0;
             return before===after;
           });
+          const noScoreGain = optResult.score5yAfter-optResult.score5yBefore<0.5;
           const scoreDegrading = score5y < currentScore - 0.5;
-          const hasOverweights = optResult?.overweights?.length>0;
-          const isBalanced = !scoreDegrading && (noChangesInPlan || optResult.score5yAfter-optResult.score5yBefore<0.5);
+          // Balanced if: no meaningful changes AND no score degradation
+          const isBalanced = (noChangesInPlan || noScoreGain) && !scoreDegrading;
 
           return isBalanced&&!hasOverweights?(
             <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:12}}>
