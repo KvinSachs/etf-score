@@ -280,8 +280,13 @@ function optimizeDCA(holdings, plans, yearsAhead=5){
   const EMERGING_TICKERS=new Set(["PAEEM","EIMI","PAEMF","XMEM","LYMEM","SPYM"]);
   const US_TICKERS=new Set(["SPY","VOO","CSP1","500","ESE","QQQ","PANX","CSPX","PCPUS","PUST","RS2K"]);
 
+  // Compute current projected portfolio concentrations to detect overweights
+  const currentProj=projectPortfolio(holdings,plans,yearsAhead);
+  const currentProjTotal=currentProj.reduce((s,h)=>s+h.amount,0)||1;
+  const currentUsPct=currentProj.filter(h=>US_TICKERS.has(h.ticker)).reduce((s,h)=>s+h.amount,0)/currentProjTotal;
+  const currentEmPct=currentProj.filter(h=>EMERGING_TICKERS.has(h.ticker)).reduce((s,h)=>s+h.amount,0)/currentProjTotal;
+
   const violatesConstraints=(w)=>{
-    // Build projected portfolio with these weights
     const simPlans2={};
     allTickers.forEach(t=>{
       const freq=plans[t]?.freq||defaultFreq;
@@ -301,11 +306,19 @@ function optimizeDCA(holdings, plans, yearsAhead=5){
       if((classTotals[cls]||0)/projTotal>cap) return true;
     }
 
-    // Check geographic caps
+    // Geographic caps — in stabilization mode, only block moves that INCREASE existing overweight
     const emTotal=proj.filter(h=>EMERGING_TICKERS.has(h.ticker)).reduce((s,h)=>s+h.amount,0);
-    if(emTotal/projTotal>GEO_CAPS.emerging) return true;
+    const newEmPct=emTotal/projTotal;
+    if(newEmPct>GEO_CAPS.emerging) return true;
+
     const usTotal=proj.filter(h=>US_TICKERS.has(h.ticker)).reduce((s,h)=>s+h.amount,0);
-    if(usTotal/projTotal>GEO_CAPS.us) return true;
+    const newUsPct=usTotal/projTotal;
+    // If already over cap, only block moves that increase US further
+    if(currentUsPct>GEO_CAPS.us){
+      if(newUsPct>currentUsPct+0.01) return true;
+    } else {
+      if(newUsPct>GEO_CAPS.us) return true;
+    }
 
     return false;
   };
@@ -369,7 +382,26 @@ function optimizeDCA(holdings, plans, yearsAhead=5){
   const score5yBefore=computeScores(projectPortfolio(holdings,plans,yearsAhead)).total;
   const score5yAfter=computeScores(projectPortfolio(holdings,optimizedPlans,yearsAhead)).total;
 
-  return{optimizedPlans,score5yBefore,score5yAfter,totalMonthlyBudget,defaultFreq};
+  // 7. Detect overweights in the 5y projection with current plans
+  const proj5y=projectPortfolio(holdings,plans,yearsAhead);
+  const proj5yTotal=proj5y.reduce((s,h)=>s+h.amount,0);
+  const overweights=[];
+  if(proj5yTotal>0){
+    // Per-ETF concentration
+    proj5y.forEach(h=>{
+      const pct=h.amount/proj5yTotal;
+      if(pct>0.60) overweights.push({type:"etf",ticker:h.ticker,name:h.name,pct:Math.round(pct*100)});
+    });
+    // US concentration
+    const US_TICKERS_OW=new Set(["SPY","VOO","CSP1","500","ESE","QQQ","PANX","CSPX","PCPUS","PUST","RS2K","BNP","BNPP"]);
+    const usPct=proj5y.filter(h=>US_TICKERS_OW.has(h.ticker)||(DB[h.ticker]?.geo?.["Amér. du Nord"]||0)>80).reduce((s,h)=>s+h.amount,0)/proj5yTotal;
+    if(usPct>0.75) overweights.push({type:"geo",zone:"Amér. du Nord",pct:Math.round(usPct*100),threshold:75});
+    // Equity concentration
+    const eqPct=proj5y.filter(h=>DB[h.ticker]?.assetClass==="equity").reduce((s,h)=>s+h.amount,0)/proj5yTotal;
+    if(eqPct>0.90) overweights.push({type:"asset",cls:"Actions",pct:Math.round(eqPct*100),threshold:90});
+  }
+
+  return{optimizedPlans,score5yBefore,score5yAfter,totalMonthlyBudget,defaultFreq,overweights};
 }
 
 /* ─── RECS & POSITIVE (identical logic) ─────────────────────────────────────── */
@@ -806,29 +838,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
           <ScoreCol label="Dans 5 ans" value={score5y} g={g5} highlight/>
         </div>
 
-        {/* Delta indicator */}
-        {score5y>currentScore&&(
-          <div style={{background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",borderRadius:14,padding:"14px 16px",marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(14,203,129,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 11V3M3.5 6.5L7 3l3.5 3.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </div>
-            <div>
-              <div style={{fontSize:13,fontWeight:600,color:T.accent}}>+{(score5y-currentScore).toFixed(1)} points en 5 ans</div>
-              <div style={{fontSize:11,color:T.text4,marginTop:2}}>Votre DCA améliore progressivement l'équilibre.</div>
-            </div>
-          </div>
-        )}
-        {score5y<=currentScore&&(
-          <div style={{background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.2)",borderRadius:14,padding:"14px 16px",marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,149,0,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 3v8M3.5 7.5L7 11l3.5-3.5" stroke="#ff9500" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </div>
-            <div>
-              <div style={{fontSize:13,fontWeight:600,color:"#ff9500"}}>Score stable ou en baisse</div>
-              <div style={{fontSize:11,color:T.text4,marginTop:2}}>Votre DCA accentue les concentrations existantes.</div>
-            </div>
-          </div>
-        )}
+
 
         {/* Per-ETF projection */}
         <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>Composition dans 5 ans</div>
@@ -864,51 +874,30 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
 
         {/* Optimization section */}
         {optResult&&!applied&&(()=>{
-          // Plan is good only if: optimizer can't improve much AND score doesn't drop vs today
-          const noGainFromOptimizer = optResult.score5yAfter-optResult.score5yBefore<0.5;
           const noChangesInPlan = holdings.every(h=>{
             const before=plans[h.ticker]?.amount||0;
             const after=optResult.optimizedPlans[h.ticker]?.amount||0;
             return before===after;
           });
+          const noScoreGain = optResult.score5yAfter-optResult.score5yBefore<0.5;
           const scoreDegrading = score5y < currentScore - 0.5;
-          const heavyDegradation = currentScore - score5y > 2;
-          // Three states:
-          // 1. isBalanced: score stable, nothing to do
-          // 2. isStuck: score degrades but optimizer can't change plans (user's deliberate concentration)
-          // 3. Otherwise: optimizer found improvements to propose
-          const isBalanced = !scoreDegrading && (noGainFromOptimizer || noChangesInPlan);
-          const isStuck = scoreDegrading && noChangesInPlan;
-          // Show rebalancing scenario if score degrades significantly, even if optimizer gain is small
-          return isBalanced?(
-          <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:12}}>
-            <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(14,203,129,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#0ecb81" strokeWidth="1"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          const hasOverweights = optResult?.overweights?.length>0;
+          // Balanced only if: no degradation AND no overweights AND (no changes or no gain)
+          const isBalanced = !scoreDegrading && !hasOverweights && (noChangesInPlan || noScoreGain);
+
+          return isBalanced&&!hasOverweights?(
+            <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:12}}>
+              <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(14,203,129,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#0ecb81" strokeWidth="1"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <div>
+                <div style={{fontSize:13,fontWeight:600,color:T.accent,fontFamily:T.fontDisplay}}>Votre plan est bien équilibré</div>
+                <div style={{fontSize:11,color:T.text4,marginTop:3,lineHeight:1.5,fontFamily:T.fontText}}>La répartition actuelle de vos versements est déjà optimale à 5 ans.</div>
+              </div>
             </div>
-            <div>
-              <div style={{fontSize:13,fontWeight:600,color:T.accent,fontFamily:T.fontDisplay}}>Votre plan est bien équilibré</div>
-              <div style={{fontSize:11,color:T.text4,marginTop:3,lineHeight:1.5,fontFamily:T.fontText}}>La répartition actuelle de vos versements est déjà optimale à 5 ans. Rien à modifier.</div>
-            </div>
-          </div>
-          ):isStuck?(
-          <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.2)"}}>
-            <div style={{fontSize:13,fontWeight:600,color:"#ff9500",fontFamily:T.fontDisplay,marginBottom:8}}>
-              Votre score va baisser de {(currentScore-score5y).toFixed(1)} points
-            </div>
-            <div style={{fontSize:11,color:T.text4,lineHeight:1.6,fontFamily:T.fontText,marginBottom:12}}>
-              Vos versements actuels accentuent la concentration de votre portefeuille. L'optimizer ne peut pas rééquilibrer sans modifier vos choix de pondération.
-            </div>
-            <div style={{fontSize:11,color:T.text4,lineHeight:1.6,fontFamily:T.fontText}}>
-              Pour limiter cette dégradation, envisagez d'ajouter des versements sur des classes d'actifs absentes — <strong style={{color:T.text3}}>obligations, or ou immobilier</strong>.
-            </div>
-          </div>
           ):(
           <div style={{marginTop:8}}>
             <div style={{height:"0.5px",background:T.borderFaint,margin:"8px 0 20px"}}/>
-            {scoreDegrading&&<div style={{padding:"12px 14px",borderRadius:10,background:"rgba(255,149,0,0.06)",border:"0.5px solid rgba(255,149,0,0.15)",marginBottom:16}}>
-              <div style={{fontSize:12,fontWeight:600,color:"#ff9500",marginBottom:4}}>Score en baisse de {(currentScore-score5y).toFixed(1)} points sans action</div>
-              <div style={{fontSize:11,color:T.text4,lineHeight:1.5}}>Ce scénario montre comment redistribuer vos versements pour <strong style={{color:T.text3}}>limiter cette dégradation</strong> — votre score passerait à {optResult.score5yAfter.toFixed(1)}/20 au lieu de {score5y.toFixed(1)}/20.</div>
-            </div>}
             <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>{scoreDegrading?"Scénario de stabilisation":"Scénario optimal à 5 ans"}</div>
 
             {/* Score comparison */}
@@ -926,9 +915,8 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               </div>
             </div>
 
-            {/* Per-ETF changes — side by side table */}
+            {/* Per-ETF table */}
             <div style={{marginBottom:16}}>
-              {/* Header */}
               <div style={{display:"flex",alignItems:"center",gap:8,padding:"6px 12px",marginBottom:4}}>
                 <div style={{flex:1}}/>
                 <div style={{width:64,textAlign:"center",fontSize:9,color:T.text5,letterSpacing:1.5,textTransform:"uppercase",fontWeight:600}}>Actuel</div>
@@ -951,11 +939,9 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
                       <div style={{fontSize:12,color:T.text,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.name}</div>
                       <div style={{fontSize:10,color:T.text5,marginTop:1}}>{freqLabel}</div>
                     </div>
-                    {/* Actuel */}
                     <div style={{width:64,textAlign:"center",flexShrink:0}}>
                       <span style={{fontSize:12,color:T.text4,fontWeight:500}}>{beforeAmt>0?`${beforeAmt} €`:"—"}</span>
                     </div>
-                    {/* Optimisé */}
                     <div style={{width:64,textAlign:"center",flexShrink:0}}>
                       <span style={{fontSize:12,fontWeight:700,color:!highlight?T.text4:afterAmt>beforeAmt?T.accent:afterAmt===0?"#ff4d4d":"#ff9500"}}>
                         {afterAmt>0?`${afterAmt} €`:"—"}
@@ -968,13 +954,13 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
 
             {/* Disclaimer */}
             <div style={{fontSize:11,color:T.text5,lineHeight:1.6,marginBottom:16,padding:"10px 12px",background:T.surfaceFaint,borderRadius:10}}>
-              Simulation indicative basée sur votre portefeuille actuel. Vos positions existantes ne sont pas modifiées — seuls les versements futurs changent. Pensez à relancer une simulation dans 2 ans.
+              Simulation indicative. Vos positions existantes ne sont pas modifiées — seuls les versements futurs changent.
             </div>
 
             {/* CTA */}
             <button onClick={()=>setShowConfirm(true)} style={{width:"100%",background:T.accent,border:"none",borderRadius:14,padding:"14px",color:"#000",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:T.fontDisplay}}>
-                {scoreDegrading?"Appliquer le scénario de stabilisation":"Appliquer ce scénario"}
-              </button>
+              {scoreDegrading?"Appliquer le scénario de stabilisation":"Appliquer ce scénario"}
+            </button>
             {showConfirm&&createPortal(
               <div onClick={()=>setShowConfirm(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999999,padding:"0 24px"}}>
                 <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:380,background:T.bgElevated,border:`0.5px solid ${T.border}`,borderRadius:20,padding:"28px 24px",animation:"popIn .25s cubic-bezier(.16,1,.3,1)"}}>
@@ -983,7 +969,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
                       <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 7v5M10 14.5v.5" stroke="#ff9500" strokeWidth="1.8" strokeLinecap="round"/><path d="M8.5 3.2L2 15a1.7 1.7 0 0 0 1.5 2.5h13A1.7 1.7 0 0 0 18 15L11.5 3.2a1.7 1.7 0 0 0-3 0Z" stroke="#ff9500" strokeWidth="1.5" strokeLinejoin="round"/></svg>
                     </div>
                     <div style={{fontFamily:T.fontDisplay,fontSize:17,fontWeight:700,color:T.text,marginBottom:8}}>Mettre à jour vos ordres ?</div>
-                    <div style={{fontSize:13,color:T.text4,lineHeight:1.65,fontFamily:T.fontText}}>Les montants de vos versements programmés vont être mis à jour selon le scénario optimal.<br/><br/>Vos <strong style={{color:T.text3}}>positions actuelles ne sont pas modifiées</strong> — seuls les versements futurs changent.</div>
+                    <div style={{fontSize:13,color:T.text4,lineHeight:1.65,fontFamily:T.fontText}}>{scoreDegrading?"Les montants de vos versements vont être ajustés pour limiter la dégradation de votre score à 5 ans.":"Les montants de vos versements programmés vont être mis à jour selon le scénario optimal."}<br/><br/>Vos <strong style={{color:T.text3}}>positions actuelles ne sont pas modifiées</strong> — seuls les versements futurs changent.</div>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     <button onClick={()=>{
@@ -1002,7 +988,8 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               document.body
             )}
           </div>
-        )})()}
+          )
+        })()}
         {applied&&(
           <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:10}}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#0ecb81" strokeWidth="1"/><path d="M5 8l2.5 2.5L11 5.5" stroke="#0ecb81" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
