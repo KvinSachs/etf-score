@@ -995,12 +995,6 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
 
         {/* Optimization section */}
         {optResult&&!applied&&(()=>{
-          const noChangesInPlan = holdings.every(h=>{
-            const before=plans[h.ticker]?.amount||0;
-            const after=activeResult.optimizedPlans[h.ticker]?.amount||0;
-            return before===after;
-          });
-          const noScoreGain = activeResult.score5yAfter-activeResult.score5yBefore<0.5;
           const scoreDegrading = score5y < currentScore - 0.5;
           const hasOverweights = optResult?.overweights?.length>0;
           // Use target-based rebalancing when overweights detected or score degrades
@@ -1011,6 +1005,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
             const after=activeResult.optimizedPlans[h.ticker]?.amount||0;
             return before===after;
           });
+          const noScoreGain = activeResult.score5yAfter-activeResult.score5yBefore<0.5;
           // Balanced only if: no degradation AND no overweights AND no meaningful changes
           const isBalanced = !scoreDegrading && !hasOverweights && (noChangesActive || noScoreGain);
 
