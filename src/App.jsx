@@ -404,6 +404,126 @@ function optimizeDCA(holdings, plans, yearsAhead=5){
   return{optimizedPlans,score5yBefore,score5yAfter,totalMonthlyBudget,defaultFreq,overweights};
 }
 
+/* ─── TARGET-BASED REBALANCER ───────────────────────────────────────────────── */
+function rebalanceDCA(holdings, plans) {
+  const periodsPerYear={weekly:52,monthly:12,quarterly:4};
+  const monthlyEquiv={weekly:52/12,monthly:1,quarterly:1/3};
+
+  // Total monthly budget
+  const existingTickers=Object.keys(plans).filter(tk=>plans[tk]?.amount>0);
+  const totalMonthly=existingTickers.reduce((sum,tk)=>{
+    const p=plans[tk]; return sum+(p.amount*(monthlyEquiv[p.freq]||1));
+  },0);
+  if(totalMonthly<=0) return null;
+
+  const defaultFreq=(() => {
+    const fc={weekly:0,monthly:0,quarterly:0};
+    existingTickers.forEach(tk=>{fc[plans[tk].freq]=(fc[plans[tk].freq]||0)+1;});
+    return Object.entries(fc).sort((a,b)=>b[1]-a[1])[0]?.[0]||"monthly";
+  })();
+
+  // Ideal target weights per asset class (based on recommended allocations)
+  const IDEAL = {equity:0.80, bond:0.10, commodity:0.07, real_estate:0.03};
+  // Within equity, ideal geo split
+  const IDEAL_GEO = {"world":0.55,"europe":0.15,"emerging":0.20,"japan":0.05,"smallcap":0.05};
+
+  // Classify each holding
+  const WORLD_TICKERS  = new Set(["IWDA","SWDA","MWRD","VWCE","EWLD","ACWI","VWRL"]);
+  const EUROPE_TICKERS = new Set(["PCEU","EXSA","MEUD","VEUR","MEUR"]);
+  const EM_TICKERS     = new Set(["PAEEM","EIMI","PAEMF","XMEM","LYMEM","SPYM"]);
+  const JAPAN_TICKERS  = new Set(["PTPXE","JPNT"]);
+  const SMALL_TICKERS  = new Set(["IUSN","RS2K"]);
+  const BOND_TICKERS   = new Set(["IEAC","XBLC","VCBO","IEAG","VAGF","OBLI","AGGH"]);
+  const GOLD_TICKERS   = new Set(["GOLD","IGLN","SGLD","WGLD"]);
+  const RE_TICKERS     = new Set(["EPRA","CBRE"]);
+  // SP500 and similar — pure US equity, treated as "world" but with US bias
+  const US_TICKERS_RB  = new Set(["SPY","VOO","CSP1","500","ESE","QQQ","PANX","CSPX","PCPUS","PUST"]);
+
+  const classify = (ticker) => {
+    if(WORLD_TICKERS.has(ticker)) return "world";
+    if(US_TICKERS_RB.has(ticker)) return "us"; // US-only equity
+    if(EUROPE_TICKERS.has(ticker)) return "europe";
+    if(EM_TICKERS.has(ticker)) return "emerging";
+    if(JAPAN_TICKERS.has(ticker)) return "japan";
+    if(SMALL_TICKERS.has(ticker)) return "smallcap";
+    if(BOND_TICKERS.has(ticker)) return "bond";
+    if(GOLD_TICKERS.has(ticker)) return "commodity";
+    if(RE_TICKERS.has(ticker)) return "realestate";
+    const cls = DB[ticker]?.assetClass;
+    return cls||"equity";
+  };
+
+  // Group holdings by category
+  const groups={world:[],us:[],europe:[],emerging:[],japan:[],smallcap:[],bond:[],commodity:[],realestate:[]};
+  holdings.forEach(h=>{const cat=classify(h.ticker);if(groups[cat])groups[cat].push(h.ticker);});
+
+  // Build target weights for each ticker based on what's available
+  // Step 1: determine which asset classes are present
+  const presentClasses=new Set(holdings.map(h=>classify(h.ticker)));
+  
+  // Step 2: normalize IDEAL to present classes only
+  const classMap={world:"equity",us:"equity",europe:"equity",emerging:"equity",japan:"equity",smallcap:"equity",bond:"bond",commodity:"commodity",realestate:"realestate"};
+  let classBudget={equity:0,bond:0,commodity:0,realestate:0};
+  presentClasses.forEach(cat=>{
+    const cls=classMap[cat]||"equity";
+    classBudget[cls]+=1;
+  });
+
+  // Equity gets its target if present, others proportional
+  const presentAssetClasses=[...new Set([...presentClasses].map(c=>classMap[c]||"equity"))];
+  let totalIdeal=presentAssetClasses.reduce((s,cls)=>s+(IDEAL[cls]||0),0)||1;
+  const normalizedClassWeight={};
+  presentAssetClasses.forEach(cls=>{ normalizedClassWeight[cls]=(IDEAL[cls]||0)/totalIdeal; });
+
+  // Step 3: within equity, distribute among present equity types
+  const equityTypes=["world","us","europe","emerging","japan","smallcap"].filter(t=>groups[t].length>0);
+  let totalEquityIdeal=equityTypes.reduce((s,t)=>s+(IDEAL_GEO[t]||0),0)||1;
+
+  // Step 4: assign target monthly amount to each ticker
+  const targetWeights={};
+  holdings.forEach(h=>{
+    const cat=classify(h.ticker);
+    const cls=classMap[cat]||"equity";
+    const clsWeight=normalizedClassWeight[cls]||0;
+    
+    if(cls==="equity"){
+      const eqTypeWeight=(IDEAL_GEO[cat]||0)/totalEquityIdeal;
+      const tickersInType=groups[cat]||[];
+      const shareInType=tickersInType.length>0?1/tickersInType.length:0;
+      targetWeights[h.ticker]=clsWeight*eqTypeWeight*shareInType;
+    } else {
+      const tickersInCls=[...presentClasses].filter(c=>classMap[c]===cls).flatMap(c=>groups[c]||[]);
+      const shareInCls=tickersInCls.length>0?1/tickersInCls.length:0;
+      targetWeights[h.ticker]=clsWeight*shareInCls;
+    }
+  });
+
+  // Normalize to sum=1
+  const total=Object.values(targetWeights).reduce((s,v)=>s+v,0)||1;
+  Object.keys(targetWeights).forEach(tk=>{targetWeights[tk]/=total;});
+
+  // Build rebalanced plans
+  const rebalancedPlans={};
+  holdings.forEach(h=>{
+    const freq=plans[h.ticker]?.freq||defaultFreq;
+    const ppy=periodsPerYear[freq]||12;
+    const monthlyAmt=targetWeights[h.ticker]*totalMonthly;
+    const perPeriod=monthlyAmt/(ppy/12);
+    const rounded=Math.round(perPeriod/5)*5;
+    if(rounded>=5){
+      rebalancedPlans[h.ticker]={
+        freq, amount:rounded,
+        startDate:plans[h.ticker]?.startDate||new Date().toISOString().split("T")[0]
+      };
+    }
+  });
+
+  const score5yBefore=computeScores(projectPortfolio(holdings,plans,5)).total;
+  const score5yAfter=computeScores(projectPortfolio(holdings,rebalancedPlans,5)).total;
+
+  return{rebalancedPlans,score5yBefore,score5yAfter,totalMonthly,defaultFreq,targetWeights};
+}
+
 /* ─── RECS & POSITIVE (identical logic) ─────────────────────────────────────── */
 function buildPositive(scores,holdings){
   const p=[],{classes}=scores,bondPct=classes["bond"]||0,commPct=classes["commodity"]||0,n=holdings.length;
@@ -803,8 +923,9 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
 
   const g0=sc(currentScore), g1=sc(score1y), g5=sc(score5y);
 
-  // Compute optimization once
+  // Compute optimization and target rebalancing
   const optResult=useMemo(()=>optimizeDCA(holdings,plans,5),[holdings,plans]);
+  const rebalResult=useMemo(()=>rebalanceDCA(holdings,plans),[holdings,plans]);
 
   const ScoreCol=({label,value,g,highlight})=>(
     <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:6,
@@ -876,14 +997,22 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
         {optResult&&!applied&&(()=>{
           const noChangesInPlan = holdings.every(h=>{
             const before=plans[h.ticker]?.amount||0;
-            const after=optResult.optimizedPlans[h.ticker]?.amount||0;
+            const after=activeResult.optimizedPlans[h.ticker]?.amount||0;
             return before===after;
           });
-          const noScoreGain = optResult.score5yAfter-optResult.score5yBefore<0.5;
+          const noScoreGain = activeResult.score5yAfter-activeResult.score5yBefore<0.5;
           const scoreDegrading = score5y < currentScore - 0.5;
           const hasOverweights = optResult?.overweights?.length>0;
-          // Balanced only if: no degradation AND no overweights AND (no changes or no gain)
-          const isBalanced = !scoreDegrading && !hasOverweights && (noChangesInPlan || noScoreGain);
+          // Use target-based rebalancing when overweights detected or score degrades
+          const useRebal = (hasOverweights || scoreDegrading) && rebalResult;
+          const activeResult = useRebal ? {...optResult, optimizedPlans:rebalResult.rebalancedPlans, score5yAfter:rebalResult.score5yAfter} : optResult;
+          const noChangesActive = holdings.every(h=>{
+            const before=plans[h.ticker]?.amount||0;
+            const after=activeResult.optimizedPlans[h.ticker]?.amount||0;
+            return before===after;
+          });
+          // Balanced only if: no degradation AND no overweights AND no meaningful changes
+          const isBalanced = !scoreDegrading && !hasOverweights && (noChangesActive || noScoreGain);
 
           return isBalanced&&!hasOverweights?(
             <div style={{marginTop:8,padding:"14px 16px",borderRadius:14,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.2)",display:"flex",alignItems:"center",gap:12}}>
@@ -898,19 +1027,19 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
           ):(
           <div style={{marginTop:8}}>
             <div style={{height:"0.5px",background:T.borderFaint,margin:"8px 0 20px"}}/>
-            <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>{scoreDegrading?"Scénario de stabilisation":"Scénario optimal à 5 ans"}</div>
+            <div style={{fontSize:9,color:T.text5,letterSpacing:2.5,textTransform:"uppercase",fontWeight:700,marginBottom:12}}>{useRebal?"Rééquilibrage conseillé":scoreDegrading?"Scénario de stabilisation":"Scénario optimal à 5 ans"}</div>
 
             {/* Score comparison */}
             <div style={{display:"flex",gap:8,marginBottom:16}}>
               <div style={{flex:1,background:T.surfaceFaint,border:`0.5px solid ${T.borderSubtle}`,borderRadius:12,padding:"12px",textAlign:"center"}}>
                 <div style={{fontSize:9,color:T.text5,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>DCA actuel</div>
-                <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:800,color:sc(optResult.score5yBefore).text,letterSpacing:-1}}>{optResult.score5yBefore.toFixed(1)}</div>
+                <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:800,color:sc(activeResult.score5yBefore).text,letterSpacing:-1}}>{activeResult.score5yBefore.toFixed(1)}</div>
                 <div style={{fontSize:9,color:T.text5}}>/20</div>
               </div>
               <div style={{display:"flex",alignItems:"center",color:T.accent,fontSize:16}}>→</div>
               <div style={{flex:1,background:"rgba(14,203,129,0.06)",border:"0.5px solid rgba(14,203,129,0.25)",borderRadius:12,padding:"12px",textAlign:"center"}}>
-                <div style={{fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{scoreDegrading?"Stabilisé":"Optimisé"}</div>
-                <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:800,color:sc(optResult.score5yAfter).text,letterSpacing:-1}}>{optResult.score5yAfter.toFixed(1)}</div>
+                <div style={{fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{useRebal?"Conseillé":scoreDegrading?"Stabilisé":"Optimisé"}</div>
+                <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:800,color:sc(activeResult.score5yAfter).text,letterSpacing:-1}}>{activeResult.score5yAfter.toFixed(1)}</div>
                 <div style={{fontSize:9,color:T.text5}}>/20</div>
               </div>
             </div>
@@ -920,14 +1049,14 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
               <div style={{display:"flex",alignItems:"center",gap:8,padding:"6px 12px",marginBottom:4}}>
                 <div style={{flex:1}}/>
                 <div style={{width:64,textAlign:"center",fontSize:9,color:T.text5,letterSpacing:1.5,textTransform:"uppercase",fontWeight:600}}>Actuel</div>
-                <div style={{width:64,textAlign:"center",fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",fontWeight:600}}>{scoreDegrading?"Stabilisé":"Optimisé"}</div>
+                <div style={{width:64,textAlign:"center",fontSize:9,color:T.accent,letterSpacing:1.5,textTransform:"uppercase",fontWeight:600}}>{useRebal?"Conseillé":scoreDegrading?"Stabilisé":"Optimisé"}</div>
               </div>
               {holdings.map(h=>{
                 const before=plans[h.ticker];
-                const after=optResult.optimizedPlans[h.ticker];
+                const after=activeResult.optimizedPlans[h.ticker];
                 const beforeAmt=before?.amount||0;
                 const afterAmt=after?.amount||0;
-                const freq=before?.freq||optResult.defaultFreq;
+                const freq=before?.freq||activeResult.defaultFreq;
                 const freqLabel=FREQS.find(f=>f.id===freq)?.short||"/mois";
                 const changed=beforeAmt!==afterAmt;
                 const isNew=!before&&after;
@@ -959,7 +1088,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
 
             {/* CTA */}
             <button onClick={()=>setShowConfirm(true)} style={{width:"100%",background:T.accent,border:"none",borderRadius:14,padding:"14px",color:"#000",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:T.fontDisplay}}>
-              {scoreDegrading?"Appliquer le scénario de stabilisation":"Appliquer ce scénario"}
+              {useRebal?"Appliquer le rééquilibrage conseillé":scoreDegrading?"Appliquer le scénario de stabilisation":"Appliquer ce scénario"}
             </button>
             {showConfirm&&createPortal(
               <div onClick={()=>setShowConfirm(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999999,padding:"0 24px"}}>
@@ -973,7 +1102,7 @@ function ProjectionSheet({holdings,plans,onPlansUpdate,currentScore,onClose}){
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     <button onClick={()=>{
-                      onPlansUpdate(optResult.optimizedPlans);
+                      onPlansUpdate(activeResult.optimizedPlans);
                       localStorage.setItem("etf-dca-sim-date",new Date().toISOString());
                       setApplied(true);setShowConfirm(false);
                     }} style={{width:"100%",background:T.accent,border:"none",borderRadius:12,padding:"14px",color:"#000",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:T.fontDisplay}}>
