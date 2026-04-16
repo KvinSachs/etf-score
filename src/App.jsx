@@ -842,8 +842,8 @@ function ColorBars({data,title,infoMap={}}){
                 </div>
                 <span style={{fontFamily:T.fontDisplay,fontSize:13,color:BARS[i%BARS.length],fontWeight:700}}>{v.toFixed(1)}%</span>
               </div>
-              <div style={{height:2,background:T.indicatorTrack,borderRadius:1,overflow:"hidden"}}>
-                <div style={{height:"100%",width:`${(v/max)*100}%`,background:BARS[i%BARS.length],borderRadius:1,transition:"width .8s cubic-bezier(.16,1,.3,1)",boxShadow:`0 0 8px ${BARS[i%BARS.length]}55`}}/>
+              <div style={{height:2,background:T.indicatorTrack,overflow:"hidden"}}>
+                <div style={{height:"100%",width:`${(v/max)*100}%`,background:BARS[i%BARS.length],transition:"width .8s cubic-bezier(.16,1,.3,1)"}}/>
               </div>
             </div>
           ))}
